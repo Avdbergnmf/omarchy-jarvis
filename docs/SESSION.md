@@ -19,6 +19,7 @@
 Implement A-009 versioned human validation catalog and guided Verify/Fail flow.
 
 ## Parallel agent
+- Desk: **A-012** from bug #12 (open youtube / honest plans), parallel-ok YES.
 A-011 remains available in actions/. Do not edit overlay/ or brain/ during this batch.
 
 ## Blockers

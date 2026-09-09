@@ -6,6 +6,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 |----|-------|--------|------|-------------|------|
 | A-007 | Slash-command autocomplete | done | area:overlay | NO | [done/A-007-slash-command-autocomplete.md](done/A-007-slash-command-autocomplete.md) |
 | A-008 | Training mode (improvement control plane) | done | area:overlay | NO | [done/A-008-training-mode.md](done/A-008-training-mode.md) |
+| A-012 | Open YouTube + honest open plans | queued | area:actions | YES | [active/A-012-open-youtube-honest-plans.md](active/A-012-open-youtube-honest-plans.md) |
 | A-011 | Open apps by name (Spotify + fuzzy match) | queued | area:actions | YES | [active/A-011-open-app-by-name.md](active/A-011-open-app-by-name.md) |
 | A-009 | Human validation tests in Training mode | in_progress | area:overlay | NO | [active/A-009-human-validation-tests.md](active/A-009-human-validation-tests.md) |
 
@@ -16,5 +17,7 @@ Recently completed: A-001 … A-006, A-010 (see [done/](done/)).
 **Astra 6:** owns **A-008 + A-009** after A-010/A-007 clear — paste [`docs/backlog/handoffs/active/astra6-A008-A009.md`](../backlog/handoffs/active/astra6-A008-A009.md).
 
 **A-011** (from bug #11) is `parallel-ok: YES` — claimable while overlay work is in_progress.
+
+**A-012** (from bug #12) is `parallel-ok: YES` — pairs with A-011; claimable alongside overlay work.
 
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).
