@@ -36,3 +36,29 @@
 - Delivery PR: #6. First CI run passed Python tests but ShellCheck flagged an unchecked `cd` and nested-shell quoting in doctor.sh. Fixed both directly (explicit failed-cd exit; model check as a shell function), then reran CI.
 - CI is green on implementation commit `53b20e2`: https://github.com/Avdbergnmf/omarchy-jarvis/actions/runs/34366901098 (PR) and https://github.com/Avdbergnmf/omarchy-jarvis/actions/runs/34366896608 (push). ShellCheck, 19 Python tests, syntax checks and overlay JS behavior all pass. The indirect model-check function triggered one additional ShellCheck diagnostic; calling it directly resolved it.
 - Final host cleanup closed only Jarvis disposable test windows; the four planning webapps remain together on workspace **2**. Final service code is active; both services remain enabled. Release delivery is through PR #6 with milestone tags `v0.0.1`, `v0.1.0`, `v0.2.0`, `v0.3.0`; M4/#5 remains follow-up scope.
+
+## 2026-09-09 — Transparency & control pass (`docs/CLAUDE_TRANSPARENCY_PASS.md`)
+
+**Before:** the overlay posted a prompt, showed "Thinking…", then polled straight to a final reply. Tool calls (workspace changes, webapp launches, scratchpad moves) had already run by the time the user saw anything — no visibility into the plan and no way to stop it.
+
+**After:** every prompt now goes through **plan → wait → execute**. `POST /v1/run` plans only; if the plan has actions it returns `status=awaiting_approval` with the proposed `plan` and nothing has touched the desktop yet. The overlay shows the plan as a checklist with **Run**/**Cancel** buttons (Run auto-focused so Enter confirms); only `POST /v1/runs/<id>/approve` executes it, and `POST /v1/runs/<id>/deny` cancels with zero side effects. While executing, `GET /v1/runs/<id>` streams a `steps[]` list (tool → running/done/error + result summary) that the overlay renders live. Chitchat with no actions still replies immediately, skipping approval. See ADR-014/ADR-015.
+
+New/changed surfaces:
+- `brain/server.py`: `plan_and_maybe_run` / `execute_plan` (JSON planner) and `plan_tools_run` / `execute_tools_plan` (opt-in `JARVIS_PLANNER=tools` loop) replace the old immediate-execute functions. New endpoints `POST /v1/runs/<id>/approve`, `/deny`, `/console`. `GET /health` adds `ollama: ok|fail` and `approval_mode`. Config loaded once from `~/.config/jarvis/config.toml` (`approval_mode`, `show_notifications`); stale `awaiting_approval` runs (>900s) auto-deny so a closed overlay can't wedge the single-run lock.
+- `overlay/`: plan checklist, live step list, Run/Cancel buttons, footer (model · ollama status · approval-mode warning), and an **always-visible Open console** button — present from first paint, disabled only until a run id exists, and re-enabled pointing at the last run (via `localStorage`) even after the overlay window is closed and reopened. Escape denies any pending plan, then closes.
+- Overlay window grew **520×150 → 640×460** (`scripts/toggle-overlay.py`, `scripts/install-hotkey.py`, re-applied to the live `~/.config/hypr/bindings.lua` on this host, `scripts/verify-host.py`).
+- `scripts/demo-test.py` now drives the API end-to-end: approves/denies through `/approve` and `/deny` instead of expecting immediate execution; added a deny-first pass on the planning prompt to prove no side effects.
+
+### How to demo
+1. `SUPER + SHIFT + J`, type "toggle scratchpad", press Enter → plan panel shows `scratch_toggle` with Run/Cancel; nothing has happened yet.
+2. Press Enter again (focus is on Run) → overlay closes, action runs, `Completed: scratch toggle.` appears in the run log; Esc/Cancel instead → `Cancelled — no actions were run.` and the scratchpad is untouched.
+3. Click **Open console** (or reopen the overlay after closing it — the button stays enabled for the last run) → `jarvis-console <run_id>` opens the live log, including the `plan`/`tool-call`/`stdout` lines.
+4. `curl http://127.0.0.1:7421/health` shows `model`, `ollama`, and `approval_mode` for the footer.
+
+### Acceptance verification (live on this host, `try-omarchy`)
+1. "Say hello…" → `status=done` immediately, `plan.actions` empty, no hypr/webapp calls in the run log.
+2. "toggle scratchpad" via `wtype` into the real overlay window: plan panel appeared with `scratch_toggle`, Run focused; scratchpad state (`hyprctl clients`) was unchanged for ~45s until Enter was pressed on Run; only then did `hl.dsp.workspace.toggle_special("scratchpad")` run and the run log recorded `Completed: scratch toggle.`. Screenshots taken with `grim` confirm the rendered plan/Run/Cancel UI and the always-visible Open console button (grayed pre-run, enabled once a run id exists, still enabled after closing/reopening the overlay).
+3. `scripts/demo-test.py`: denied "open my planning in a new workspace" first — asserted no new workspace and no new webapp windows — then approved the same prompt, which placed all four apps on a fresh workspace as before.
+4. During the approved planning/scratch-and-mail runs, `GET /v1/runs/<id>` `steps[]` updated per tool call; `POST /v1/runs/<id>/console` (what the Open-console button calls) opened a live `jarvis-console` window tailing the same run log.
+5. `./scripts/doctor.sh` (live) and `./scripts/doctor.sh --syntax` both exit 0 after the change; `python3 -m unittest discover -s tests` — 31 tests pass (12 new `ApprovalFlowTest` cases covering awaiting/approve/deny/expiry/config modes); `node tests/overlay.test.cjs` passes against the rewritten overlay UI; `scripts/verify-host.py` passes (640×460 float size).
+6. Evidence: run ids and screenshots above; full run logs under (git-ignored) `logs/runs/`; `logs/demo-evidence.json` regenerated by the updated `scripts/demo-test.py`.

@@ -1,13 +1,37 @@
 # Omarchy Jarvis
 
-A local, keyboard-first desktop assistant for Omarchy. Press **SUPER + SHIFT + J**, type a request, and press Enter. Escape closes the overlay. The overlay closes before desktop actions and restores the window you were working in.
+A local, keyboard-first desktop assistant for Omarchy. Press **SUPER + SHIFT + J**, type a request, and press Enter.
 
 Try:
 - “open my planning in a new workspace” — Todoist, Google Calendar, Outlook and WhatsApp together.
 - “move this window to scratchpad and open email” — hide the original window in scratchpad and open Outlook. SUPER+S reveals scratchpad again.
 - “switch to workspace 1” or “open Outlook”.
+- “hello” — chitchat with no actions replies immediately; no approval step, no desktop change.
+
+## Human entry points — see it, control it
+
+Jarvis never runs a mutating action before you say so. Every prompt with a proposed action shows a **plan** first:
+
+1. Type a request and press Enter. If it needs no tools (chitchat), you get a reply immediately.
+2. Otherwise the overlay shows the proposed action(s) as a checklist and focuses **Run**.
+   - **Run** (or press **Enter** while it's focused) executes the plan. The overlay closes, restores the window you were working in, then runs the action(s), showing a live per-tool step list as each one finishes.
+   - **Cancel** (or **Esc**) denies the plan — nothing happens to the desktop.
+3. **Esc** always denies any plan still awaiting approval and then closes the overlay, so you can never leave one stuck mid-decision. A plan left untouched for 15 minutes auto-denies on its own.
+4. The **Open console** button (bottom-left, always visible) opens the live `jarvis-console` for the current run while it's planning/running, or for the **last** run if you reopen the overlay with nothing new typed yet — it remembers the last run id even across closing and reopening the window.
+5. The footer on the right shows the model name, whether Ollama answered a health check, and — if someone set `approval_mode = "off"` — a "⚠ approval off" warning, since that mode skips the Run step entirely and is for debugging only.
 
 Click a **Jarvis notification** to open its floating live console. **SUPER+ALT+COMMA** invokes the latest notification’s same native action. The console uses `tail -F`, including after log rotation; Ctrl+C exits. Action summaries and tool results are logged, not private model reasoning.
+
+### Approval modes
+
+Optional config at `~/.config/jarvis/config.toml` (create it yourself; Jarvis falls back to safe defaults if it's missing):
+
+```toml
+approval_mode = "always"     # default: every action plan waits for Run
+# approval_mode = "skills_trusted"  # reviewed run_skill recipes auto-run; anything else still waits
+# approval_mode = "off"      # debugging only: everything auto-runs, overlay shows a warning
+show_notifications = true    # desktop "thought bubble" notifications; the overlay is always the source of truth
+```
 
 ## Status
 
@@ -71,6 +95,6 @@ The installer rejects a missing/mismatched digest, changed draft content, symlin
 
 ## Internals
 
-`overlay/` contains the small web UI; `brain/` serves it and asks local Ollama for a validated plan; `actions/` exposes reviewed argv tools; `skills/examples/` composes those tools. A run returns HTTP 202 with its id, then status is available at `/v1/runs/<id>`. Token/origin/host guards protect mutations, one desktop run executes at a time, and the HTTP server listens only on loopback.
+`overlay/` contains the small web UI; `brain/` serves it and asks local Ollama for a validated plan; `actions/` exposes reviewed argv tools; `skills/examples/` composes those tools. A run returns HTTP 202 with its id and `status=planning`; `GET /v1/runs/<id>` reports `status | plan | steps[] | reply`, moving through `planning → awaiting_approval → running → done|error` (or `denied`, or straight to `done` for chitchat with no actions). `POST /v1/runs/<id>/approve` executes a plan still `awaiting_approval`; `POST /v1/runs/<id>/deny` cancels it; `POST /v1/runs/<id>/console` opens the live console for that run id (what the overlay's Open console button calls). Token/origin/host guards protect mutations, one desktop run executes at a time (a plan left awaiting approval for more than 15 minutes auto-denies and frees that slot), and the HTTP server listens only on loopback.
 
 The binding catalog is live data. Only scratchpad, Outlook/WhatsApp and numbered workspace switches have reviewed execution mappings; unsupported catalog entries are reported explicitly. See ADR-007 for why arbitrary Lua binding callbacks cannot be safely extracted on this host.

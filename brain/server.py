@@ -9,6 +9,8 @@ import secrets
 import subprocess
 import sys
 import threading
+import time
+import tomllib
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.request import Request, urlopen
@@ -24,6 +26,26 @@ TOKEN = secrets.token_urlsafe(32)
 BUSY = threading.Lock()
 STATE_LOCK = threading.Lock()
 RUNS = {}
+PENDING = {}
+BUSY_RUN_ID = None
+AWAIT_TIMEOUT = 900  # seconds an awaiting-approval run may sit idle before auto-deny
+RUN_ID_RE = re.compile(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}')
+
+def load_config():
+    defaults = {'approval_mode': 'always', 'show_notifications': True}
+    path = Path(os.environ.get('JARVIS_CONFIG', str(Path.home() / '.config/jarvis/config.toml')))
+    if not path.exists():
+        return defaults
+    try:
+        data = tomllib.loads(path.read_text())
+    except Exception:
+        return defaults
+    mode = data.get('approval_mode', defaults['approval_mode'])
+    if mode not in ('always', 'skills_trusted', 'off'):
+        mode = defaults['approval_mode']
+    return {'approval_mode': mode, 'show_notifications': bool(data.get('show_notifications', defaults['show_notifications']))}
+
+CONFIG = load_config()
 
 def redact(value):
     text = str(value)
@@ -38,8 +60,26 @@ def log(run_id, event, value):
 def announce(run_id, message):
     message = redact(message)
     log(run_id, 'status', message)
+    if not CONFIG['show_notifications']:
+        return
     try: notify(run_id, message)
     except Exception as e: log(run_id, 'notification-error', e)
+
+def release_busy():
+    global BUSY_RUN_ID
+    with STATE_LOCK: BUSY_RUN_ID = None
+    BUSY.release()
+
+def expire_stale():
+    with STATE_LOCK:
+        rid = BUSY_RUN_ID
+        run = RUNS.get(rid) if rid else None
+        if not (run and run.get('status') == 'awaiting_approval' and time.monotonic() - run.get('awaiting_since', 0) > AWAIT_TIMEOUT):
+            return
+        run.update(status='denied', reply='Cancelled: approval timed out.')
+        PENDING.pop(rid, None)
+    log(rid, 'status', 'Cancelled: approval timed out (no response).')
+    release_busy()
 
 def validate_call(name, args):
     if name not in SCHEMAS or not isinstance(args, dict):
@@ -64,6 +104,9 @@ def tool_argv(name, args):
     elif name == 'run_skill': argv.append(args['skill'])
     return argv
 
+def action_label(name, args):
+    return (args.get('skill') or name).replace('_', ' ')
+
 def restore_target(target):
     clients = hypr('clients')
     if target and not any(c['address'] == target for c in clients):
@@ -79,13 +122,16 @@ PLAN_SCHEMA = {'type':'object','properties':{
         for name,schema in SCHEMAS.items()]}},
     'reply':{'type':'string'}},'required':['actions','reply'],'additionalProperties':False}
 
+def ollama_chat(payload):
+    request = Request('http://127.0.0.1:11434/api/chat', data=json.dumps(payload).encode(), headers={'Content-Type':'application/json'})
+    with urlopen(request, timeout=180) as response: return json.load(response)['message']
+
 def json_plan(prompt):
     instructions = (ROOT/'brain/system_prompt.md').read_text() + '\nReturn a JSON object with actions (tool + arguments) and reply. Choose at most ONE action. Compound requests MUST use a complete run_skill recipe. Never combine a recipe with its individual steps. Use these exact examples:\n' + json.dumps([
         {'user':'open my planning in a new workspace','plan':{'actions':[{'tool':'run_skill','arguments':{'skill':'open-planning'}}],'reply':'Opening your planning apps.'}},
         {'user':'move this window to scratchpad and open email','plan':{'actions':[{'tool':'run_skill','arguments':{'skill':'scratch-and-mail'}}],'reply':'Moving the window to scratchpad and opening Outlook.'}},
         {'user':'hello','plan':{'actions':[],'reply':'Hello! How can I help?'}}]) + '\nOther single actions: catalog_bindings(query), run_binding(binding), workspace_new(), workspace_switch(workspace integer), scratch_toggle(), scratch_move_here(), open_webapp(name). For compound scratch + email requests the ONE action is run_skill with skill=scratch-and-mail. For planning the ONE action is run_skill with skill=open-planning.'
-    request = Request('http://127.0.0.1:11434/api/chat',data=json.dumps({'model':MODEL,'messages':[{'role':'system','content':instructions},{'role':'user','content':prompt}],'format':PLAN_SCHEMA,'stream':False,'options':{'temperature':0,'num_ctx':8192}}).encode(),headers={'Content-Type':'application/json'})
-    with urlopen(request,timeout=180) as response: plan=json.loads(json.load(response)['message']['content'])
+    plan = json.loads(ollama_chat({'model':MODEL,'messages':[{'role':'system','content':instructions},{'role':'user','content':prompt}],'format':PLAN_SCHEMA,'stream':False,'options':{'temperature':0,'num_ctx':8192}})['content'])
     if not isinstance(plan,dict) or set(plan)!={'actions','reply'} or not isinstance(plan['actions'],list) or len(plan['actions'])>1 or not isinstance(plan['reply'],str):
         raise ValueError('Invalid JSON action plan')
     seen=set()
@@ -99,49 +145,104 @@ def json_plan(prompt):
         raise ValueError('A complete recipe cannot be combined with other actions')
     return plan
 
-def execute_json_run(run_id,prompt,target):
+def execute_plan(run_id, plan, target):
     try:
-        announce(run_id,'Planning your request… Click for live console.')
-        plan=json_plan(prompt)
-        log(run_id,'plan',json.dumps(plan))
+        with STATE_LOCK: RUNS[run_id].update(status='running', steps=[])
         if plan['actions']: restore_target(target)
-        summaries=[]
+        summaries = []
         for action in plan['actions']:
-            name=action['tool']; args=action['arguments']
-            log(run_id,'tool-call',json.dumps({'name':name,'arguments':args}))
-            announce(run_id,'Running '+args.get('skill',name).replace('_',' ')+'…')
-            result=subprocess.run(tool_argv(name,args),capture_output=True,text=True,timeout=160)
-            log(run_id,'stdout',result.stdout)
-            if result.stderr: log(run_id,'stderr',result.stderr)
-            if result.returncode: raise RuntimeError('Action failed: '+result.stdout.strip())
-            summaries.append(args.get('skill',name).replace('_',' '))
-        # Completion text is derived from successful actions, not model claims.
-        reply='Completed: '+', '.join(summaries)+'.' if summaries else plan['reply'][:1000]
+            name = action['tool']; args = action['arguments']
+            label = action_label(name, args)
+            step = {'tool': name, 'arguments': args, 'label': label, 'status': 'running'}
+            with STATE_LOCK: RUNS[run_id]['steps'].append(step)
+            log(run_id, 'tool-call', json.dumps({'name':name,'arguments':args}))
+            announce(run_id, 'Running ' + label + '…')
+            result = subprocess.run(tool_argv(name, args), capture_output=True, text=True, timeout=160)
+            log(run_id, 'stdout', result.stdout)
+            if result.stderr: log(run_id, 'stderr', result.stderr)
+            if result.returncode:
+                with STATE_LOCK: step.update(status='error', summary=result.stdout.strip()[:300])
+                raise RuntimeError('Action failed: ' + result.stdout.strip())
+            with STATE_LOCK: step.update(status='done', summary=result.stdout.strip()[:300])
+            summaries.append(label)
+        reply = 'Completed: '+', '.join(summaries)+'.' if summaries else plan['reply'][:1000]
         announce(run_id,reply)
         with STATE_LOCK: RUNS[run_id].update(status='done',reply=reply)
     except Exception as e:
         reply=redact(str(e)); announce(run_id,'Stopped: '+reply[:200])
         with STATE_LOCK: RUNS[run_id].update(status='error',reply=reply)
-    finally: BUSY.release()
+    finally: release_busy()
 
-def execute_run(run_id, prompt, target):
+def plan_and_maybe_run(run_id, prompt, target):
+    try:
+        announce(run_id, 'Planning your request… Click for live console.')
+        plan = json_plan(prompt)
+        log(run_id, 'plan', json.dumps(plan))
+        if not plan['actions']:
+            reply = plan['reply'][:1000]
+            announce(run_id, reply)
+            with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply, plan=plan)
+            release_busy(); return
+        with STATE_LOCK: RUNS[run_id].update(plan=plan, reply=plan['reply'][:1000])
+        auto = CONFIG['approval_mode'] == 'off' or (CONFIG['approval_mode'] == 'skills_trusted' and all(a['tool'] == 'run_skill' for a in plan['actions']))
+        if auto:
+            if CONFIG['approval_mode'] == 'off': log(run_id, 'status', 'approval_mode=off: auto-running without confirmation')
+            execute_plan(run_id, plan, target)
+        else:
+            with STATE_LOCK: PENDING[run_id] = {'target': target, 'planner': 'json'}
+            with STATE_LOCK: RUNS[run_id].update(status='awaiting_approval', awaiting_since=time.monotonic())
+            announce(run_id, 'Awaiting approval — open Jarvis to review the plan.')
+    except Exception as e:
+        reply = redact(str(e)); announce(run_id, 'Stopped: ' + reply[:200])
+        with STATE_LOCK: RUNS[run_id].update(status='error', reply=reply)
+        release_busy()
+
+def calls_to_actions(calls):
+    actions = []
+    for call in calls:
+        name = call['function']['name']; args = call['function'].get('arguments', {})
+        if isinstance(args, str): args = json.loads(args)
+        tool_argv(name, args)  # validate before showing the plan to the user
+        actions.append({'tool': name, 'arguments': args})
+    return actions
+
+def plan_tools_run(run_id, prompt, target):
     try:
         announce(run_id, 'Planning your request… Click for live console.')
         messages = [{'role':'system','content':(ROOT / 'brain/system_prompt.md').read_text()}, {'role':'user','content':prompt}]
-        seen = set(); restored = False; total = 0
+        msg = ollama_chat({'model':MODEL,'messages':messages,'tools':TOOLS,'stream':False,'options':{'temperature':0,'num_ctx':8192}})
+        msg = {k:v for k,v in msg.items() if k in ('role','content','tool_calls')}
+        messages.append(msg)
+        calls = msg.get('tool_calls') or []
+        if not calls:
+            reply = msg.get('content', '').strip() or 'Done.'
+            announce(run_id, reply[:250])
+            with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
+            release_busy(); return
+        actions = calls_to_actions(calls)
+        plan = {'actions': actions, 'reply': msg.get('content', '').strip()}
+        log(run_id, 'plan', json.dumps(plan))
+        with STATE_LOCK: RUNS[run_id].update(plan=plan, reply=(plan['reply'][:1000] or 'Reviewing proposed actions…'))
+        if CONFIG['approval_mode'] == 'off':
+            log(run_id, 'status', 'approval_mode=off: auto-running without confirmation')
+            execute_tools_plan(run_id, target, messages)
+        else:
+            with STATE_LOCK: PENDING[run_id] = {'target': target, 'planner': 'tools', 'messages': messages}
+            with STATE_LOCK: RUNS[run_id].update(status='awaiting_approval', awaiting_since=time.monotonic())
+            announce(run_id, 'Awaiting approval — open Jarvis to review the plan.')
+    except Exception as e:
+        reply = redact(str(e)); announce(run_id, 'Stopped: ' + reply[:200])
+        with STATE_LOCK: RUNS[run_id].update(status='error', reply=reply)
+        release_busy()
+
+def execute_tools_plan(run_id, target, messages):
+    try:
+        with STATE_LOCK: RUNS[run_id].update(status='running', steps=[])
+        restore_target(target)
+        seen = set(); total = 0
+        pending_calls = messages[-1].get('tool_calls') or []
         for _ in range(6):
-            request = Request('http://127.0.0.1:11434/api/chat', data=json.dumps({'model':MODEL,'messages':messages,'tools':TOOLS,'stream':False,'options':{'temperature':0,'num_ctx':8192}}).encode(), headers={'Content-Type':'application/json'})
-            with urlopen(request, timeout=180) as response: msg = json.load(response)['message']
-            # Retain public content and calls, never model-internal thinking fields.
-            msg = {k:v for k,v in msg.items() if k in ('role','content','tool_calls')}
-            messages.append(msg)
-            calls = msg.get('tool_calls') or []
-            if not calls:
-                reply = msg.get('content', '').strip() or 'Done.'
-                announce(run_id, reply[:250])
-                with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
-                return
-            for call in calls:
+            for call in pending_calls:
                 name = call['function']['name']; args = call['function'].get('arguments', {})
                 if isinstance(args, str): args = json.loads(args)
                 argv = tool_argv(name, args)
@@ -149,21 +250,66 @@ def execute_run(run_id, prompt, target):
                 if signature in seen: raise ValueError('Model repeated a completed action; stopped to prevent duplicate work')
                 seen.add(signature); total += 1
                 if total > 10: raise ValueError('Action limit reached')
+                label = action_label(name, args)
+                step = {'tool': name, 'arguments': args, 'label': label, 'status': 'running'}
+                with STATE_LOCK: RUNS[run_id]['steps'].append(step)
                 log(run_id, 'tool-call', json.dumps({'name':name,'arguments':args}))
-                if name != 'catalog_bindings' and not restored:
-                    restore_target(target); restored = True
-                announce(run_id, 'Running ' + (args.get('skill') or name).replace('_',' ') + '…')
+                announce(run_id, 'Running ' + label + '…')
                 result = subprocess.run(argv, capture_output=True, text=True, timeout=160)
                 log(run_id, 'stdout', result.stdout)
                 if result.stderr: log(run_id, 'stderr', result.stderr)
-                if result.returncode: raise RuntimeError('Action failed: ' + result.stdout.strip())
+                if result.returncode:
+                    with STATE_LOCK: step.update(status='error', summary=result.stdout.strip()[:300])
+                    raise RuntimeError('Action failed: ' + result.stdout.strip())
+                with STATE_LOCK: step.update(status='done', summary=result.stdout.strip()[:300])
                 messages.append({'role':'tool','tool_name':name,'content':result.stdout[:16000]})
+            msg = ollama_chat({'model':MODEL,'messages':messages,'tools':TOOLS,'stream':False,'options':{'temperature':0,'num_ctx':8192}})
+            msg = {k:v for k,v in msg.items() if k in ('role','content','tool_calls')}
+            messages.append(msg)
+            pending_calls = msg.get('tool_calls') or []
+            if not pending_calls:
+                reply = msg.get('content', '').strip() or 'Done.'
+                announce(run_id, reply[:250])
+                with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
+                return
         raise RuntimeError('Model exceeded the six-turn limit')
     except Exception as e:
-        reply = redact(str(e))
-        announce(run_id, 'Stopped: ' + reply[:200])
+        reply = redact(str(e)); announce(run_id, 'Stopped: ' + reply[:200])
         with STATE_LOCK: RUNS[run_id].update(status='error', reply=reply)
-    finally: BUSY.release()
+    finally: release_busy()
+
+def run_pending(run_id):
+    with STATE_LOCK: pending = PENDING.pop(run_id, None)
+    if not pending:
+        release_busy(); return
+    if pending['planner'] == 'tools':
+        execute_tools_plan(run_id, pending['target'], pending['messages'])
+    else:
+        with STATE_LOCK: plan = RUNS[run_id]['plan']
+        execute_plan(run_id, plan, pending['target'])
+
+def handle_approve(run_id):
+    with STATE_LOCK:
+        run = RUNS.get(run_id)
+        if not run or run.get('status') != 'awaiting_approval': return None
+        run['status'] = 'running'
+    threading.Thread(target=run_pending, args=(run_id,), daemon=True).start()
+    return run
+
+def handle_deny(run_id):
+    with STATE_LOCK:
+        run = RUNS.get(run_id)
+        if not run or run.get('status') != 'awaiting_approval': return None
+        run.update(status='denied', reply='Cancelled — no actions were run.')
+        PENDING.pop(run_id, None)
+    log(run_id, 'status', 'Denied by user; no actions were run.')
+    release_busy()
+    return run
+
+def ollama_health():
+    try:
+        with urlopen('http://127.0.0.1:11434/api/tags', timeout=2): return 'ok'
+    except Exception: return 'fail'
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args): pass
@@ -176,28 +322,50 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none'")
         self.send_header('Content-Length',str(len(data))); self.end_headers(); self.wfile.write(data)
     def host_ok(self): return self.headers.get('Host') == '127.0.0.1:7421'
+    def run_id_from(self, suffix):
+        if not self.path.startswith('/v1/runs/') or not self.path.endswith(suffix): return None
+        run_id = self.path[len('/v1/runs/'):-len(suffix)]
+        return run_id if RUN_ID_RE.fullmatch(run_id) else None
     def do_GET(self):
         if not self.host_ok(): return self.reply(403, {'error':'Invalid host'})
-        if self.path == '/health': return self.reply(200, {'service':'omarchy-jarvis','model':MODEL})
+        if self.path == '/health': return self.reply(200, {'service':'omarchy-jarvis','model':MODEL,'ollama':ollama_health(),'approval_mode':CONFIG['approval_mode']})
         if self.path in ('/','/jarvis-overlay','/app.js','/style.css'):
             name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css')}[self.path]
             return self.reply(200,(ROOT/'overlay'/name).read_text(),mime)
         if self.path == '/v1/session': return self.reply(200, {'token':TOKEN})
         if self.path.startswith('/v1/runs/'):
             if self.headers.get('X-Jarvis-Token') != TOKEN: return self.reply(403, {'error':'Invalid token'})
-            with STATE_LOCK: state = RUNS.get(self.path.rsplit('/',1)[-1])
+            expire_stale()
+            run_id = self.path.rsplit('/',1)[-1]
+            with STATE_LOCK: state = RUNS.get(run_id)
             return self.reply(200 if state else 404,state or {'error':'Unknown run'})
         return self.reply(404, {'error':'Not found'})
     def do_POST(self):
         if not self.host_ok() or self.headers.get('Origin') not in (None,'http://127.0.0.1:7421') or self.headers.get('X-Jarvis-Token') != TOKEN:
             return self.reply(403, {'error':'Invalid origin or token'})
-        if self.path not in ('/v1/run','/v1/close'): return self.reply(404, {'error':'Not found'})
         if self.path == '/v1/close':
             try:
                 for c in hypr('clients'):
                     if is_overlay(c): dispatch('closewindow','address:'+c['address'])
                 return self.reply(200, {'ok':True})
             except Exception as e: return self.reply(500, {'error':str(e)})
+        approve_id = self.run_id_from('/approve')
+        if approve_id:
+            expire_stale()
+            run = handle_approve(approve_id)
+            return self.reply(202, run) if run else self.reply(409, {'error':'Run is not awaiting approval'})
+        deny_id = self.run_id_from('/deny')
+        if deny_id:
+            run = handle_deny(deny_id)
+            return self.reply(200, run) if run else self.reply(409, {'error':'Run is not awaiting approval'})
+        console_id = self.run_id_from('/console')
+        if console_id:
+            try:
+                subprocess.Popen([str(ROOT/'console/jarvis-console'), console_id], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+                return self.reply(200, {'ok':True})
+            except Exception as e: return self.reply(500, {'error':str(e)})
+        if self.path != '/v1/run': return self.reply(404, {'error':'Not found'})
+        expire_stale()
         try:
             length = int(self.headers.get('Content-Length','0'))
             if not 0 < length <= 8192: raise ValueError('Invalid request size')
@@ -212,11 +380,13 @@ class Handler(BaseHTTPRequestHandler):
                 target = json.loads((LOGS/'overlay-target.json').read_text()).get('address')
             run_id = str(uuid.uuid4())
             (LOGS/'runs'/(run_id+'.log')).touch(mode=0o600)
+            global BUSY_RUN_ID
             with STATE_LOCK:
                 if len(RUNS)>200: RUNS.pop(next(iter(RUNS)))
-                RUNS[run_id] = {'run_id':run_id,'status':'running','reply':'Thinking…'}
-            threading.Thread(target=execute_run if os.environ.get('JARVIS_PLANNER') == 'tools' else execute_json_run,args=(run_id,prompt.strip(),target),daemon=True).start()
-            return self.reply(202, {'run_id':run_id,'reply':'Thinking…'})
+                RUNS[run_id] = {'run_id':run_id,'status':'planning','reply':'Thinking…','plan':None,'steps':[]}
+                BUSY_RUN_ID = run_id
+            threading.Thread(target=plan_tools_run if os.environ.get('JARVIS_PLANNER') == 'tools' else plan_and_maybe_run,args=(run_id,prompt.strip(),target),daemon=True).start()
+            return self.reply(202, {'run_id':run_id,'status':'planning','reply':'Thinking…'})
         except Exception as e:
             BUSY.release(); return self.reply(500, {'error':str(e)})
 
@@ -226,5 +396,5 @@ if __name__ == '__main__':
     catalog(refresh=True)
     server = ThreadingHTTPServer(('127.0.0.1',7421),Handler)
     server.timeout = 10
-    print('Jarvis listening on 127.0.0.1:7421; model=' + MODEL,flush=True)
+    print('Jarvis listening on 127.0.0.1:7421; model=' + MODEL + '; approval_mode=' + CONFIG['approval_mode'],flush=True)
     server.serve_forever()

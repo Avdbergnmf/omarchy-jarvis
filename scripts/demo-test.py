@@ -13,23 +13,40 @@ from core import hypr,dispatch
 BASE='http://127.0.0.1:7421'
 def get(path):
  with urlopen(Request(BASE+path,headers={'X-Jarvis-Token':token}),timeout=10) as r: return json.load(r)
-def run(prompt):
- request=Request(BASE+'/v1/run',data=json.dumps({'prompt':prompt}).encode(),headers={'Content-Type':'application/json','X-Jarvis-Token':token})
- with urlopen(request,timeout=10) as r: result=json.load(r)
+def post(path,body=None):
+ request=Request(BASE+path,data=json.dumps(body or {}).encode(),headers={'Content-Type':'application/json','X-Jarvis-Token':token})
+ with urlopen(request,timeout=10) as r: return json.load(r)
+def run(prompt,approve=True):
+ result=post('/v1/run',{'prompt':prompt}); run_id=result['run_id']
  print(json.dumps(result),flush=True)
+ approved=False
  for _ in range(300):
-  result=get('/v1/runs/'+result['run_id'])
-  if result['status']!='running':
+  result=get('/v1/runs/'+run_id)
+  if result['status']=='awaiting_approval':
    print(json.dumps(result),flush=True)
-   if result['status']!='done': raise RuntimeError(result)
+   if approved: raise RuntimeError('Plan still awaiting approval after decision')
+   approved=True
+   result=post('/v1/runs/'+run_id+('/approve' if approve else '/deny'))
+   continue
+  if result['status'] not in ('planning','running'):
+   print(json.dumps(result),flush=True)
+   if approve and result['status']!='done': raise RuntimeError(result)
+   if not approve and result['status']!='denied': raise RuntimeError(result)
    return result
   time.sleep(1)
  raise RuntimeError('Demo exceeded 5 minutes')
 with urlopen(BASE+'/v1/session') as r: token=json.load(r)['token']
-# First exercise the Ollama loop with no desktop mutation.
+# First exercise the Ollama loop with no desktop mutation; chitchat skips approval entirely.
 results=[run('Say hello in one short sentence. Do not use tools.')]
+assert results[-1]['status']=='done'
+assert not (results[-1].get('plan') or {}).get('actions'), 'Chitchat must skip approval and run no actions'
 # Existing overlay is closed by the brain only when running a desktop action.
 before_workspaces={w['id'] for w in hypr('workspaces')}
+# Deny the plan first: nothing should happen (acceptance test 3).
+denied=run('open my planning in a new workspace',approve=False)
+assert not any(host in c['class'] for c in hypr('clients') for host in ['app.todoist.com','calendar.google.com'] if c['workspace']['id'] not in before_workspaces)
+assert {w['id'] for w in hypr('workspaces')}==before_workspaces, 'Deny must not create a workspace'
+results.append(denied)
 results.append(run('open my planning in a new workspace'))
 apps=hypr('clients'); expected=['app.todoist.com','calendar.google.com','outlook.live.com','web.whatsapp.com']
 selected=[next(c for c in apps if host in c['class']) for host in expected]
@@ -53,4 +70,4 @@ assert '"skill": "scratch-and-mail"' in (ROOT/'logs/runs'/(results[-1]['run_id']
 assert any('outlook.live.com' in c['class'] and c['mapped'] for c in hypr('clients'))
 (ROOT/'logs/demo-evidence.json').write_text(json.dumps({'runs':results,'planning':[{'class':c['class'],'workspace':c['workspace']['id']} for c in selected],'scratch_address':test['address'],'scratch_workspace':moved['workspace']['name']},indent=2))
 dispatch('closewindow','address:'+test['address'])
-print('PASS: Ollama hello, planning placement, scratch-and-mail with overlay focus restoration',flush=True)
+print('PASS: Ollama hello (no approval), denied plan (no side effects), approved planning placement, scratch-and-mail with overlay focus restoration',flush=True)
