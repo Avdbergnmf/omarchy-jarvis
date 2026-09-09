@@ -19,6 +19,7 @@
 - Coding agent: NEW_AGENT → claim **A-012** (parallel-ok YES)
 
 ## Parallel agent
+- Desk: filed **A-013** (worktrees default for parallel agents), from Claude’s A-011 note.
 - `codex/training-track` may hold A-007/A-008/A-009 WIP — do not disturb that overlay work.
 - A-012 is actions/brain-light only.
 
