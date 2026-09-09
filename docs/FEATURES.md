@@ -14,5 +14,7 @@ Coding agents: when you ship a user-visible feature, **add/update a row** and a 
 | feat-train | Training mode | overlay | unvalidated | A-008 |
 | feat-validate | Human validation queue in Training | overlay | unvalidated | A-009 |
 | feat-open-by-name | Open any installed app by name (open_app_by_name) | actions | unvalidated | A-011, e.g. "open spotify" |
+| feat-open-youtube | Open YouTube webapp (works even without a local .desktop) | actions | unvalidated | A-012 |
+| feat-honest-plans | Planner never claims an action with an empty action list | brain | unvalidated | A-012 |
 
 Status values: `unvalidated` | `validated` | `failed`.

@@ -14,7 +14,7 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 LOGS = ROOT / 'logs'
-APPS = {'Todoist': 'https://app.todoist.com/app', 'Google Calendar': 'https://calendar.google.com/', 'Outlook': 'https://outlook.live.com/mail/', 'WhatsApp': 'https://web.whatsapp.com/'}
+APPS = {'Todoist': 'https://app.todoist.com/app', 'Google Calendar': 'https://calendar.google.com/', 'Outlook': 'https://outlook.live.com/mail/', 'WhatsApp': 'https://web.whatsapp.com/', 'YouTube': 'https://www.youtube.com/'}
 REPO = 'Avdbergnmf/omarchy-jarvis'
 BACKLOG_KIND = {'bug': {'labels': ['bug', 'jarvis-reported'], 'dir': 'bugs'}, 'feature': {'labels': ['enhancement', 'backlog'], 'dir': 'features'}}
 HANDOFF_AGENTS = ('claude-code', 'cursor', 'human')

@@ -219,3 +219,20 @@ While verifying the input-clear fix, `node tests/overlay.test.cjs` started hangi
 
 ### A note on working in parallel with another agent in the same checkout
 This repo has no worktree isolation between concurrent sessions by default (noted in earlier passes). For this assignment specifically, `git worktree add` was used to get a clean, isolated `main` checkout for A-011's own commit, rather than risking `git checkout`/`stash` against a shared tree that had another agent's uncommitted, differently-branched work sitting in it. Recommend this as the default pattern whenever two assignments are genuinely running in parallel on this host.
+
+## 2026-09-09 — A-012: open YouTube + a planner honesty guard against empty-action lies
+
+**Before:** "open youtube" produced `{"actions": [], "reply": "Opening YouTube."}` — a false success claim that skipped approval entirely (zero-action plans go straight to `done`) and was rated "bad" by the user (run `fad6f832`, via A-005's own feedback controls).
+
+**After:** `YouTube` is now in `open_webapp`'s `APPS` map — a real webapp, not just a `.desktop`-dependent resolution, so it works even on a host without a local YouTube launcher installed. Separately, and more generally: if the planner ever produces an empty-action plan whose reply *itself* claims an action ("Opening…", "Moving…", "Switching…", etc.), the reply is rewritten to an honest "I don't have a way to do that yet" before it ever reaches the user — in both the default JSON planner and the opt-in tools-loop planner. See ADR-024.
+
+- `actions/core.py`: `YouTube` → `https://www.youtube.com/` in `APPS`.
+- `brain/tools.json`: `YouTube` added to `open_webapp`'s enum.
+- `brain/server.py`: `FALSE_ACTION_CLAIM_RE` guard in `json_plan()` and `plan_tools_run`; a new `open youtube` → `open_webapp` JSON-plan example.
+- `brain/system_prompt.md`: explicit "never claim an action without a matching tool call" instruction, plus YouTube added to the open_webapp list.
+- Tests: 5 new (the exact `fad6f832` reply gets rewritten; an honest empty reply is untouched; a real action's "Opening…" reply is untouched; the same guard on the tools-loop path; YouTube present in `APPS`).
+
+### Verification
+- `python3 -m unittest discover -s tests` — **85 tests** pass (5 new). `shellcheck`/`doctor.sh --syntax` clean.
+- Live on this host: reproduced the *original* bug for real against the live service before this fix landed — "open youtube" (with YouTube not yet in `APPS`) actually returned a plan with a *different* hallucinated target ("Opening Google Calendar.", a real but wrong action) on one attempt, confirming this model is unreliable for unsupported names in more than one way; the journal's own record of run `fad6f832` independently confirms the exact empty-action variant this fix targets. After the fix, `./actions/open_webapp --name YouTube` really opened YouTube (`class: brave-www.youtube.com__-Default`) and a second call correctly focused the same window instead of duplicating it. Did not re-drive the fixed behavior through the live HTTP planner end-to-end this session — the shared checkout's live `jarvis.service` was under real concurrent use (repeated 409s) partway through verification; the server-side honesty guard is deterministic string-matching logic covered directly by unit tests instead, and the `open_webapp`/YouTube half was verified for real via the CLI action.
+- This work was done in its own `git worktree` (`~/Work/omarchy-jarvis-a012`, branch `a012-open-youtube`), consistent with the A-013-in-progress pattern, since A-007/A-008/A-009 continue in parallel on `codex/training-track` in another worktree.

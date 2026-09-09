@@ -27,6 +27,13 @@ def tearDownModule():
 class ActionsTest(unittest.TestCase):
  def test_chord_modifier_order(self):
   self.assertEqual(core.chord('SUPER + ALT + S'),core.chord('ALT SUPER + S'))
+ def test_youtube_is_a_webapp_independent_of_any_installed_desktop_file(self):
+  # A-012: open_webapp's launcher never checks for a .desktop file at all — it always
+  # opens the URL directly via omarchy-launch-webapp — so adding YouTube here gives the
+  # "webapp if installed [as a running window], else a browser tab" fallback the
+  # assignment asked for regardless of whether a local .desktop shortcut exists.
+  self.assertIn('YouTube',core.APPS)
+  self.assertEqual(core.APPS['YouTube'],'https://www.youtube.com/')
  def test_is_overlay_matches_known_and_unseen_chromium_variants(self):
   # A-010: Chromium has derived classes ADR-013 didn't anticipate before; the match
   # must survive a variant we haven't hardcoded, without matching unrelated windows.
@@ -121,6 +128,34 @@ class JsonPlanTest(unittest.TestCase):
   with patch.object(server,'restore_target'),patch.object(server,'announce'),patch.object(server,'log'),patch.object(server.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'{"ok":true}','')):
    server.execute_plan(rid,plan,None)
   self.assertEqual(server.RUNS[rid]['reply'],'Completed: open-planning.')
+  self.assertFalse(server.BUSY.locked())
+ def test_false_action_claim_with_no_actions_is_rewritten_honestly(self):
+  # A-012: run fad6f832 shipped exactly {"actions": [], "reply": "Opening YouTube."} —
+  # a zero-action plan skips approval entirely (commit_plan's zero-action branch), so
+  # this false claim reached the user as already "done" with nothing to review first.
+  plan={'actions':[],'reply':'Opening YouTube.'}
+  with patch.object(server,'urlopen',return_value=self.response(plan)):
+   result=server.json_plan('open youtube')
+  self.assertEqual(result['actions'],[])
+  self.assertNotIn('Opening YouTube',result['reply'])
+  self.assertIn("don't have a way",result['reply'])
+ def test_honest_empty_reply_is_left_alone(self):
+  plan={'actions':[],'reply':'Hello! How can I help?'}
+  with patch.object(server,'urlopen',return_value=self.response(plan)):
+   result=server.json_plan('hello')
+  self.assertEqual(result['reply'],'Hello! How can I help?')
+ def test_false_action_claim_reply_only_checked_when_actions_empty(self):
+  plan={'actions':[{'tool':'scratch_toggle','arguments':{}}],'reply':'Opening a thing.'}
+  with patch.object(server,'urlopen',return_value=self.response(plan)):
+   result=server.json_plan('toggle scratchpad')
+  self.assertEqual(result['reply'],'Opening a thing.')  # a real action legitimately gets an "Opening …"-style reply
+ def test_plan_tools_run_rewrites_false_action_claim_too(self):
+  # Same fad6f832-shaped bug, opt-in JARVIS_PLANNER=tools loop path.
+  rid='tools-false-claim-unit'; server.RUNS[rid]={'steps':[]}; server.BUSY.acquire()
+  with patch.object(server,'ollama_chat',return_value={'role':'assistant','content':'Opening YouTube.'}),patch.object(server,'announce'),patch.object(server,'log'):
+   server.plan_tools_run(rid,'open youtube',None)
+  self.assertEqual(server.RUNS[rid]['status'],'done')
+  self.assertNotIn('Opening YouTube',server.RUNS[rid]['reply'])
   self.assertFalse(server.BUSY.locked())
 
 

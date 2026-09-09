@@ -174,12 +174,22 @@ def ollama_chat(payload):
     request = Request('http://127.0.0.1:11434/api/chat', data=json.dumps(payload).encode(), headers={'Content-Type':'application/json'})
     with urlopen(request, timeout=180) as response: return json.load(response)['message']
 
+# A-012: the planner (qwen2.5:3b) has shipped a real "Opening YouTube." reply with
+# actions:[] (run fad6f832, rated bad by the user) — a false success claim for a zero-
+# action plan, which skips approval entirely (commit_plan's own zero-action branch) and
+# reaches the user as a already-"done" lie with nothing to review first. Chitchat replies
+# ("Hello! How can I help?") correctly have no actions and make no such claim; only a
+# reply that *itself* opens with one of these verbs is the dishonest pattern to catch —
+# matching this project's own example replies for real actions ("Opening …", "Moving …").
+FALSE_ACTION_CLAIM_RE = re.compile(r'^(opening|moving|switching|toggling|launching|starting|closing|focusing|filing)\b', re.I)
+
 def json_plan(prompt):
     instructions = (ROOT/'brain/system_prompt.md').read_text() + '\nReturn a JSON object with actions (tool + arguments) and reply. Choose at most ONE action. Compound requests MUST use a complete run_skill recipe. Never combine a recipe with its individual steps. Use these exact examples:\n' + json.dumps([
         {'user':'open my planning in a new workspace','plan':{'actions':[{'tool':'run_skill','arguments':{'skill':'open-planning'}}],'reply':'Opening your planning apps.'}},
         {'user':'move this window to scratchpad and open email','plan':{'actions':[{'tool':'run_skill','arguments':{'skill':'scratch-and-mail'}}],'reply':'Moving the window to scratchpad and opening Outlook.'}},
         {'user':'hello','plan':{'actions':[],'reply':'Hello! How can I help?'}},
-        {'user':'open spotify','plan':{'actions':[{'tool':'open_app_by_name','arguments':{'name':'Spotify'}}],'reply':'Opening Spotify.'}}]) + '\nOther single actions: catalog_bindings(query), run_binding(binding), workspace_new(), workspace_switch(workspace integer), scratch_toggle(), scratch_move_here(), open_webapp(name), open_app_by_name(name). For compound scratch + email requests the ONE action is run_skill with skill=scratch-and-mail. For planning the ONE action is run_skill with skill=open-planning.'
+        {'user':'open spotify','plan':{'actions':[{'tool':'open_app_by_name','arguments':{'name':'Spotify'}}],'reply':'Opening Spotify.'}},
+        {'user':'open youtube','plan':{'actions':[{'tool':'open_webapp','arguments':{'name':'YouTube'}}],'reply':'Opening YouTube.'}}]) + '\nOther single actions: catalog_bindings(query), run_binding(binding), workspace_new(), workspace_switch(workspace integer), scratch_toggle(), scratch_move_here(), open_webapp(name), open_app_by_name(name). For compound scratch + email requests the ONE action is run_skill with skill=scratch-and-mail. For planning the ONE action is run_skill with skill=open-planning. NEVER write a reply that says you are opening/moving/switching/toggling/launching/closing/focusing/filing something unless actions contains the matching tool call — if you cannot fulfill the request, use an empty actions list and say so plainly instead.'
     plan = json.loads(ollama_chat({'model':MODEL,'messages':[{'role':'system','content':instructions},{'role':'user','content':prompt}],'format':PLAN_SCHEMA,'stream':False,'options':{'temperature':0,'num_ctx':8192}})['content'])
     if not isinstance(plan,dict) or set(plan)!={'actions','reply'} or not isinstance(plan['actions'],list) or len(plan['actions'])>1 or not isinstance(plan['reply'],str):
         raise ValueError('Invalid JSON action plan')
@@ -192,6 +202,8 @@ def json_plan(prompt):
         seen.add(signature)
     if any(a['tool']=='run_skill' for a in plan['actions']) and len(plan['actions'])!=1:
         raise ValueError('A complete recipe cannot be combined with other actions')
+    if not plan['actions'] and FALSE_ACTION_CLAIM_RE.match(plan['reply'].strip()):
+        plan['reply'] = "I don't have a way to do that yet, so nothing happened — try rephrasing, or ask for something more specific."
     return plan
 
 # Backlog/handoff tools file GitHub issues or write local files; they don't touch
@@ -287,6 +299,8 @@ def plan_tools_run(run_id, prompt, target):
         calls = msg.get('tool_calls') or []
         if not calls:
             reply = msg.get('content', '').strip() or 'Done.'
+            if FALSE_ACTION_CLAIM_RE.match(reply):  # A-012: same false-success guard as json_plan
+                reply = "I don't have a way to do that yet, so nothing happened — try rephrasing, or ask for something more specific."
             try:
                 announce(run_id, reply[:250])
             finally:
