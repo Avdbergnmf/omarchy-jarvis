@@ -12,4 +12,4 @@
 | A-008 | queued | Training mode (improvement control plane) |
 | A-009 | queued | Human validation tests in Training mode |
 | A-010 | done | Overlay lifecycle, single-instance, feedback bugs |
-| A-011 | queued | Open apps by name (Spotify + fuzzy match) |
+| A-011 | done | Open apps by name (Spotify + fuzzy match) |

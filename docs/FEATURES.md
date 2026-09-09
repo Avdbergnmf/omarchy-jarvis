@@ -13,5 +13,6 @@ Coding agents: when you ship a user-visible feature, **add/update a row** and a 
 | feat-slash | Slash autocomplete | overlay | unvalidated | A-007 (when done) |
 | feat-train | Training mode | overlay | unvalidated | A-008 |
 | feat-validate | Human validation queue in Training | overlay | unvalidated | A-009 |
+| feat-open-by-name | Open any installed app by name (open_app_by_name) | actions | unvalidated | A-011, e.g. "open spotify" |
 
 Status values: `unvalidated` | `validated` | `failed`.

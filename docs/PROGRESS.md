@@ -201,3 +201,21 @@ While verifying the input-clear fix, `node tests/overlay.test.cjs` started hangi
 ### Verification
 - `python3 -m unittest discover -s tests` — **71 tests** pass (1 new). `node tests/overlay.test.cjs` — both scenarios pass. `shellcheck`/`doctor.sh --syntax` clean.
 - Live on this host (service restarted to load the change): `toggle-overlay.py` verified branch-by-branch via `hyprctl` — open when none exists, focus (not close) when it exists but isn't the active window, and — after manually granting it real focus via `dispatch('focuswindow', …)`, since spawning it through this sandboxed session doesn't grant real window focus the way a user's keypress would (the same documented limitation noted in `scripts/verify-host.py`) — correctly closes when it *is* focused. A real `toggle scratchpad` run was submitted, approved, and completed through the live service; `GET /v1/runs/<id>` confirmed `prompt`/`status`/`feedback` are all present and correct for the restore-on-reopen path to consume. A genuine multi-window self-heal scenario could not be reliably reproduced live in this environment for the reason above; that branch is covered by code review and the straightforward nature of the list-filter logic rather than a live repro.
+
+## 2026-09-09 — A-011: open apps by name (Spotify + general .desktop matching)
+
+**Before:** saying "spotify" produced an empty plan and a "not a supported action" reply — `open_webapp` only covers four fixed webapps.
+
+**After:** `open_app_by_name` resolves any text against installed `.desktop` launchers (exact → unambiguous prefix/substring → single closest fuzzy match; a genuine tie lists the candidates instead of guessing) and delegates the actual open-or-focus to Omarchy's own `omarchy-launch-or-focus`, which already handles "focus if a matching window exists, else launch" — no new window-polling logic was needed for that part. See ADR-023.
+
+- `actions/core.py`: `desktop_entries()`, `resolve_app()`, `launch_command_for()` (strips `.desktop` field codes — the whole token, not just the code), `open_by_name()`; new `actions/open_app_by_name` CLI.
+- `brain/tools.json`/`system_prompt.md`/`server.py`: new tool wired into `tool_argv`/`action_label`, plan-schema example, and system-prompt disambiguation from `open_webapp`.
+- Tests: `tests/test_jarvis.py::OpenByNameTest` (9 cases) using synthetic `.desktop` fixtures and mocked `hyprctl`/`Popen`.
+
+### Verification
+- `python3 -m unittest discover -s tests` — **80 tests** pass (9 new). `shellcheck`/`doctor.sh --syntax` clean.
+- Live on this host: `./actions/open_app_by_name --name spotify` for real launched Spotify (not previously running) and reported its window correctly (`class: Spotify`, real address); calling it again focused the *same* window instead of launching a duplicate. Also dry-run verified against several other real installed apps (`Spotify`, `Discord`, `Google Photos`) and a no-match case.
+- Not verified live end-to-end through the HTTP planner/overlay in this session: this work was done in an isolated `git worktree` on `main` because the shared checkout's working tree was mid-flight with another agent's uncommitted A-007 work on `codex/training-track`, and the live `jarvis.service` (bound to port 7421) runs from that shared checkout — starting a second instance to test against would have conflicted. The action itself, `tool_argv`/`action_label` wiring, and the JSON-plan example are all covered by direct CLI runs and unit tests instead.
+
+### A note on working in parallel with another agent in the same checkout
+This repo has no worktree isolation between concurrent sessions by default (noted in earlier passes). For this assignment specifically, `git worktree add` was used to get a clean, isolated `main` checkout for A-011's own commit, rather than risking `git checkout`/`stash` against a shared tree that had another agent's uncommitted, differently-branched work sitting in it. Recommend this as the default pattern whenever two assignments are genuinely running in parallel on this host.
