@@ -2,7 +2,7 @@
 
 Local assistant for **Omarchy** (Hyprland). Press **Super+Shift+J**, type what you want, press Enter.
 
-You always see a **plan** before anything changes your desktop. **Run** to do it, **Cancel** / **Esc** to abort. **Open console** (always on the overlay) tails the live log for this or the last run.
+You always see a **plan** before anything changes your desktop. **Run** to do it, **Cancel** / **Esc** to abort. The overlay stays open through execution so you can watch it happen — dismiss it with **Esc** or by pressing the hotkey again. **Open console** (always on the overlay) tails the live log for this or the last run.
 
 ## Everyday use
 

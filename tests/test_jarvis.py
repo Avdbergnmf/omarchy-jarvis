@@ -68,6 +68,19 @@ class BrainTest(unittest.TestCase):
   self.assertEqual(server.tool_argv('run_skill',{'skill':'open-planning'}),[str(ROOT/'actions/run_skill'),'open-planning'])
  def test_original_target_disappearing_stops_actions(self):
   with patch.object(server,'hypr',return_value=[]),self.assertRaises(ValueError): server.restore_target('0x123')
+ def test_restore_target_focuses_without_closing_overlay(self):
+  # A-004: the overlay used to be closed here at the *start* of execution, before the
+  # user could see any live step progress. It must now only focus the pre-overlay
+  # window and leave every window (including the overlay) open.
+  clients=[{'address':'0xabc','class':'jarvis-overlay'},{'address':'0x123'}]
+  with patch.object(server,'hypr',return_value=clients),patch.object(server,'dispatch') as dsp:
+   server.restore_target('0x123')
+  dsp.assert_called_once_with('focuswindow','address:0x123')
+ def test_restore_target_noop_without_a_target(self):
+  clients=[{'address':'0xabc','class':'jarvis-overlay'}]
+  with patch.object(server,'hypr',return_value=clients),patch.object(server,'dispatch') as dsp:
+   server.restore_target(None)
+  dsp.assert_not_called()
  def test_redacts_common_credentials(self):
   self.assertNotIn('test-secret',server.redact('token=test-secret password=test-secret Bearer test-secret'))
  def test_run_failure_stops_before_later_action(self):

@@ -144,11 +144,16 @@ def action_label(name, args):
     return str(label).replace('_', ' ')
 
 def restore_target(target):
+    """Focus the window that was active before the overlay opened, so actions that read
+    hypr('activewindow') (scratch_move_here, some run_binding chords) operate on the
+    user's intended window rather than the overlay itself. Deliberately does NOT close
+    the overlay (see A-004/ADR-019): it used to, which killed the live step-list view
+    the instant Run was pressed. The overlay now stays open through execution — the
+    user dismisses it with Escape or by pressing the hotkey again (toggle-overlay.py's
+    existing single-instance close-if-focused / re-focus-if-not logic)."""
     clients = hypr('clients')
     if target and not any(c['address'] == target for c in clients):
         raise ValueError('Original window closed; focus a window and try again')
-    for c in clients:
-        if is_overlay(c): dispatch('closewindow', 'address:' + c['address'])
     if target: dispatch('focuswindow', 'address:' + target)
 
 # report_bug/report_feature are only ever placed in a plan by the deterministic

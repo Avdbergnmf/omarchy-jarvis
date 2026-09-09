@@ -132,3 +132,19 @@ This pass's implementation (this dated section, ADR-017/018 polish, and this ver
 - Archived completed pass briefs + prompts under `docs/passes/archive/`; INDEX now shows active empty.
 - Marked assignments A-001..A-003 **done** (moved to `docs/assignments/done/`); QUEUE empty for new asks.
 - Left **M4** (skill confirm UI) open as intentional product backlog, not silently closed.
+
+## 2026-09-09 — A-004: overlay stays open through execution (follow-along visibility)
+
+**Before:** pressing Run closed the overlay window immediately — `restore_target()` ran at the *start* of `execute_plan`/`execute_tools_plan` and closed every `is_overlay` client before a single step executed or the overlay's own poller could render anything, then re-focused the pre-overlay window (immediately re-focused past by each action's own dispatch on completion). Net effect: the overlay vanishes the instant Run is pressed, the screen flashes to the old window, and the real result (up to ~30s later for a newly-launched webapp) appears with nothing visible in between — matching Alex's report of "a flash then back to nowhere" and wanting a "chance to see what it's doing."
+
+**After:** `restore_target()` still focuses the pre-overlay target before an action runs (still required for `scratch_move_here`/current-window-dependent bindings) but no longer closes any window. The overlay stays open through planning, awaiting-approval, live step execution and the terminal reply; the user dismisses it with **Esc** or by pressing the hotkey again (`toggle-overlay.py`'s existing single-instance close-if-focused/refocus-if-not logic, unchanged). See ADR-019.
+
+- `brain/server.py::restore_target`: removed the `dispatch('closewindow', …)` loop over `is_overlay` clients; kept the `focuswindow` dispatch and the "original window disappeared" failure.
+- `tests/test_jarvis.py`: `test_restore_target_focuses_without_closing_overlay` (exactly one `focuswindow` dispatch, no close, given an overlay client is present) and `test_restore_target_noop_without_a_target`.
+- `README.md`: one-liner that the overlay stays open and how to dismiss it.
+- Chitchat (`commit_plan`'s zero-action branch) and denied plans (`handle_deny`) were already unaffected either way — neither ever called `restore_target`.
+
+### Verification
+- `python3 -m unittest discover -s tests` — **58 tests** pass (2 new). `node tests/overlay.test.cjs`, `./scripts/doctor.sh --syntax`, `shellcheck` all pass.
+- Live: restarted `jarvis.service` to load the change; `./scripts/doctor.sh` (live) exits 0.
+- Not yet done in this session: a live approve-and-watch demo confirming the overlay visibly stays on screen through a real `open_webapp`/workspace-switch run (this host's browser/native UI automation connector exposes no surfaces per earlier passes' documented limitation — verification here is via `hyprctl` state and the targeted unit tests above, not a screenshot). Left as the next-action note in `docs/SESSION.md` for whoever resumes, in case a different verification path becomes available.
