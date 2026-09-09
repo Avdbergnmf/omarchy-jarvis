@@ -10,7 +10,12 @@ if [[ ${1:-} == --syntax ]]; then
 fi
 check ollama list
 model_ready() { ollama list | awk '{print $1}' | grep -Fx "${JARVIS_MODEL:-qwen2.5:3b}"; }
-check model_ready
+if model_ready; then
+  printf 'OK: selected model is available\n'
+else
+  printf 'FAIL: selected model is unavailable\n'
+  failed=1
+fi
 check hyprctl -j workspaces
 check ./actions/catalog_bindings --refresh --query scratch
 check ./skills/examples/open-planning/run.sh --dry-run
