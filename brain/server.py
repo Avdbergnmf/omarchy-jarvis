@@ -78,8 +78,10 @@ def expire_stale():
             return
         run.update(status='denied', reply='Cancelled: approval timed out.')
         PENDING.pop(rid, None)
-    log(rid, 'status', 'Cancelled: approval timed out (no response).')
-    release_busy()
+    try:
+        log(rid, 'status', 'Cancelled: approval timed out (no response).')
+    finally:
+        release_busy()
 
 def validate_call(name, args):
     if name not in SCHEMAS or not isinstance(args, dict):
@@ -180,22 +182,30 @@ def plan_and_maybe_run(run_id, prompt, target):
         log(run_id, 'plan', json.dumps(plan))
         if not plan['actions']:
             reply = plan['reply'][:1000]
-            announce(run_id, reply)
-            with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply, plan=plan)
-            release_busy(); return
+            try:
+                announce(run_id, reply)
+            finally:
+                with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply, plan=plan)
+                release_busy()
+            return
         with STATE_LOCK: RUNS[run_id].update(plan=plan, reply=plan['reply'][:1000])
         auto = CONFIG['approval_mode'] == 'off' or (CONFIG['approval_mode'] == 'skills_trusted' and all(a['tool'] == 'run_skill' for a in plan['actions']))
         if auto:
             if CONFIG['approval_mode'] == 'off': log(run_id, 'status', 'approval_mode=off: auto-running without confirmation')
-            execute_plan(run_id, plan, target)
+            execute_plan(run_id, plan, target)  # releases busy itself, on every path
         else:
             with STATE_LOCK: PENDING[run_id] = {'target': target, 'planner': 'json'}
             with STATE_LOCK: RUNS[run_id].update(status='awaiting_approval', awaiting_since=time.monotonic())
             announce(run_id, 'Awaiting approval — open Jarvis to review the plan.')
     except Exception as e:
-        reply = redact(str(e)); announce(run_id, 'Stopped: ' + reply[:200])
-        with STATE_LOCK: RUNS[run_id].update(status='error', reply=reply)
-        release_busy()
+        reply = redact(str(e))
+        try:
+            announce(run_id, 'Stopped: ' + reply[:200])
+        finally:
+            with STATE_LOCK:
+                RUNS[run_id].update(status='error', reply=reply)
+                PENDING.pop(run_id, None)
+            release_busy()
 
 def calls_to_actions(calls):
     actions = []
@@ -216,24 +226,32 @@ def plan_tools_run(run_id, prompt, target):
         calls = msg.get('tool_calls') or []
         if not calls:
             reply = msg.get('content', '').strip() or 'Done.'
-            announce(run_id, reply[:250])
-            with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
-            release_busy(); return
+            try:
+                announce(run_id, reply[:250])
+            finally:
+                with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
+                release_busy()
+            return
         actions = calls_to_actions(calls)
         plan = {'actions': actions, 'reply': msg.get('content', '').strip()}
         log(run_id, 'plan', json.dumps(plan))
         with STATE_LOCK: RUNS[run_id].update(plan=plan, reply=(plan['reply'][:1000] or 'Reviewing proposed actions…'))
         if CONFIG['approval_mode'] == 'off':
             log(run_id, 'status', 'approval_mode=off: auto-running without confirmation')
-            execute_tools_plan(run_id, target, messages)
+            execute_tools_plan(run_id, target, messages)  # releases busy itself, on every path
         else:
             with STATE_LOCK: PENDING[run_id] = {'target': target, 'planner': 'tools', 'messages': messages}
             with STATE_LOCK: RUNS[run_id].update(status='awaiting_approval', awaiting_since=time.monotonic())
             announce(run_id, 'Awaiting approval — open Jarvis to review the plan.')
     except Exception as e:
-        reply = redact(str(e)); announce(run_id, 'Stopped: ' + reply[:200])
-        with STATE_LOCK: RUNS[run_id].update(status='error', reply=reply)
-        release_busy()
+        reply = redact(str(e))
+        try:
+            announce(run_id, 'Stopped: ' + reply[:200])
+        finally:
+            with STATE_LOCK:
+                RUNS[run_id].update(status='error', reply=reply)
+                PENDING.pop(run_id, None)
+            release_busy()
 
 def execute_tools_plan(run_id, target, messages):
     try:
@@ -302,8 +320,10 @@ def handle_deny(run_id):
         if not run or run.get('status') != 'awaiting_approval': return None
         run.update(status='denied', reply='Cancelled — no actions were run.')
         PENDING.pop(run_id, None)
-    log(run_id, 'status', 'Denied by user; no actions were run.')
-    release_busy()
+    try:
+        log(run_id, 'status', 'Denied by user; no actions were run.')
+    finally:
+        release_busy()
     return run
 
 def ollama_health():

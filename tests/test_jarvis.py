@@ -12,6 +12,11 @@ sys.path.insert(0,str(ROOT/'actions')); sys.path.insert(0,str(ROOT/'brain'))
 import core
 import server
 
+def setUpModule():
+ # server.py's own startup creates this before accepting requests (see __main__);
+ # tests call run-log-writing code paths directly, so mirror that precondition here.
+ (ROOT/'logs/runs').mkdir(parents=True, exist_ok=True)
+
 class ActionsTest(unittest.TestCase):
  def test_chord_modifier_order(self):
   self.assertEqual(core.chord('SUPER + ALT + S'),core.chord('ALT SUPER + S'))
