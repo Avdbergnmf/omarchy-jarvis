@@ -3,40 +3,42 @@ You are a NEW agent on Omarchy Jarvis (cold start). No prior chat context.
 
 ## Where “who is working” lives
 - **docs/assignments/QUEUE.md** — status column (`queued` / `in_progress` / …)
-- **docs/SESSION.md** — which assignment the current session claims + Next action
-- Run **`./scripts/assignment-status.sh`** first — it prints the queue, what’s in progress, and what you may claim
+- **docs/SESSION.md** — which assignment the current session claims + Next action + optional Batch
+- Run **`./scripts/assignment-status.sh`** first
+
+## Batch policy (important)
+- **Default:** do **exactly one** assignment, then **stop and report** to Alex.
+- **Keep going** only if Alex explicitly asked (`keep going`, `batch N`, `do N assignments`, `until queue empty`). Record `Batch:` in SESSION. Still stop early if tokens are tight or nothing claimable.
 
 ## Mandatory order
 1) Read START.md (job modes + parallel rules).
-2) Read docs/assignments/README.md (skim).
-3) Run `./scripts/assignment-status.sh` and read docs/SESSION.md + docs/assignments/QUEUE.md.
+2) Skim docs/assignments/README.md.
+3) Run `./scripts/assignment-status.sh`; read SESSION.md + QUEUE.md.
 
-## Claiming work (do this — don’t invent a fourth process)
-A) If the user named a specific assignment id → do that only if it’s free or they explicitly said to take over; else stop and report conflict.
+## Claiming work
+A) If Alex named an assignment id → only if free or they said take over; else report conflict.
 B) Else compute **claimable** queued rows:
-   - Must be `status=queued`
-   - If **any** row is already `in_progress`:
-     - You may **only** claim a queued row with **`parallel-ok: YES`** whose `area:` / Allowed / Forbidden paths **do not conflict** with every `in_progress` assignment (read each active/*.md).
-     - Never claim `parallel-ok: NO` while something else is in_progress.
-     - Never start a second `in_progress` on the same area as an existing one.
-   - If **nothing** is in_progress → claim the top queued row (oldest / first in QUEUE table).
-C) If you claimed one: set it `in_progress` in QUEUE.md + INDEX, update SESSION.md Active goal/checklist, then execute it. Obey Token & context discipline.
-D) **If nothing is claimable**, do **not** start coding. Reply to the user exactly in this shape (fill in real rows):
+   - `status=queued`
+   - If any `in_progress`: only `parallel-ok: YES` with disjoint area/paths vs every in_progress active/*.md; never claim `parallel-ok: NO` while something else is in_progress; never same area as an in_progress.
+   - If nothing in_progress → first queued row.
+C) Claimed → mark in_progress in QUEUE+INDEX, fill SESSION, execute.
+D) If nothing claimable, do not code. Reply:
 
 ```
 No assignment in queue is possible right now.
 
 Queue:
-- A-00X … [in_progress] area:… parallel-ok:…  ← being worked (see SESSION.md)
-- A-00Y … [queued] area:… parallel-ok:NO     ← blocked until in_progress finishes
-- A-00Z … [queued] area:… parallel-ok:YES    ← (explain why not claimable, or omit if none)
-
+- … (mark in_progress)
 SESSION active: …
 ```
 
-If the queue has zero non-done rows, say: `No assignment in queue is possible right now. The queue is empty.`
+Or: `No assignment in queue is possible right now. The queue is empty.`
+
+## After finishing one assignment
+- Default: stop; tell Alex what done + next QUEUE row.
+- If Batch allows more: claim next claimable and repeat until batch exhausted / nothing claimable / must stop.
 
 ## Do not
 - Paste or demand prior agent chat logs
-- Steal or edit files owned by an in_progress non-parallel assignment
-- Assume “NEW_AGENT” means “take the next serial task” while another agent holds `parallel-ok: NO` work — take a **parallel-ok** task instead, or report nothing possible
+- Steal files from a non-parallel in_progress assignment
+- Chain multiple assignments without an explicit batch/keep-going ask

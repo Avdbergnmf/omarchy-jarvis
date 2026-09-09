@@ -18,3 +18,8 @@ Canonical path: `~/Work/omarchy-jarvis/docs/assignments/prompts/`
 - `./scripts/assignment-status.sh` — run this first; it hints what a new agent may claim
 
 If nothing is claimable, agents must stop and say **“No assignment in queue is possible right now.”** plus the queue list (or that the queue is empty). They must **not** grab a `parallel-ok: NO` task while another assignment is in progress — they should take a `parallel-ok: YES` candidate or report nothing possible.
+
+## One vs many assignments
+- **Default:** agent finishes **one** assignment, then reports back to you.
+- **Keep going:** tell it explicitly, e.g. `keep going for 3` / `batch 2` / `until queue empty` (it still stops if nothing is claimable or tokens are tight).
+- Recorded in `docs/SESSION.md` as `Batch: N` or `Batch: until-empty` while running.

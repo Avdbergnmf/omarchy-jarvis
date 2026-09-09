@@ -1,10 +1,18 @@
 cd ~/Work/omarchy-jarvis
 You are continuing Omarchy Jarvis work. Do NOT ask for chat/session logs.
 
+## Default batch size = 1
+Complete **one** claimable/in_progress assignment, update QUEUE/SESSION/PROGRESS, then **stop and report** to Alex (what shipped, evidence, what’s next in QUEUE). Do **not** auto-start another unless Alex enabled a batch (below).
+
+## Optional: keep going
+Only if Alex explicitly said one of:
+- `keep going` / `batch N` / `do N assignments` / `until queue empty` (still stop on token pressure or unblockable queue)
+Then set SESSION `Batch: N` or `Batch: until-empty` and after each done assignment, re-run claimable logic (NEW_AGENT rules) and continue until N finished, queue has nothing claimable, or you must stop for tokens/blockers — then report.
+
+## Steps
 1) Run `./scripts/assignment-status.sh`. Read START.md (skim), QUEUE.md, SESSION.md.
-2) Resume the assignment marked **in_progress** that SESSION points at (or the one the user named). Read `docs/assignments/active/…`.
-3) Do the next unchecked checklist item / SESSION “Next action”.
-4) Update checklist + SESSION as you go; before stopping, flush Next action.
-5) When acceptance is met: QUEUE/INDEX → done, move file to docs/assignments/done/, PROGRESS note, stub SESSION.
-6) If user said “next step” and current is already done: run the **claimable** logic from NEW_AGENT.txt (parallel-aware). If nothing claimable → “No assignment in queue is possible…” + queue list (or empty).
-7) Do not start conflicting parallel work unless the user said parallel / NEW_AGENT and claim rules allow it.
+2) Resume SESSION’s in_progress (or claim per NEW_AGENT if none and user said continue/next).
+3) Work checklist; flush SESSION Next action before any pause.
+4) On acceptance: QUEUE/INDEX → done; move file to docs/assignments/done/; PROGRESS note.
+5) If batch remaining → claim next claimable; else **stop and summarize for Alex**.
+6) If nothing claimable → “No assignment in queue is possible right now.” + queue list / empty.

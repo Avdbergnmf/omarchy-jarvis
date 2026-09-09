@@ -68,3 +68,6 @@ Never tell Alex to paste agent session logs into the next agent. Point at QUEUE 
 ## Visibility for humans
 - **Who is working right now?** `docs/SESSION.md` (Active goal) and any QUEUE row with `in_progress`.
 - **What can a second agent take?** `./scripts/assignment-status.sh` (claim hint). New agents follow `prompts/NEW_AGENT.txt`: prefer `parallel-ok: YES` when something is already in progress; otherwise reply **No assignment in queue is possible right now** with the queue list.
+
+## One assignment then report (default)
+Coding agents complete **a single** assignment per invocation unless Alex explicitly enables a batch (`keep going`, `batch N`, `until queue empty`). After each assignment they update QUEUE/SESSION/PROGRESS; after the batch (or the single default) they **stop and summarize** for Alex instead of silently draining the queue.
