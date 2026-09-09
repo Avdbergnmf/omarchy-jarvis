@@ -37,3 +37,9 @@ human — docs/UI copy fix, not worth spinning up an agent
 ---
 Filed by Jarvis (`report_bug`) so a cold agent can act without chat history. Secrets are redacted before filing.
 
+
+## Triage — 2026-09-09 (A-014)
+Closed smoke fixture, not a product defect. GitHub confirms issue #8 closed at
+2026-09-09T17:22:59Z; the archived handoff already records completion. Retained
+here as filing evidence; local backlog status reconciled to closed. No regression
+fix or new issue is needed for this deliberately filed verification artifact.

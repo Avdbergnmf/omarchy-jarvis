@@ -248,3 +248,6 @@ Verification: all **80 Python tests** pass; shellcheck across scripts/skills, `d
 - Merged `a013-parallel-worktrees` into main (conflict reconcile).
 - A-012 already on main; bookkeeping done.
 - Queued **A-014** for Codex keep-going hygiene until session tokens.
+
+### 2026-09-09 — A-014 chunk 1: bookkeeping
+Claimed by Codex on `a014-hygiene` in the assigned absolute worktree; desk and training SESSION checked read-only, overlay claims untouched. QUEUE/INDEX matched disk; assignment body reconciled. GitHub confirms smoke #8 closed; corrected stale local backlog row and retained fixture with triage note. Assignment-status and syntax Doctor pass; baseline 85 Python tests pass. No live service restart. Next: test gaps.

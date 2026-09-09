@@ -1,6 +1,6 @@
 # A-014 — Hygiene: bug hunt, tests, lean cleanup
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:docs (also light `area:brain`, `area:actions`, `tests/` as needed)
 - **parallel-ok:** YES
 - **Allowed paths:** `docs/` (except stealing overlay assignment bodies for A-007–A-009), `scripts/`, `tests/`, `brain/` (dead code, honesty, journal/logging hygiene), `actions/` (dead/duplicate helpers), `README.md`, `START.md`, `AGENTS.md`, `VERSION` (patch only if behavior changes), root config that is clearly unused
@@ -23,7 +23,7 @@ Improve Jarvis reliability and lean-ness in **small commits** until Codex sessio
 After each chunk: update checklist, PROGRESS one line, SESSION Next action, commit+push branch. On token pressure: stop, leave tree clean, summarize chunks shipped.
 
 ## Checklist
-- [ ] Chunk 1 bookkeeping
+- [x] Chunk 1 bookkeeping
 - [ ] Chunk 2 tests
 - [ ] Chunk 3 dead code
 - [ ] Chunk 4 honesty
