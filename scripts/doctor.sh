@@ -20,6 +20,13 @@ check hyprctl -j workspaces
 check ./actions/catalog_bindings --refresh --query scratch
 check ./skills/examples/open-planning/run.sh --dry-run
 check ./skills/examples/scratch-and-mail/run.sh --dry-run
+check gh auth status
+check ./actions/report_bug --title 'Doctor check' --body 'Doctor dry-run body' --difficulty S --dry-run
+check ./actions/report_feature --title 'Doctor check' --body 'Doctor dry-run body' --difficulty S --dry-run
+check ./actions/list_backlog --dry-run
+check ./actions/prepare_handoff --issue 1 --agent human --dry-run
+check ./skills/examples/report-last-failure/run.sh --dry-run
+check ./skills/examples/add-feature-request/run.sh --dry-run 'doctor check feature'
 check python3 -c 'import socket,urllib.request,json; s=socket.socket();
 try: s.bind(("127.0.0.1",7421)); print("Port 7421 free (brain stopped)")
 except OSError: assert json.load(urllib.request.urlopen("http://127.0.0.1:7421/health"))["service"] == "omarchy-jarvis"; print("Jarvis listening")

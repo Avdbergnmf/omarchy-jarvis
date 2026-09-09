@@ -1,0 +1,5 @@
+cd ~/Work/omarchy-jarvis
+# Claude Code:
+Read and implement docs/CLAUDE_AGENT_ENTRYPOINT_PASS.md end-to-end.
+START.md + Issue Loop + multi-agent area labels + passes active/archive lifecycle (as in that doc).
+LOGGING (important clarification): Primary = run JOURNAL jsonl: prompt → process → done → small eval (flag suspicious/mismatch/partial) with jarvis_version + ts. Module/internal logs = debug only (off by default). On version / big change: reset CURRENT journal (archive old file; history stays on old git commits). No cloud LLM for eval — cheap local heuristics. docs/LOGGING.md. Don’t slow polls. Doctor/CI green.

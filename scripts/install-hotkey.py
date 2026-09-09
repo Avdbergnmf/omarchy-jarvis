@@ -17,7 +17,7 @@ if marker in text:
  text=text[:start]+text[finish:]
 block=f'''{marker}
 o.bind("SUPER + SHIFT + J", "Jarvis overlay", {json.dumps(str(ROOT/'scripts/toggle-overlay.py'))})
-o.window("^(jarvis-overlay|chrome-127[.]0[.]0[.]1__jarvis-overlay-Default)$", {{ float = true, center = true, size = {{ 520, 150 }} }})
+o.window("^(jarvis-overlay|chrome-127[.]0[.]0[.]1__jarvis-overlay-Default)$", {{ float = true, center = true, size = {{ 640, 460 }} }})
 {end}
 '''
 shutil.copy2(path,str(path)+'.jarvis-backup-'+str(time.time_ns()))

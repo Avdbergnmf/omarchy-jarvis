@@ -1,52 +1,24 @@
-# Agent guide — Omarchy Jarvis
+# Agent invariants — Omarchy Jarvis
 
-Read this before changing anything. Optimize for **agent development** and **human understanding**.
+Read [START.md](START.md) fully first. It defines job modes, the Issue Loop, area ownership,
+pass/handoff lifecycle and session completion. [README](README.md) covers usage;
+[HOST](docs/HOST.md) records host details.
 
-## Project goals
-1. Local, keyboard-first assistant for **Omarchy** (Hyprland) that turns natural language into safe system actions.
-2. Main input: center chat overlay (textbox). No voice in v0.
-3. Brain: **Ollama** + small tool-calling model. Actions are scripts/tools, not prompt spaghetti.
-4. Keybinds are **data**: parse live catalog; do not hardcode Super combos in the model.
-5. Thought bubbles (desktop notifications) with click → **live console** of that run (not just a static file).
-6. Heavier workflows become **skills** (scripts + metadata). New skills require **human confirm** before save.
-7. Private GitHub repo is the source of truth: milestones, DECISIONS.md, progress log, tested example skills.
+- Local, keyboard-first overlay → Ollama → reviewed actions/skills. No cloud evaluator.
+- Preserve plan → approve → execute and default approval_mode=always. No arbitrary model shell.
+- Keybindings are live data; do not hardcode Super combinations in the model.
+- IPC/HTTP stays local. Never put API keys or unredacted secrets in logs or issues.
+- New persisted skills require explicit human confirmation of reviewable bytes.
+- Self-improvement is deterministic issue drafting plus local backlog, approved before filing.
+  Dispatch prepares a paste-ready prompt; it never sends, contacts or spends agent credits.
+- Primary evidence is the bounded run journal. Internal logs are debug-only; polls stay quiet.
+- Single writer for brain/control plane; no parallel approve/execute redesign.
+- Update docs/PROGRESS.md each session (worked/failed); record non-obvious choices in
+  docs/DECISIONS.md. Keep actions and skills callable without the UI.
+- Verify Hyprland/window changes with hyprctl clients/workspaces. Keep host-specific choices
+  in HOST/ADRs (Google Calendar is not the stock Super+Shift+C HEY binding).
+- Milestones and version tags track releases. Archive merged/closed passes and handoffs;
+  never treat archived briefs as current instructions.
 
-## Non-goals (v0)
-- Voice, multi-user, LAN exposure of the brain, auto-installing random packages without confirm, replacing Omarchy menus.
-
-## Where things live on this machine
-| Path | Role |
-|------|------|
-| `~/Work/omarchy-jarvis/` | This repo on the implementation host |
-| `~/.config/hypr/bindings.lua` | User keybind overrides only |
-| Omarchy defaults | `/usr/share/omarchy/default/hypr/bindings/*.lua` |
-| Live catalog | `omarchy menu keybindings --print` |
-| Notifications | `omarchy-notification-send … [--exec cmd args…]` |
-| Webapps | `omarchy-launch-webapp URL` / `omarchy-launch-or-focus-webapp NAME URL` |
-| Terminal | `omarchy-launch-terminal` (foot) |
-| Browser | Chromium; `omarchy-launch-webapp` for PWAs |
-
-## User-confirmed planning apps (v0 “open planning”)
-| App | How to open on this host |
-|-----|--------------------------|
-| Outlook mail | Binding **SUPER + M** → `https://outlook.live.com/mail/` (also Outlook.desktop) |
-| WhatsApp | Binding **SUPER + N** → `https://web.whatsapp.com/` |
-| Todoist | Desktop `Todoist.desktop` → `omarchy-launch-webapp https://app.todoist.com/app` (no dedicated hotkey yet) |
-| Google Calendar | **Not** the stock SUPER+SHIFT+C (that is HEY calendar). Prefer launch `https://calendar.google.com/` via webapp/focus helper. Document this in DECISIONS.md. |
-
-## Scratchpad (user said “scratchboard”)
-- **SUPER + S** → Toggle scratchpad (`special:scratchpad`)
-- **SUPER + ALT + S** → Move window to scratchpad (no follow)
-
-## Safety
-- Never paste API keys into chat logs.
-- Skills that run shell must be reviewable; dry-run / echo mode for risky tools.
-- Bind Jarvis overlay to localhost / local IPC only.
-- Ask before persisting new skills (user rule).
-
-## How to work in this repo
-1. Update `docs/PROGRESS.md` every session (what worked / failed).
-2. Record non-obvious choices in `docs/DECISIONS.md` (ADR style: Context → Decision → Consequences).
-3. Milestones = GitHub Milestones + tags `v0.1.0`, etc. Close issues against them.
-4. Prefer small PRs; keep `actions/` and `skills/` callable from CLI without the UI.
-5. After any Hyprland/window change, verify with `hyprctl clients` / `hyprctl workspaces`.
+- Work orders: [docs/assignments/QUEUE.md](docs/assignments/QUEUE.md). Paste prompts: [docs/assignments/prompts/](docs/assignments/prompts/README.md).
+  Update [docs/SESSION.md](docs/SESSION.md) checkboxes / Next action before stopping.

@@ -121,6 +121,69 @@
   {
     "type": "function",
     "function": {
+      "name": "report_bug",
+      "description": "File a GitHub issue for something Jarvis got wrong, with a full context pack. Only used after intake Q&A builds the title/body; never call directly on raw chat text.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string", "maxLength": 200 },
+          "body": { "type": "string", "maxLength": 8000 },
+          "difficulty": { "type": "string", "enum": ["S", "M", "L"] }
+        },
+        "required": ["title", "body", "difficulty"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "report_feature",
+      "description": "File a GitHub issue and local backlog record for a requested feature, with a full context pack. Only used after intake Q&A builds the title/body; never call directly on raw chat text.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string", "maxLength": 200 },
+          "body": { "type": "string", "maxLength": 8000 },
+          "difficulty": { "type": "string", "enum": ["S", "M", "L"] }
+        },
+        "required": ["title", "body", "difficulty"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "list_backlog",
+      "description": "List open bug/feature issues and the local backlog index.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "prepare_handoff",
+      "description": "Write a paste-ready handoff prompt for another agent to pick up a filed issue. Never sends or spends credits on that agent itself.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "issue": { "type": "integer", "minimum": 1, "maximum": 999999 },
+          "agent": { "type": "string", "enum": ["claude-code", "cursor", "human"] }
+        },
+        "required": ["issue", "agent"],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
       "name": "open_webapp",
       "description": "Open or focus a supported webapp.",
       "parameters": {

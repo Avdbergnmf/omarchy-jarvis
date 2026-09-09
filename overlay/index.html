@@ -1,3 +1,39 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jarvis</title><link rel="stylesheet" href="/style.css"></head>
-<body><main><form id="prompt-form"><label for="prompt">JARVIS <span>LOCAL · OMARCHY</span></label><input id="prompt" autofocus autocomplete="off" maxlength="2000" placeholder="What would you like to do?" aria-describedby="status"><footer><output id="status" aria-live="polite">Ready</output><span>Enter to run · Esc to close</span></footer></form></main><script src="/app.js"></script></body></html>
+<body><main>
+<form id="prompt-form">
+<label for="prompt">JARVIS <span>LOCAL · OMARCHY</span></label>
+<input id="prompt" autofocus autocomplete="off" maxlength="2000" placeholder="What would you like to do?" aria-describedby="status">
+</form>
+<section id="qa" hidden>
+<h2>Quick question</h2>
+<p id="qa-question"></p>
+<form id="qa-form">
+<input id="qa-answer" autocomplete="off" maxlength="600" placeholder="Type your answer, or &quot;skip&quot;" aria-label="Answer">
+<div id="qa-buttons">
+<button id="qa-submit" type="submit">Send <kbd>Enter</kbd></button>
+<button id="qa-skip" type="button">Skip &amp; file now</button>
+</div>
+</form>
+</section>
+<section id="plan" hidden>
+<h2 id="plan-heading">Proposed actions</h2>
+<div id="draft-preview" hidden>
+<strong id="draft-title"></strong>
+<pre id="draft-body"></pre>
+</div>
+<ul id="plan-actions"></ul>
+<div id="plan-buttons">
+<button id="run-btn" type="button">Run <kbd>Enter</kbd></button>
+<button id="cancel-btn" type="button">Cancel <kbd>Esc</kbd></button>
+</div>
+</section>
+<section id="steps" hidden>
+<ul id="step-list"></ul>
+</section>
+<output id="status" aria-live="polite">Ready</output>
+<footer>
+<button id="console-btn" type="button" disabled>Open console</button>
+<span id="meta"></span>
+</footer>
+</main><script src="/app.js"></script></body></html>

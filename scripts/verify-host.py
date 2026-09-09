@@ -30,7 +30,7 @@ for c in hypr('clients'):
  if is_overlay(c):dispatch('closewindow','address:'+c['address'])
 subprocess.run([str(ROOT/'scripts/toggle-overlay.py')],check=True)
 overlays=[c for c in hypr('clients') if is_overlay(c)]
-assert len(overlays)==1 and overlays[0]['floating'] and overlays[0]['size']==[520,150],overlays
+assert len(overlays)==1 and overlays[0]['floating'] and overlays[0]['size']==[640,460],overlays
 # Exercise the same toggle command used by the installed hotkey twice more.
 subprocess.run([str(ROOT/'scripts/toggle-overlay.py')],check=True)
 time.sleep(.2)
