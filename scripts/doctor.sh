@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 failed=0
 check() { if "$@"; then printf 'OK: %s\n' "$*"; else printf 'FAIL: %s\n' "$*"; failed=1; fi; }
 if [[ ${1:-} == --syntax ]]; then
@@ -9,7 +9,8 @@ if [[ ${1:-} == --syntax ]]; then
   exit "$failed"
 fi
 check ollama list
-check bash -c 'ollama list | awk "{print \$1}" | grep -Fx "${JARVIS_MODEL:-qwen2.5:3b}"'
+model_ready() { ollama list | awk '{print $1}' | grep -Fx "${JARVIS_MODEL:-qwen2.5:3b}"; }
+check model_ready
 check hyprctl -j workspaces
 check ./actions/catalog_bindings --refresh --query scratch
 check ./skills/examples/open-planning/run.sh --dry-run
