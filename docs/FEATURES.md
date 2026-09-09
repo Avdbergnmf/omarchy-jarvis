@@ -14,3 +14,4 @@ Agents must update definitions when shipping user-visible behavior. Automated te
 | feat-slash | Slash-command autocomplete | overlay | unvalidated | — |
 | feat-train | Training and confirmed handoffs | overlay | unvalidated | — |
 | feat-validate | Guided human validation | overlay | unvalidated | — |
+| feat-open-by-name | Open any installed app by name | actions | unvalidated | — |

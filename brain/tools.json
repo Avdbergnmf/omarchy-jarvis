@@ -205,5 +205,25 @@
         "additionalProperties": false
       }
     }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "open_app_by_name",
+      "description": "Open or focus any other installed desktop app by name (exact or close match against installed .desktop launchers), e.g. Spotify, Discord, a game. Use open_webapp instead for Todoist, Google Calendar, Outlook or WhatsApp specifically.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    }
   }
 ]

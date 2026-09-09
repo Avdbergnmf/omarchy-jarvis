@@ -384,4 +384,69 @@ class FeedbackTest(unittest.TestCase):
   finally:
    server.BUSY.release()
 
+def write_desktop(path,name,exec_line,extra=''):
+ path.write_text('[Desktop Entry]\nType=Application\nName='+name+'\nExec='+exec_line+'\n'+extra)
+
+class OpenByNameTest(unittest.TestCase):
+ def test_desktop_entries_skips_nodisplay_and_non_application(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   d=Path(tmp)
+   write_desktop(d/'a.desktop','Alpha','alpha')
+   write_desktop(d/'b.desktop','Beta','beta','NoDisplay=true\n')
+   (d/'c.desktop').write_text('[Desktop Entry]\nType=Link\nName=Gamma\nExec=gamma\n')
+   with patch.object(core,'DESKTOP_DIRS',(d,)):
+    entries=core.desktop_entries()
+  self.assertEqual({e['name'] for e in entries},{'Alpha'})
+ def test_desktop_entries_prefers_first_dir_on_duplicate_stem(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   d1=Path(tmp)/'d1'; d2=Path(tmp)/'d2'; d1.mkdir(); d2.mkdir()
+   write_desktop(d1/'spotify.desktop','Spotify Local','spotify-local')
+   write_desktop(d2/'spotify.desktop','Spotify System','spotify-system')
+   with patch.object(core,'DESKTOP_DIRS',(d1,d2)):
+    entries=core.desktop_entries()
+  self.assertEqual(len(entries),1); self.assertEqual(entries[0]['name'],'Spotify Local')
+ def test_resolve_app_exact_prefix_fuzzy_and_ambiguous(self):
+  entries=[{'name':'Spotify','exec':'spotify','stem':'spotify','wmclass':'spotify'},
+           {'name':'Spotify Beta','exec':'spotify-beta','stem':'spotify-beta','wmclass':'spotify-beta'},
+           {'name':'Discord','exec':'discord','stem':'discord','wmclass':'discord'}]
+  self.assertEqual(core.resolve_app('Spotify',entries)['name'],'Spotify')
+  self.assertEqual(core.resolve_app('spotify',entries)['name'],'Spotify')  # case-insensitive exact
+  self.assertEqual(core.resolve_app('Discor',entries)['name'],'Discord')  # unambiguous prefix
+  self.assertEqual(core.resolve_app('Discrod',entries)['name'],'Discord')  # fuzzy typo
+  with self.assertRaisesRegex(ValueError,'Multiple installed apps match'):
+   core.resolve_app('ify',entries)  # substring of both "Spotify" and "Spotify Beta"
+  with self.assertRaisesRegex(ValueError,'No installed app matches'):
+   core.resolve_app('totally-unrelated-xyz',entries)
+  with self.assertRaises(ValueError):
+   core.resolve_app('',entries)
+ def test_launch_command_drops_field_codes_not_just_the_token_value(self):
+  entry={'name':'Spotify','exec':'spotify --uri=%u','stem':'spotify','wmclass':'spotify'}
+  self.assertEqual(core.launch_command_for(entry),'spotify')
+  entry2={'name':'Files','exec':'nautilus %U','stem':'nautilus','wmclass':'nautilus'}
+  self.assertEqual(core.launch_command_for(entry2),'nautilus')
+ def test_launch_command_rejects_empty_exec(self):
+  with self.assertRaises(ValueError): core.launch_command_for({'name':'X','exec':'%u','stem':'x','wmclass':'x'})
+ def test_open_by_name_dry_run_uses_omarchy_launch_or_focus(self):
+  entries=[{'name':'Spotify','exec':'spotify --uri=%u','stem':'spotify','wmclass':'spotify'}]
+  with patch.object(core,'desktop_entries',return_value=entries):
+   result=core.open_by_name('spotify',dry=True)
+  self.assertEqual(result['argv'],['omarchy-launch-or-focus','spotify','uwsm-app -- spotify'])
+  self.assertTrue(result['dry_run'])
+ def test_open_by_name_finds_the_resulting_window(self):
+  entries=[{'name':'Spotify','exec':'spotify','stem':'spotify','wmclass':'spotify'}]
+  clients=[{'address':'0xabc','class':'Spotify','title':'Spotify','workspace':{'id':3}}]
+  with patch.object(core,'desktop_entries',return_value=entries),patch.object(core,'hypr',return_value=clients),patch.object(core.subprocess,'Popen') as popen:
+   result=core.open_by_name('spotify')
+  popen.assert_called_once()
+  self.assertEqual(result,{'name':'Spotify','address':'0xabc','workspace':3,'class':'Spotify'})
+ def test_open_by_name_times_out_if_no_window_appears(self):
+  entries=[{'name':'Ghost','exec':'ghost-app','stem':'ghost-app','wmclass':'ghost-app'}]
+  with patch.object(core,'desktop_entries',return_value=entries),patch.object(core,'hypr',return_value=[]),patch.object(core.subprocess,'Popen'),patch.object(core.time,'monotonic',side_effect=[0,100]):
+   with self.assertRaisesRegex(RuntimeError,'no matching window appeared'):
+    core.open_by_name('ghost')
+ def test_tool_argv_and_action_label_for_open_app_by_name(self):
+  argv=server.tool_argv('open_app_by_name',{'name':'Spotify'})
+  self.assertEqual(argv[-2:],['--name','Spotify'])
+  self.assertEqual(server.action_label('open_app_by_name',{'name':'Spotify'}),'Spotify')
+
 if __name__=='__main__': unittest.main()

@@ -238,3 +238,21 @@ Version 0.5.1 archives CURRENT on restart/first write. The shared checkout was s
 another session during A-009; its named stash 5b29ade was preserved and restored without
 loss into ~/Work/omarchy-jarvis-training. The other session's cherry-pick was left alone.
 The authorized A-007 → A-008 → A-009 batch is implemented; next is PR integration/checks.
+
+## 2026-09-09 — A-011: open apps by name (Spotify + general .desktop matching)
+
+**Before:** saying "spotify" produced an empty plan and a "not a supported action" reply — `open_webapp` only covers four fixed webapps.
+
+**After:** `open_app_by_name` resolves any text against installed `.desktop` launchers (exact → unambiguous prefix/substring → single closest fuzzy match; a genuine tie lists the candidates instead of guessing) and delegates the actual open-or-focus to Omarchy's own `omarchy-launch-or-focus`, which already handles "focus if a matching window exists, else launch" — no new window-polling logic was needed for that part. See ADR-023.
+
+- `actions/core.py`: `desktop_entries()`, `resolve_app()`, `launch_command_for()` (strips `.desktop` field codes — the whole token, not just the code), `open_by_name()`; new `actions/open_app_by_name` CLI.
+- `brain/tools.json`/`system_prompt.md`/`server.py`: new tool wired into `tool_argv`/`action_label`, plan-schema example, and system-prompt disambiguation from `open_webapp`.
+- Tests: `tests/test_jarvis.py::OpenByNameTest` (9 cases) using synthetic `.desktop` fixtures and mocked `hyprctl`/`Popen`.
+
+### Verification
+- `python3 -m unittest discover -s tests` — **80 tests** pass (9 new). `shellcheck`/`doctor.sh --syntax` clean.
+- Live on this host: `./actions/open_app_by_name --name spotify` for real launched Spotify (not previously running) and reported its window correctly (`class: Spotify`, real address); calling it again focused the *same* window instead of launching a duplicate. Also dry-run verified against several other real installed apps (`Spotify`, `Discord`, `Google Photos`) and a no-match case.
+- Not verified live end-to-end through the HTTP planner/overlay in this session: this work was done in an isolated `git worktree` on `main` because the shared checkout's working tree was mid-flight with another agent's uncommitted A-007 work on `codex/training-track`, and the live `jarvis.service` (bound to port 7421) runs from that shared checkout — starting a second instance to test against would have conflicted. The action itself, `tool_argv`/`action_label` wiring, and the JSON-plan example are all covered by direct CLI runs and unit tests instead.
+
+### A note on working in parallel with another agent in the same checkout
+This repo has no worktree isolation between concurrent sessions by default (noted in earlier passes). For this assignment specifically, `git worktree add` was used to get a clean, isolated `main` checkout for A-011's own commit, rather than risking `git checkout`/`stash` against a shared tree that had another agent's uncommitted, differently-branched work sitting in it. Recommend this as the default pattern whenever two assignments are genuinely running in parallel on this host.

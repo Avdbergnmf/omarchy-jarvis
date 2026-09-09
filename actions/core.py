@@ -1,10 +1,12 @@
 """Reviewed desktop actions. No model-generated shell commands are evaluated."""
 import argparse
 import datetime
+import difflib
 import json
 import os
 from pathlib import Path
 import re
+import shlex
 import subprocess
 import sys
 import time
@@ -16,6 +18,10 @@ APPS = {'Todoist': 'https://app.todoist.com/app', 'Google Calendar': 'https://ca
 REPO = 'Avdbergnmf/omarchy-jarvis'
 BACKLOG_KIND = {'bug': {'labels': ['bug', 'jarvis-reported'], 'dir': 'bugs'}, 'feature': {'labels': ['enhancement', 'backlog'], 'dir': 'features'}}
 HANDOFF_AGENTS = ('claude-code', 'cursor', 'human')
+# A-011: installed desktop apps by .desktop location, standard + common Flatpak export dirs.
+DESKTOP_DIRS = (Path.home() / '.local/share/applications', Path('/usr/share/applications'),
+                Path('/var/lib/flatpak/exports/share/applications'), Path.home() / '.local/share/flatpak/exports/share/applications')
+FIELD_CODE_RE = re.compile(r'%[fFuUdDnNickvm]')
 
 def redact(value):
     text = str(value)
@@ -191,6 +197,98 @@ def run_skill(skill, dry=False):
         raise RuntimeError(result.stdout.strip() + '\n' + result.stderr.strip())
     return {'skill': skill, 'results': [json.loads(line) for line in result.stdout.splitlines() if line.strip()]}
 
+def desktop_entries():
+    """Installed .desktop launchers (Name/Exec/StartupWMClass), most-local dir wins on
+    a duplicate stem. Skips NoDisplay entries (helpers not meant to be launched by name)
+    and non-Application types (links, dirs)."""
+    entries, seen = [], set()
+    for d in DESKTOP_DIRS:
+        if not d.is_dir():
+            continue
+        for f in sorted(d.glob('*.desktop')):
+            if f.stem in seen:
+                continue
+            try:
+                text = f.read_text(errors='ignore')
+            except OSError:
+                continue
+            fields, in_entry = {}, False
+            for line in text.splitlines():
+                stripped = line.strip()
+                if stripped == '[Desktop Entry]':
+                    in_entry = True; continue
+                if stripped.startswith('[') and stripped != '[Desktop Entry]':
+                    in_entry = False; continue
+                if not in_entry or '=' not in stripped or stripped.startswith('#'):
+                    continue
+                key, _, val = stripped.partition('=')
+                fields.setdefault(key.strip(), val.strip())
+            name, exec_line = fields.get('Name'), fields.get('Exec')
+            if not name or not exec_line: continue
+            if fields.get('NoDisplay', '').lower() == 'true': continue
+            if fields.get('Type', 'Application') != 'Application': continue
+            seen.add(f.stem)
+            entries.append({'name': name, 'exec': exec_line, 'stem': f.stem, 'wmclass': fields.get('StartupWMClass') or f.stem})
+    return entries
+
+def resolve_app(name, entries=None):
+    """Exact match wins outright; otherwise an unambiguous prefix/substring match;
+    otherwise the single closest fuzzy match. Ties raise rather than guess."""
+    query = (name or '').strip().lower()
+    if not query:
+        raise ValueError('App name required')
+    entries = desktop_entries() if entries is None else entries
+    exact = [e for e in entries if e['name'].lower() == query]
+    if len(exact) == 1: return exact[0]
+    starts = [e for e in entries if e['name'].lower().startswith(query)]
+    if len(starts) == 1: return starts[0]
+    contains = [e for e in entries if query in e['name'].lower()]
+    if len(contains) == 1: return contains[0]
+    ambiguous = exact or starts or contains
+    if len(ambiguous) > 1:
+        raise ValueError('Multiple installed apps match ' + repr(name) + ': ' + ', '.join(sorted({e['name'] for e in ambiguous})) + ' — be more specific')
+    close = difflib.get_close_matches(query, [e['name'].lower() for e in entries], n=1, cutoff=0.6)
+    if close:
+        return next(e for e in entries if e['name'].lower() == close[0])
+    raise ValueError('No installed app matches ' + repr(name))
+
+def launch_command_for(entry):
+    # .desktop field codes (%u/%f/...) are for file-manager-style invocation; a bare
+    # by-name launch has no file/URL argument to fill them with — drop the whole token
+    # (not just the code) so "--uri=%u" disappears instead of leaving a dangling "--uri=".
+    try:
+        raw_parts = shlex.split(entry['exec'])
+    except ValueError as e:
+        raise ValueError('Could not parse Exec line for ' + entry['name'] + ': ' + str(e))
+    parts = [cleaned for cleaned in (FIELD_CODE_RE.sub('', p) for p in raw_parts) if cleaned and not cleaned.endswith('=')]
+    if not parts:
+        raise ValueError('Empty Exec line for ' + entry['name'])
+    return ' '.join(shlex.quote(p) for p in parts)
+
+def open_by_name(name, dry=False):
+    entry = resolve_app(name)
+    pattern = entry['wmclass']
+    # omarchy-launch-or-focus focuses a matching window if one exists, else launches
+    # (via `eval exec setsid …`, which *replaces* its own process — never wait on it
+    # synchronously the way command() does, or a real launch blocks until the app exits).
+    argv = ['omarchy-launch-or-focus', pattern, 'uwsm-app -- ' + launch_command_for(entry)]
+    if dry:
+        return {'argv': argv, 'name': entry['name'], 'dry_run': True}
+    LOGS.mkdir(exist_ok=True, mode=0o700)
+    with (LOGS / 'webapps.log').open('a') as out:
+        subprocess.Popen(argv, stdout=out, stderr=out, start_new_session=True)
+    deadline = time.monotonic() + 20
+    client = None
+    while time.monotonic() < deadline:
+        candidates = [c for c in hypr('clients') if pattern.casefold() in (c.get('class') or '').casefold()
+                      or pattern.casefold() in (c.get('title') or '').casefold() or entry['name'].casefold() in (c.get('title') or '').casefold()]
+        if candidates:
+            client = candidates[0]; break
+        time.sleep(.3)
+    if client is None:
+        raise RuntimeError(entry['name'] + ' launched but no matching window appeared within 20s')
+    return {'name': entry['name'], 'address': client['address'], 'workspace': client['workspace']['id'], 'class': client['class']}
+
 def notify(run_id, message, dry=False):
     if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}', run_id):
         raise ValueError('Invalid run id')
@@ -336,6 +434,8 @@ def main():
         p.add_argument('--difficulty', default='M', choices=['S', 'M', 'L'])
     elif name == 'prepare_handoff':
         p.add_argument('--issue', required=True, type=int); p.add_argument('--agent', required=True, choices=list(HANDOFF_AGENTS))
+    elif name == 'open_app_by_name':
+        p.add_argument('--name', required=True)
     a = p.parse_args()
     try:
         if name == 'catalog_bindings': result = catalog(a.refresh, a.query)
@@ -353,6 +453,7 @@ def main():
         elif name == 'report_feature': result = report_record('feature', a.title, a.body, a.difficulty, a.dry_run)
         elif name == 'list_backlog': result = list_backlog(a.dry_run)
         elif name == 'prepare_handoff': result = prepare_handoff(a.issue, a.agent, a.dry_run)
+        elif name == 'open_app_by_name': result = open_by_name(a.name, a.dry_run)
         else: raise ValueError('Unknown action')
         print(json.dumps({'ok': True, **result}))
     except (ValueError, RuntimeError, OSError, subprocess.SubprocessError, StopIteration) as e:

@@ -139,10 +139,11 @@ def tool_argv(name, args):
     elif name == 'run_skill': argv.append(args['skill'])
     elif name in ('report_bug', 'report_feature'): argv += ['--title', args['title'], '--body', args['body'], '--difficulty', args['difficulty']]
     elif name == 'prepare_handoff': argv += ['--issue', str(args['issue']), '--agent', args['agent']]
+    elif name == 'open_app_by_name': argv += ['--name', args['name']]
     return argv
 
 def action_label(name, args):
-    label = args.get('skill') or args.get('title') or (name == 'prepare_handoff' and 'issue #' + str(args.get('issue'))) or name
+    label = args.get('skill') or args.get('title') or (name == 'prepare_handoff' and 'issue #' + str(args.get('issue'))) or (name == 'open_app_by_name' and args.get('name')) or name
     return str(label).replace('_', ' ')
 
 def restore_target(target):
@@ -179,7 +180,8 @@ def json_plan(prompt):
     instructions = (ROOT/'brain/system_prompt.md').read_text() + '\nReturn a JSON object with actions (tool + arguments) and reply. Choose at most ONE action. Compound requests MUST use a complete run_skill recipe. Never combine a recipe with its individual steps. Use these exact examples:\n' + json.dumps([
         {'user':'open my planning in a new workspace','plan':{'actions':[{'tool':'run_skill','arguments':{'skill':'open-planning'}}],'reply':'Opening your planning apps.'}},
         {'user':'move this window to scratchpad and open email','plan':{'actions':[{'tool':'run_skill','arguments':{'skill':'scratch-and-mail'}}],'reply':'Moving the window to scratchpad and opening Outlook.'}},
-        {'user':'hello','plan':{'actions':[],'reply':'Hello! How can I help?'}}]) + '\nOther single actions: catalog_bindings(query), run_binding(binding), workspace_new(), workspace_switch(workspace integer), scratch_toggle(), scratch_move_here(), open_webapp(name). For compound scratch + email requests the ONE action is run_skill with skill=scratch-and-mail. For planning the ONE action is run_skill with skill=open-planning.'
+        {'user':'hello','plan':{'actions':[],'reply':'Hello! How can I help?'}},
+        {'user':'open spotify','plan':{'actions':[{'tool':'open_app_by_name','arguments':{'name':'Spotify'}}],'reply':'Opening Spotify.'}}]) + '\nOther single actions: catalog_bindings(query), run_binding(binding), workspace_new(), workspace_switch(workspace integer), scratch_toggle(), scratch_move_here(), open_webapp(name), open_app_by_name(name). For compound scratch + email requests the ONE action is run_skill with skill=scratch-and-mail. For planning the ONE action is run_skill with skill=open-planning.'
     plan = json.loads(ollama_chat({'model':MODEL,'messages':[{'role':'system','content':instructions},{'role':'user','content':prompt}],'format':PLAN_SCHEMA,'stream':False,'options':{'temperature':0,'num_ctx':8192}})['content'])
     if not isinstance(plan,dict) or set(plan)!={'actions','reply'} or not isinstance(plan['actions'],list) or len(plan['actions'])>1 or not isinstance(plan['reply'],str):
         raise ValueError('Invalid JSON action plan')

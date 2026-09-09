@@ -20,7 +20,7 @@ Integrate latest main in the isolated training worktree, verify CI, and publish 
 
 ## Parallel agent
 - Desk: **A-012** from bug #12 (open youtube / honest plans), parallel-ok YES.
-A-011 completed on main. A-012 is queued. Training work is isolated at ~/Work/omarchy-jarvis-training.
+A-011 completed on main. A-012 and A-013 are queued. Training work is isolated at ~/Work/omarchy-jarvis-training.
 
 ## Blockers
 None.

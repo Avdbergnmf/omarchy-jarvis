@@ -144,6 +144,23 @@
       "last_run": null,
       "jarvis_version": null,
       "jarvis_version_shipped": "0.5.1"
+    },
+    {
+      "id": "feat-open-by-name",
+      "title": "Open any installed app by name",
+      "area": "actions",
+      "status": "unvalidated",
+      "jarvis_version_shipped": "0.5.1",
+      "jarvis_version": null,
+      "last_run": null,
+      "steps": [
+        "Press Super+Shift+J.",
+        "Type: open spotify. Inspect the plan and approve with Run.",
+        "Confirm Spotify opens or focuses if already running.",
+        "Repeat the request and confirm the same Spotify window is focused, without a duplicate.",
+        "Optionally repeat with another installed app, such as Discord."
+      ],
+      "expected": "An installed app is resolved by name, opened or focused. A repeated request focuses the existing window."
     }
   ]
 }
