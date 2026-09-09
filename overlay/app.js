@@ -2,10 +2,17 @@ const input=document.querySelector('#prompt');
 const status=document.querySelector('#status');
 const planSection=document.querySelector('#plan');
 const planActions=document.querySelector('#plan-actions');
+const draftPreview=document.querySelector('#draft-preview');
+const draftTitle=document.querySelector('#draft-title');
+const draftBody=document.querySelector('#draft-body');
 const runBtn=document.querySelector('#run-btn');
 const cancelBtn=document.querySelector('#cancel-btn');
 const stepsSection=document.querySelector('#steps');
 const stepList=document.querySelector('#step-list');
+const qaSection=document.querySelector('#qa');
+const qaQuestion=document.querySelector('#qa-question');
+const qaAnswer=document.querySelector('#qa-answer');
+const qaSkip=document.querySelector('#qa-skip');
 const consoleBtn=document.querySelector('#console-btn');
 const meta=document.querySelector('#meta');
 const session=fetch('/v1/session').then(r=>r.json());
@@ -37,13 +44,20 @@ function describeAction(action){
  return label+(args?' ('+args+')':'');
 }
 
-function renderPlan(plan){
+function renderPlan(plan,draft){
  planActions.innerHTML='';
  (plan.actions||[]).forEach(action=>{
   const li=document.createElement('li');
   li.textContent=describeAction(action);
   planActions.appendChild(li);
  });
+ if(draft){
+  draftTitle.textContent=draft.title;
+  draftBody.textContent=draft.body;
+  draftPreview.hidden=false;
+ }else{
+  draftPreview.hidden=true;
+ }
  planSection.hidden=false;
 }
 
@@ -61,15 +75,21 @@ function renderSteps(steps){
 function render(result){
  status.className=result.status==='error'?'error':'';
  status.textContent=result.reply||result.status;
- if(result.status==='awaiting_approval'){
-  renderPlan(result.plan||{actions:[]});
+ if(result.status==='awaiting_answer'){
+  planSection.hidden=true;stepsSection.hidden=true;
+  qaQuestion.textContent=result.reply;
+  qaSection.hidden=false;
+  qaAnswer.value='';qaAnswer.focus();
+ }else if(result.status==='awaiting_approval'){
+  qaSection.hidden=true;
+  renderPlan(result.plan||{actions:[]},result.draft);
   stepsSection.hidden=true;
   runBtn.focus();
  }else if(result.status==='running'){
-  planSection.hidden=true;
+  qaSection.hidden=true;planSection.hidden=true;
   renderSteps(result.steps);
  }else{
-  planSection.hidden=true;
+  qaSection.hidden=true;planSection.hidden=true;
   renderSteps(result.steps);
  }
 }
@@ -81,7 +101,7 @@ async function poll(runId){
   try{result=await get('/v1/runs/'+runId);}
   catch(error){status.textContent=error.message;status.className='error';input.disabled=false;return;}
   render(result);
-  if(result.status==='planning'||result.status==='awaiting_approval'||result.status==='running'){
+  if(result.status==='planning'||result.status==='awaiting_approval'||result.status==='awaiting_answer'||result.status==='running'){
    pollHandle=setTimeout(step,700);
   }else{
    input.disabled=false;input.focus();
@@ -93,7 +113,7 @@ async function poll(runId){
 document.querySelector('#prompt-form').addEventListener('submit',async event=>{
  event.preventDefault();if(!input.value.trim()||input.disabled)return;
  input.disabled=true;status.className='';status.textContent='Thinking…';
- planSection.hidden=true;stepsSection.hidden=true;
+ planSection.hidden=true;stepsSection.hidden=true;qaSection.hidden=true;
  try{
   const {run_id}=await post('/v1/run',{prompt:input.value.trim()});
   setConsoleTarget(run_id);
@@ -124,11 +144,21 @@ consoleBtn.addEventListener('click',async()=>{
  catch(error){status.textContent=error.message;status.className='error';}
 });
 
+async function answer(text){
+ if(!currentRunId||!text)return;
+ try{await post('/v1/runs/'+currentRunId+'/answer',{text});await poll(currentRunId);}
+ catch(error){status.textContent=error.message;status.className='error';}
+}
+document.querySelector('#qa-form').addEventListener('submit',async event=>{
+ event.preventDefault();await answer(qaAnswer.value.trim());
+});
+qaSkip.addEventListener('click',()=>answer('skip'));
+
 document.addEventListener('keydown',async event=>{
  if(event.key!=='Escape')return;
  event.preventDefault();
- const awaitingApproval=!planSection.hidden;
- try{if(awaitingApproval&&currentRunId)await post('/v1/runs/'+currentRunId+'/deny').catch(()=>{});}
+ const pending=!planSection.hidden||!qaSection.hidden;
+ try{if(pending&&currentRunId)await post('/v1/runs/'+currentRunId+'/deny').catch(()=>{});}
  finally{await post('/v1/close');}
 });
 

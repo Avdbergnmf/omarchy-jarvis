@@ -11,20 +11,29 @@ const elements={
  '#status':makeElement(),
  '#plan':makeElement(),
  '#plan-actions':makeElement(),
+ '#draft-preview':makeElement(),
+ '#draft-title':makeElement(),
+ '#draft-body':makeElement(),
  '#run-btn':makeElement(),
  '#cancel-btn':makeElement(),
  '#steps':makeElement(),
  '#step-list':makeElement(),
+ '#qa':makeElement(),
+ '#qa-question':makeElement(),
+ '#qa-answer':{value:'',disabled:false,focused:false,focus(){this.focused=true;}},
+ '#qa-skip':makeElement(),
  '#console-btn':makeElement(),
  '#meta':makeElement(),
 };
 const store={};
 let runState='awaiting_approval';
+let qaRunState='fresh'; // 'fresh' -> 'answered' -> 'finished'
 const context={
  document:{
   querySelector(selector){
    if(elements[selector])return elements[selector];
    if(selector==='#prompt-form')return {addEventListener(n,fn){handlers[n]=fn;}};
+   if(selector==='#qa-form')return {addEventListener(n,fn){handlers['qaForm'+n]=fn;}};
    throw new Error('unexpected selector '+selector);
   },
   createElement(){return makeElement();},
@@ -45,6 +54,12 @@ const context={
   if(path==='/v1/runs/test-run/approve'){runState='done';return {ok:true,json:async()=>({status:'running'})};}
   if(path==='/v1/runs/test-run/deny')return {ok:true,json:async()=>({status:'denied'})};
   if(path==='/v1/close')return {ok:true,json:async()=>({ok:true})};
+  if(path==='/v1/runs/qa-run')return {ok:true,json:async()=>{
+   if(qaRunState==='fresh')return {status:'awaiting_answer',reply:'What actually happened instead?',plan:null,steps:[]};
+   if(qaRunState==='finished')return {status:'done',reply:'Cancelled — no actions were run.',plan:null,steps:[]};
+   return {status:'awaiting_approval',reply:'Draft ready — review before filing.',plan:{actions:[{tool:'report_bug',arguments:{title:'Bug: x',body:'y',difficulty:'M'}}]},draft:{title:'Bug: x',body:'y'},steps:[]};
+  }};
+  if(path==='/v1/runs/qa-run/answer'){qaRunState='answered';return {ok:true,json:async()=>({status:'awaiting_approval'})};}
   return {ok:true,json:async()=>({ok:true})};
  },
 };
@@ -68,5 +83,26 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
  await elements['#console-btn'].handlers.click();
  assert(requests.some(r=>r.path==='/v1/runs/test-run/console'),'Open console must target the current/last run');
 
- console.log('PASS: overlay plan/approve, step completion, Escape, always-available Open console');
+ // Single get+render (not the auto-continuing poll loop) — this mock's setTimeout
+ // fires synchronously/immediately rather than after a real delay, so letting
+ // poll() self-schedule here would race an orphaned background chain against
+ // the assertions below instead of just exercising one rendered state.
+ context.setConsoleTarget('qa-run');
+ context.render(await context.get('/v1/runs/qa-run'));
+ assert.equal(elements['#qa'].hidden,false,'qa panel must show during intake Q&A');
+ assert.equal(elements['#plan'].hidden,true,'plan panel must stay hidden during intake Q&A');
+ assert.equal(elements['#qa-question'].textContent,'What actually happened instead?');
+
+ elements['#qa-answer'].value='it crashed';
+ await handlers['qaFormsubmit']({preventDefault(){}});
+ const answerReq=requests.find(r=>r.path==='/v1/runs/qa-run/answer');
+ assert(answerReq,'answer must post to /answer');
+ assert.equal(JSON.parse(answerReq.options.body).text,'it crashed');
+ assert.equal(elements['#qa'].hidden,true,'qa panel must hide once intake finalizes into a draft');
+ assert.equal(elements['#plan'].hidden,false,'plan panel must show the filed draft for review');
+ assert.equal(elements['#draft-preview'].hidden,false,'draft preview must show for report_bug plans');
+ assert.equal(elements['#draft-title'].textContent,'Bug: x');
+ qaRunState='finished'; // let any still-orphaned background poll settle to a terminal status
+
+ console.log('PASS: overlay plan/approve, step completion, Escape, always-available Open console, intake Q&A + draft preview');
 })();

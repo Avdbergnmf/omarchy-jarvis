@@ -5,8 +5,23 @@
 <label for="prompt">JARVIS <span>LOCAL · OMARCHY</span></label>
 <input id="prompt" autofocus autocomplete="off" maxlength="2000" placeholder="What would you like to do?" aria-describedby="status">
 </form>
+<section id="qa" hidden>
+<h2>Quick question</h2>
+<p id="qa-question"></p>
+<form id="qa-form">
+<input id="qa-answer" autocomplete="off" maxlength="600" placeholder="Type your answer, or &quot;skip&quot;" aria-label="Answer">
+<div id="qa-buttons">
+<button id="qa-submit" type="submit">Send <kbd>Enter</kbd></button>
+<button id="qa-skip" type="button">Skip &amp; file now</button>
+</div>
+</form>
+</section>
 <section id="plan" hidden>
 <h2 id="plan-heading">Proposed actions</h2>
+<div id="draft-preview" hidden>
+<strong id="draft-title"></strong>
+<pre id="draft-body"></pre>
+</div>
 <ul id="plan-actions"></ul>
 <div id="plan-buttons">
 <button id="run-btn" type="button">Run <kbd>Enter</kbd></button>

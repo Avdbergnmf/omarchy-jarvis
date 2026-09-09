@@ -10,6 +10,7 @@ Read this before changing anything. Optimize for **agent development** and **hum
 5. Thought bubbles (desktop notifications) with click → **live console** of that run (not just a static file).
 6. Heavier workflows become **skills** (scripts + metadata). New skills require **human confirm** before save.
 7. Private GitHub repo is the source of truth: milestones, DECISIONS.md, progress log, tested example skills.
+8. **Self-improve through the user, not around them:** a miss or a feature idea becomes a rich GitHub issue + local backlog record (`/report`, `/feature`, `/backlog`, `/dispatch` — see README and `docs/backlog/README.md`), not a silent self-fix. Filing is a plan/approve action like any other; drafting is deterministic (ADR-016), never left to the local model. Dispatch to another agent only ever **prepares** a paste-ready prompt — never a real send.
 
 ## Non-goals (v0)
 - Voice, multi-user, LAN exposure of the brain, auto-installing random packages without confirm, replacing Omarchy menus.

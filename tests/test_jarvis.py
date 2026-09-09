@@ -1,6 +1,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -187,5 +188,128 @@ class ApprovalFlowTest(unittest.TestCase):
   self.assertEqual(server.RUNS[rid]['status'],'denied')
   self.assertNotIn(rid,server.PENDING)
   self.assertFalse(server.BUSY.locked())
+ def test_expire_stale_covers_awaiting_answer(self):
+  rid='stale-answer-unit'
+  server.RUNS[rid]={'status':'awaiting_answer','awaiting_since':time.monotonic()-server.AWAIT_TIMEOUT-1,'steps':[]}
+  server.BUSY.acquire()
+  with patch.object(server,'BUSY_RUN_ID',rid),patch.object(server,'log'):
+   server.expire_stale()
+  self.assertEqual(server.RUNS[rid]['status'],'denied')
+  self.assertFalse(server.BUSY.locked())
+
+
+class BacklogActionsTest(unittest.TestCase):
+ def test_redact_strips_token_shaped_secrets(self):
+  text=core.redact('key sk-ant-abc123def456ghi789 and ghp_ABCDEFGHIJ1234567890 here')
+  self.assertNotIn('sk-ant-abc123def456ghi789',text)
+  self.assertNotIn('ghp_ABCDEFGHIJ1234567890',text)
+ def test_slugify_basic(self):
+  self.assertEqual(core.slugify("Bug: Window Won't Move!!"),'bug-window-won-t-move')
+ def test_ensure_labels_is_idempotent_create_or_update(self):
+  with patch.object(core.subprocess,'run') as run:
+   core.ensure_labels(['bug','jarvis-reported'])
+  self.assertEqual(run.call_count,2)
+  for call in run.call_args_list: self.assertIn('--force',call.args[0])
+ def test_report_record_dry_run_makes_no_gh_call(self):
+  with patch.object(core,'command') as cmd:
+   result=core.report_record('bug','Test title','body text','M',dry=True)
+  cmd.assert_not_called()
+  self.assertTrue(result['dry_run'])
+  self.assertIn('bug',result['labels'])
+ def test_report_record_rejects_bad_difficulty(self):
+  with self.assertRaises(ValueError): core.report_record('bug','Title','body','X',dry=True)
+ def test_report_record_writes_mirror_and_index(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   root=Path(tmp)
+   (root/'docs/templates').mkdir(parents=True)
+   for name in ('ISSUE_BUG.md','ISSUE_FEATURE.md'): shutil.copy2(ROOT/'docs/templates'/name,root/'docs/templates'/name)
+   (root/'docs/backlog/bugs').mkdir(parents=True)
+   (root/'docs/backlog/INDEX.md').write_text('| id | type | title | difficulty | status | gh issue |\n|---|---|---|---|---|---|\n')
+   fake=lambda *a,**k:{'argv':[],'stdout':'https://github.com/Avdbergnmf/omarchy-jarvis/issues/123\n','stderr':''}
+   with patch.object(core,'ROOT',root),patch.object(core,'command',side_effect=fake),patch.object(core,'ensure_labels') as ensure:
+    result=core.report_record('bug','Window fails to move','body & stuff','M')
+   ensure.assert_called_once_with(['bug','jarvis-reported'])
+   self.assertEqual(result['number'],123)
+   self.assertTrue((root/'docs/backlog/bugs'/(result['slug']+'.md')).exists())
+   self.assertIn('#123',(root/'docs/backlog/INDEX.md').read_text())
+ def test_prepare_handoff_dry_run_and_bad_agent(self):
+  result=core.prepare_handoff(7,'claude-code',dry=True)
+  self.assertTrue(result['dry_run'])
+  with self.assertRaises(ValueError): core.prepare_handoff(7,'not-an-agent',dry=True)
+ def test_list_backlog_dry_run(self):
+  self.assertTrue(core.list_backlog(dry=True)['dry_run'])
+
+
+class SelfImproveServerTest(unittest.TestCase):
+ def tearDown(self):
+  server.CONFIG['approval_mode']='always'
+ def test_detect_intake_slash_and_natural_language(self):
+  self.assertEqual(server.detect_intake('/report the scratchpad binding is broken'),('bug','the scratchpad binding is broken'))
+  self.assertEqual(server.detect_intake('/feature add dark mode'),('feature','add dark mode'))
+  kind,_=server.detect_intake('you messed up, the window moved to the wrong workspace')
+  self.assertEqual(kind,'bug')
+  kind,_=server.detect_intake('I wish it could remember my last workspace')
+  self.assertEqual(kind,'feature')
+  self.assertEqual(server.detect_intake('hello there'),(None,None))
+ def test_report_tools_excluded_from_model_facing_planner(self):
+  names={t['function']['name'] for t in server.TOOLS_FOR_MODEL}
+  self.assertNotIn('report_bug',names); self.assertNotIn('report_feature',names)
+  self.assertIn('list_backlog',names); self.assertIn('prepare_handoff',names)
+  self.assertNotIn('report_bug',json.dumps(server.PLAN_SCHEMA))
+ def test_validate_call_respects_maxlength_override(self):
+  server.validate_call('report_bug',{'title':'t','body':'x'*500,'difficulty':'M'})
+  with self.assertRaises(ValueError): server.validate_call('report_bug',{'title':'t'*300,'body':'b','difficulty':'M'})
+ def test_tool_argv_for_backlog_tools(self):
+  argv=server.tool_argv('report_bug',{'title':'T','body':'B','difficulty':'M'})
+  self.assertEqual(argv[-6:],['--title','T','--body','B','--difficulty','M'])
+  argv=server.tool_argv('prepare_handoff',{'issue':9,'agent':'human'})
+  self.assertEqual(argv[-4:],['--issue','9','--agent','human'])
+ def test_execute_plan_skips_restore_for_backlog_tools(self):
+  rid='backlog-exec-unit'; server.RUNS[rid]={'steps':[]}; server.BUSY.acquire()
+  plan={'actions':[{'tool':'list_backlog','arguments':{}}],'reply':'Listing.'}
+  with patch.object(server,'restore_target') as restore,patch.object(server,'announce'),patch.object(server,'log'),patch.object(server.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'{"ok":true}','')):
+   server.execute_plan(rid,plan,'0xdead')
+  restore.assert_not_called()
+  self.assertEqual(server.RUNS[rid]['status'],'done')
+ def test_intake_flow_reaches_draft_awaiting_approval(self):
+  rid='intake-unit'
+  server.RUNS[rid]={'run_id':rid,'status':'planning','reply':'Thinking…','plan':None,'steps':[]}
+  server.BUSY.acquire()
+  with patch.object(server,'announce'),patch.object(server,'log'),patch.object(server,'gather_host_facts',return_value='(skipped)'),patch.object(server,'gather_binding_hits',return_value='(skipped)'):
+   server.start_intake(rid,'bug','the scratchpad toggle did nothing',None)
+   self.assertEqual(server.RUNS[rid]['status'],'awaiting_answer')
+   for answer in ('it should toggle the scratchpad','nothing happened','always reproduces'):
+    server.handle_answer(rid,answer)
+  run=server.RUNS[rid]
+  self.assertEqual(run['status'],'awaiting_approval')
+  self.assertEqual(run['plan']['actions'][0]['tool'],'report_bug')
+  self.assertIn('nothing happened',run['plan']['actions'][0]['arguments']['body'])
+  server.handle_deny(rid)
+ def test_intake_skip_files_with_partial_context(self):
+  rid='intake-skip-unit'
+  server.RUNS[rid]={'run_id':rid,'status':'planning','reply':'Thinking…','plan':None,'steps':[]}
+  server.BUSY.acquire()
+  with patch.object(server,'announce'),patch.object(server,'log'),patch.object(server,'gather_host_facts',return_value='(skipped)'),patch.object(server,'gather_binding_hits',return_value='(skipped)'):
+   server.start_intake(rid,'feature','add a dark mode toggle',None)
+   server.handle_answer(rid,'skip')
+  run=server.RUNS[rid]
+  self.assertEqual(run['status'],'awaiting_approval')
+  self.assertEqual(run['plan']['actions'][0]['tool'],'report_feature')
+  self.assertIn('no answers',run['plan']['actions'][0]['arguments']['body'])
+  server.handle_deny(rid)
+ def test_handle_answer_rejects_wrong_status(self):
+  rid='answer-wrong-status'; server.RUNS[rid]={'status':'done'}
+  self.assertIsNone(server.handle_answer(rid,'text'))
+ def test_backlog_and_dispatch_slash_commands_build_expected_plan(self):
+  # list_backlog is read-only but still goes through Run/Cancel like any other
+  # tool call, matching how catalog_bindings is gated (consistency over risk).
+  rid='backlog-route-unit'
+  server.RUNS[rid]={'run_id':rid,'status':'planning','reply':'Thinking…','plan':None,'steps':[]}
+  server.BUSY.acquire()
+  with patch.object(server,'announce'),patch.object(server,'log'):
+   server.start_fixed_plan(rid,{'actions':[{'tool':'list_backlog','arguments':{}}],'reply':'Listing open backlog items.'},None)
+  self.assertEqual(server.RUNS[rid]['status'],'awaiting_approval')
+  self.assertEqual(server.RUNS[rid]['plan']['actions'][0]['tool'],'list_backlog')
+  server.handle_deny(rid)
 
 if __name__=='__main__': unittest.main()

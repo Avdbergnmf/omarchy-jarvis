@@ -1,5 +1,6 @@
 """Reviewed desktop actions. No model-generated shell commands are evaluated."""
 import argparse
+import datetime
 import json
 import os
 from pathlib import Path
@@ -12,6 +13,24 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 LOGS = ROOT / 'logs'
 APPS = {'Todoist': 'https://app.todoist.com/app', 'Google Calendar': 'https://calendar.google.com/', 'Outlook': 'https://outlook.live.com/mail/', 'WhatsApp': 'https://web.whatsapp.com/'}
+REPO = 'Avdbergnmf/omarchy-jarvis'
+BACKLOG_KIND = {'bug': {'labels': ['bug', 'jarvis-reported'], 'dir': 'bugs'}, 'feature': {'labels': ['enhancement', 'backlog'], 'dir': 'features'}}
+HANDOFF_AGENTS = ('claude-code', 'cursor', 'human')
+
+def redact(value):
+    text = str(value)
+    text = re.sub(r'(?i)(bearer\s+|(?:api[_-]?key|password|token|secret)\s*[=:]\s*)[^\s,}"\']+', r'\1[REDACTED]', text)
+    return re.sub(r'\b(sk-[A-Za-z0-9_-]{10,}|gh[ops]_[A-Za-z0-9]{20,})\b', '[REDACTED]', text)
+
+def slugify(text, maxlen=50):
+    slug = re.sub(r'[^a-z0-9]+', '-', text.lower()).strip('-')
+    return (slug[:maxlen].rstrip('-')) or 'item'
+
+def fill_template(name, values):
+    text = (ROOT / 'docs/templates' / name).read_text()
+    for key, val in values.items():
+        text = text.replace('{{' + key + '}}', str(val) if val not in (None, '') else '—')
+    return text
 
 def is_overlay(client):
     return client.get('class') in ('jarvis-overlay', 'chrome-127.0.0.1__jarvis-overlay-Default')
@@ -156,7 +175,7 @@ def workspace_new(dry=False):
     return {**dispatch('workspace', number, dry), 'workspace': number}
 
 def run_skill(skill, dry=False):
-    if skill not in ('open-planning', 'scratch-and-mail'):
+    if skill not in ('open-planning', 'scratch-and-mail', 'report-last-failure', 'add-feature-request'):
         raise ValueError('Unknown/unapproved skill id')
     argv = [str(ROOT / 'skills/examples' / skill / 'run.sh')]
     if dry:
@@ -174,6 +193,112 @@ def notify(run_id, message, dry=False):
         (LOGS / 'runs' / (run_id + '.log')).touch(mode=0o600)
     return command(['omarchy-notification-send', '--app-name', 'jarvis', '-u', 'normal', '-t', '12000', 'Jarvis', message[:300], '--exec', str(ROOT / 'console/jarvis-console'), run_id], dry)
 
+def index_rows():
+    lines = (ROOT / 'docs/backlog/INDEX.md').read_text().splitlines()
+    return [l for l in lines if l.startswith('|') and not l.startswith('| id') and not re.fullmatch(r'\|[-\s|]+\|', l)]
+
+def index_ids():
+    ids = set()
+    for row in index_rows():
+        cells = [c.strip() for c in row.strip('|').split('|')]
+        if cells and cells[0]:
+            ids.add(cells[0])
+    return ids
+
+def index_append(id_, kind, title, difficulty, status, issue_ref):
+    row = '| {} | {} | {} | {} | {} | {} |\n'.format(id_, kind, redact(title).replace('|', '\\|')[:80], difficulty, status, issue_ref)
+    with (ROOT / 'docs/backlog/INDEX.md').open('a') as f:
+        f.write(row)
+
+def backlog_slug(title):
+    base = slugify(title)
+    existing = index_ids()
+    slug, n = base, 2
+    while slug in existing:
+        slug = f'{base}-{n}'; n += 1
+    return slug
+
+LABEL_COLORS = {'bug': 'd73a4a', 'jarvis-reported': '5319e7', 'enhancement': 'a2eeef', 'backlog': '0e8a16'}
+
+def ensure_labels(labels):
+    # gh issue create fails outright if a --label doesn't exist yet in the repo;
+    # --force makes this idempotent (create-or-update) so it's safe every time.
+    for label in labels:
+        subprocess.run(['gh', 'label', 'create', label, '--repo', REPO, '--color', LABEL_COLORS.get(label, 'ededed'), '--force'], capture_output=True, text=True, timeout=15)
+
+def report_record(kind, title, body, difficulty='M', dry=False):
+    if kind not in BACKLOG_KIND:
+        raise ValueError('Unknown backlog kind')
+    title = redact(title).strip()[:200]
+    if not title:
+        raise ValueError('Title required')
+    if difficulty not in ('S', 'M', 'L'):
+        raise ValueError('Difficulty must be S, M or L')
+    body = redact(body)
+    meta = BACKLOG_KIND[kind]
+    slug = backlog_slug(title)
+    argv = ['gh', 'issue', 'create', '--repo', REPO, '--title', title, '--body', body]
+    for label in meta['labels']:
+        argv += ['--label', label]
+    if dry:
+        return {'kind': kind, 'slug': slug, 'title': title, 'labels': meta['labels'], 'argv': argv, 'dry_run': True}
+    ensure_labels(meta['labels'])
+    result = command(argv)
+    url = next((line for line in reversed(result['stdout'].splitlines()) if line.startswith('http')), '')
+    if not url:
+        raise RuntimeError('gh issue create did not return a URL: ' + result['stdout'])
+    number = url.rstrip('/').rsplit('/', 1)[-1]
+    mirror = ROOT / 'docs/backlog' / meta['dir'] / (slug + '.md')
+    mirror.parent.mkdir(parents=True, exist_ok=True)
+    mirror.write_text('# ' + title + '\n\nGitHub issue: ' + url + '\n\n' + body + '\n')
+    index_append(slug, kind, title, difficulty, 'open', '#' + number)
+    return {'kind': kind, 'slug': slug, 'title': title, 'url': url, 'number': int(number), 'mirror': str(mirror.relative_to(ROOT))}
+
+def extract_acceptance(body):
+    match = re.search(r'##\s*Acceptance criteria.*?\n(.*?)(\n##|\Z)', body, re.S)
+    text = match.group(1).strip() if match else ''
+    return text or '(see issue body above)'
+
+def list_backlog(dry=False):
+    argv = ['gh', 'issue', 'list', '--repo', REPO, '--state', 'open', '--json', 'number,title,labels,url', '--limit', '100']
+    if dry:
+        return {'argv': argv, 'dry_run': True}
+    result = command(argv)
+    issues = json.loads(result['stdout'] or '[]')
+    relevant = [i for i in issues if any(l['name'] in ('bug', 'jarvis-reported', 'enhancement', 'backlog') for l in i.get('labels', []))]
+    index = []
+    for row in index_rows():
+        cells = [c.strip() for c in row.strip('|').split('|')]
+        if len(cells) == 6:
+            index.append(dict(zip(['id', 'type', 'title', 'difficulty', 'status', 'gh_issue'], cells)))
+    return {'issues': relevant, 'index': index}
+
+def prepare_handoff(issue, agent, dry=False):
+    if agent not in HANDOFF_AGENTS:
+        raise ValueError('Unknown agent; use claude-code, cursor or human')
+    if not 1 <= issue <= 999999:
+        raise ValueError('Invalid issue number')
+    argv = ['gh', 'issue', 'view', str(issue), '--repo', REPO, '--json', 'title,body,url,labels']
+    if dry:
+        return {'argv': argv, 'issue': issue, 'agent': agent, 'dry_run': True}
+    result = command(argv)
+    data = json.loads(result['stdout'])
+    slug = slugify(data['title'])
+    branch = ('issue-' + str(issue) + '-' + slug)[:60]
+    values = {
+        'ISSUE': issue, 'AGENT': agent, 'REPO': REPO, 'BRANCH': branch,
+        'TITLE': data['title'], 'ISSUE_URL': data['url'],
+        'LABELS': ', '.join(l['name'] for l in data.get('labels', [])) or 'none',
+        'ISSUE_BODY': redact(data.get('body') or '(no body)'),
+        'ACCEPTANCE': redact(extract_acceptance(data.get('body') or '')),
+        'DATE': datetime.date.today().isoformat(),
+    }
+    text = fill_template('HANDOFF_AGENT.md', values)
+    path = ROOT / 'docs/backlog/handoffs' / ('issue-' + str(issue) + '-' + agent + '.md')
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text)
+    return {'issue': issue, 'agent': agent, 'path': str(path.relative_to(ROOT)), 'branch': branch}
+
 def main():
     name = Path(sys.argv[0]).name
     p = argparse.ArgumentParser(description='Jarvis ' + name + ': JSON stdout, nonzero on failure')
@@ -187,6 +312,11 @@ def main():
     elif name == 'notify_thought':
         p.add_argument('--run-id', required=True); p.add_argument('--message', required=True)
     elif name == 'run_skill': p.add_argument('skill')
+    elif name in ('report_bug', 'report_feature'):
+        p.add_argument('--title', required=True); p.add_argument('--body', required=True)
+        p.add_argument('--difficulty', default='M', choices=['S', 'M', 'L'])
+    elif name == 'prepare_handoff':
+        p.add_argument('--issue', required=True, type=int); p.add_argument('--agent', required=True, choices=list(HANDOFF_AGENTS))
     a = p.parse_args()
     try:
         if name == 'catalog_bindings': result = catalog(a.refresh, a.query)
@@ -200,6 +330,10 @@ def main():
         elif name == 'open_webapp': result = open_app(a.name, a.url, a.workspace, a.dry_run)
         elif name == 'notify_thought': result = notify(a.run_id, a.message, a.dry_run)
         elif name == 'run_skill': result = run_skill(a.skill, a.dry_run)
+        elif name == 'report_bug': result = report_record('bug', a.title, a.body, a.difficulty, a.dry_run)
+        elif name == 'report_feature': result = report_record('feature', a.title, a.body, a.difficulty, a.dry_run)
+        elif name == 'list_backlog': result = list_backlog(a.dry_run)
+        elif name == 'prepare_handoff': result = prepare_handoff(a.issue, a.agent, a.dry_run)
         else: raise ValueError('Unknown action')
         print(json.dumps({'ok': True, **result}))
     except (ValueError, RuntimeError, OSError, subprocess.SubprocessError, StopIteration) as e:
