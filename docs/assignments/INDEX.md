@@ -11,3 +11,4 @@
 | A-007 | queued | Slash-command autocomplete |
 | A-008 | queued | Training mode (improvement control plane) |
 | A-009 | queued | Human validation tests in Training mode |
+| A-010 | queued | Overlay lifecycle, single-instance, feedback bugs |
