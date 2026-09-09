@@ -4,7 +4,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| A-013 | Parallel agents: default git worktrees | queued | area:docs | YES | [active/A-013-parallel-worktrees-default.md](active/A-013-parallel-worktrees-default.md) |
+| A-013 | Parallel agents: default git worktrees | in_progress | area:docs | YES | [active/A-013-parallel-worktrees-default.md](active/A-013-parallel-worktrees-default.md) |
 | A-012 | Open YouTube + honest open plans | queued | area:actions | YES | [active/A-012-open-youtube-honest-plans.md](active/A-012-open-youtube-honest-plans.md) |
 | A-007 | Slash-command autocomplete | queued | area:overlay | NO | [active/A-007-slash-command-autocomplete.md](active/A-007-slash-command-autocomplete.md) |
 | A-008 | Training mode (improvement control plane) | queued | area:overlay | NO | [active/A-008-training-mode.md](active/A-008-training-mode.md) |

@@ -3,25 +3,23 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Assignment: _(desk just filed **A-012**; claim with NEW_AGENT)_
-- Area: area:actions
-- Branch: main
+- Assignment: **A-013** (Codex via Firsty) — parallel worktrees default
+- Area: area:docs
+- Branch/worktree: `a013-parallel-worktrees` @ `~/Work/omarchy-jarvis-a013`
 
 ## Checklist
-- [x] A-011 open apps by name — done
-- [ ] A-012 open YouTube + honest plans — queued
-- [ ] Overlay/training track A-007→A-009 — may be on `codex/training-track`
+- [ ] A-013 parallel worktrees policy/docs/helper
 
 ## Done this session (evidence)
-- Desk (Firsty): converted bug #12 → A-012; closed GH #12; moved backlog file to `bugs/converted/`
+- Desk (Firsty): launched Codex on A-013 in isolated worktree (Alex bedtime fire)
 
 ## Next action (one concrete step)
-- Coding agent: NEW_AGENT → claim **A-012** (parallel-ok YES)
+- Codex completes A-013; A-012 may still have WIP in `omarchy-jarvis-a012`
 
 ## Parallel agent
-- Desk: filed **A-013** (worktrees default for parallel agents), from Claude’s A-011 note.
-- `codex/training-track` may hold A-007/A-008/A-009 WIP — do not disturb that overlay work.
-- A-012 is actions/brain-light only.
+- `omarchy-jarvis-a012` — A-012 YouTube WIP
+- `omarchy-jarvis-training` — overlay/training track
+- Do not touch those trees
 
 ## Blockers
 - none
