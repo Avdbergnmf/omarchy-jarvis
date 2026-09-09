@@ -1,4 +1,4 @@
-cd ~/Work/omarchy-jarvis
+Working directory: use Alex’s assigned Jarvis worktree; stay there if already isolated.
 You are continuing Omarchy Jarvis work. Do NOT ask for chat/session logs.
 
 ## Default batch size = 1
@@ -16,3 +16,34 @@ Then set SESSION `Batch: N` or `Batch: until-empty` and after each done assignme
 4) On acceptance: QUEUE/INDEX → done; move file to docs/assignments/done/; PROGRESS note.
 5) If batch remaining → claim next claimable; else **stop and summarize for Alex**.
 6) If nothing claimable → “No assignment in queue is possible right now.” + queue list / empty.
+
+## Required worktree setup (before claim edits or coding)
+Concurrent agents must each use a separate worktree + branch, even if clean.
+If already assigned an isolated directory, verify it and resume there; do not
+run the creation commands again. Otherwise, after read-only claim checks:
+
+    git worktree list
+    git status --short --branch
+    git fetch origin
+    jarvis_task=a014-example  # replace with your assignment's unique branch/slug
+    jarvis_tree="$HOME/Work/omarchy-jarvis-$jarvis_task"
+    git worktree add -b "$jarvis_task" "$jarvis_tree" origin/main
+    cd "$jarvis_tree"
+    git status --short --branch
+
+Use START's isolation section for offline/existing-branch handling and cleanup.
+Never checkout/stash/reset/clean/edit another agent's tree. Before claiming,
+check the listed trees' QUEUE/SESSION + scopes read-only and coordinate with the
+desk: each is a branch snapshot, not a global lock. Record owner, branch,
+absolute worktree path and Batch in your own SESSION; reconcile shared status
+files on merge without reverting others' claims. Isolation does not waive
+parallel-ok/area/path rules or permit shared-service restarts.
+Commit the scoped assignment, then `git push -u origin HEAD` and report.
+After confirmed merge/handoff, from a remaining checkout (actual path/branch):
+
+    git -C "$HOME/Work/omarchy-jarvis-a014-example" status --short
+    git worktree remove "$HOME/Work/omarchy-jarvis-a014-example"
+    git branch -d a014-example
+
+Remove only clean, merged, unowned trees; never force. Default batch size is 1:
+stop and summarize after this assignment unless Alex explicitly enabled more.

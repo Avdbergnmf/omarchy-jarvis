@@ -11,7 +11,12 @@
 Queue of work: [`../QUEUE.md`](../QUEUE.md)  
 How Firsty (or any desk agent) adds work: [`../README.md`](../README.md)
 
-Canonical path: `~/Work/omarchy-jarvis/docs/assignments/prompts/`
+Concurrent agents must use separate worktrees/branches; paste the assigned absolute
+working directory with the prompt. Reuse an already assigned isolated tree.
+See [START commands](../../../START.md#required-isolation-for-concurrent-agents).
+QUEUE/SESSION are branch-local: confirm claims across trees and with the desk.
+
+Canonical prompt source path: `~/Work/omarchy-jarvis/docs/assignments/prompts/`
 
 ## Who is working?
 - `docs/SESSION.md` + the `in_progress` column in [`../QUEUE.md`](../QUEUE.md)

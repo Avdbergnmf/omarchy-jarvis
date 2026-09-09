@@ -4,6 +4,43 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+echo "=== Worktree isolation (read-only hints) ==="
+CURRENT_BRANCH=$(git symbolic-ref --quiet --short HEAD || printf 'detached HEAD')
+printf 'Current: %s [%s]\n' "$ROOT" "$CURRENT_BRANCH"
+TREE=""
+BRANCH=""
+while IFS= read -r -d '' FIELD; do
+  case "$FIELD" in
+    worktree\ *) TREE=${FIELD#worktree } ;;
+    branch\ *) BRANCH=${FIELD#branch refs/heads/} ;;
+    detached) BRANCH="detached HEAD" ;;
+    "")
+      if [[ -n "$TREE" ]]; then
+        if [[ -d "$TREE" ]] && STATE=$(git --no-optional-locks -C "$TREE" status --porcelain --untracked-files=normal 2>/dev/null); then
+          if [[ -n "$STATE" ]]; then
+            printf 'DIRTY: %s [%s]\n' "$TREE" "${BRANCH:-unknown}"
+            if [[ "$TREE" != "$ROOT" ]]; then
+              if [[ "$BRANCH" != "$CURRENT_BRANCH" ]]; then
+                echo "Hint: another checkout is dirty on a different branch; use your isolated worktree."
+              fi
+              echo "Do not checkout/stash/reset/clean or edit that tree."
+            fi
+          else
+            printf 'Clean: %s [%s]\n' "$TREE" "${BRANCH:-unknown}"
+          fi
+        else
+          printf 'Unavailable: %s (verify ownership manually)\n' "$TREE"
+        fi
+      fi
+      TREE=""
+      BRANCH=""
+      ;;
+  esac
+done < <(git worktree list --porcelain -z)
+echo "Concurrent agents require separate worktrees/branches (START.md); no automatic claim."
+echo "QUEUE/SESSION below are branch-local. Check other trees' claims read-only and coordinate with the desk."
+echo
+
 echo "=== Who is working (SESSION) ==="
 if [[ -f docs/SESSION.md ]]; then
   sed -n '/^## Active goal/,/^## Checklist/p' docs/SESSION.md | sed '$d'

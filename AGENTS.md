@@ -12,6 +12,8 @@ pass/handoff lifecycle and session completion. [README](README.md) covers usage;
 - Self-improvement is deterministic issue drafting plus local backlog, approved before filing.
   Dispatch prepares a paste-ready prompt; it never sends, contacts or spends agent credits.
 - Primary evidence is the bounded run journal. Internal logs are debug-only; polls stay quiet.
+- Concurrent coding agents require separate worktrees and branches; reuse assigned trees.
+  Follow START isolation/claim reconciliation rules; never mutate another agent’s checkout.
 - Single writer for brain/control plane; no parallel approve/execute redesign.
 - Update docs/PROGRESS.md each session (worked/failed); record non-obvious choices in
   docs/DECISIONS.md. Keep actions and skills callable without the UI.
