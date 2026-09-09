@@ -15,4 +15,4 @@
 | A-011 | Open app by name | done | area:actions | YES | [done/A-011-open-app-by-name.md](done/A-011-open-app-by-name.md) |
 | A-012 | Open YouTube + honest open plans | done | area:actions | YES | [done/A-012-open-youtube-honest-plans.md](done/A-012-open-youtube-honest-plans.md) |
 | A-013 | Parallel agents: default git worktrees | done | area:docs | YES | [done/A-013-parallel-worktrees-default.md](done/A-013-parallel-worktrees-default.md) |
-| A-014 | Hygiene: bug hunt, tests, lean cleanup | queued | area:docs | YES | [active/A-014-hygiene-bug-hunt-cleanup.md](active/A-014-hygiene-bug-hunt-cleanup.md) |
+| A-014 | Hygiene: bug hunt, tests, lean cleanup | in_progress | area:docs | YES | [active/A-014-hygiene-bug-hunt-cleanup.md](active/A-014-hygiene-bug-hunt-cleanup.md) |
