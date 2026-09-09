@@ -45,7 +45,24 @@ def assignments(root):
 
 def slots(root):
     data = json.loads(read(root, SLOTS) or '{"version":1,"agents":[]}')
-    if not isinstance(data.get('agents'), list): raise ValueError('Invalid agent registry')
+    if not isinstance(data, dict) or data.get('version') != 1 or not isinstance(data.get('agents'), list) or len(data['agents']) > 32:
+        raise ValueError('Invalid agent registry')
+    seen = set()
+    for slot in data['agents']:
+        if not isinstance(slot, dict): raise ValueError('Invalid agent slot')
+        sid = slot.get('id')
+        if not isinstance(sid, str) or not re.fullmatch(r'[a-zA-Z0-9_-]{1,80}', sid) or sid in seen:
+            raise ValueError('Invalid or duplicate agent slot id')
+        seen.add(sid)
+        if slot.get('kind') not in KINDS or slot.get('status') not in ('idle','busy'):
+            raise ValueError('Invalid agent kind or status')
+        short(slot.get('label'), 'Agent label', 60)
+        queued = slot.get('queued_assignment_ids')
+        if not isinstance(queued, list) or len(queued)>200 or any(not isinstance(a,str) or not re.fullmatch(r'A-\d{3,}',a) for a in queued):
+            raise ValueError('Invalid agent assignment queue')
+        current = slot.get('current_assignment')
+        if current is not None and (not isinstance(current,str) or not re.fullmatch(r'A-\d{3,}',current)):
+            raise ValueError('Invalid current assignment')
     return data
 
 

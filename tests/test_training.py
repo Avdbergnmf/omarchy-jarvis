@@ -87,6 +87,13 @@ class TrainingTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Symlinked'):
             training.preview(self.root,self.payload)
 
+    def test_malformed_slot_cannot_supply_a_handoff_path(self):
+        path=self.root/training.SLOTS
+        path.parent.mkdir(parents=True)
+        path.write_text(json.dumps({'version':1,'agents':[{'id':'../../escape'}]}))
+        with self.assertRaisesRegex(ValueError,'slot id'):
+            training.preview(self.root,self.payload)
+
     def test_http_auth_and_confirmation_boundary(self):
         handler=object.__new__(server.Handler)
         handler.path='/v1/training/preview'

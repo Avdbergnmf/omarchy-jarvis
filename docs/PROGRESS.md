@@ -256,3 +256,15 @@ The authorized A-007 → A-008 → A-009 batch is implemented; next is PR integr
 
 ### A note on working in parallel with another agent in the same checkout
 This repo has no worktree isolation between concurrent sessions by default (noted in earlier passes). For this assignment specifically, `git worktree add` was used to get a clean, isolated `main` checkout for A-011's own commit, rather than risking `git checkout`/`stash` against a shared tree that had another agent's uncommitted, differently-branched work sitting in it. Recommend this as the default pattern whenever two assignments are genuinely running in parallel on this host.
+
+### Training batch integration and final checks
+Merged latest main into the isolated training branch, preserving A-011 and queued A-012/A-013.
+Resolved documentation conflicts and kept ADR-023 for A-011; Training-track decisions are
+ADR-024/025/026. Added A-011's app-by-name guide to the machine-readable catalog (10 entries).
+Validated slot identifiers and registry shape before they can contribute to handoff paths.
+Final evidence: 92 Python tests, all four UI smoke scenarios, all JS syntax checks, ShellCheck,
+Doctor syntax and live Doctor pass. The isolated Doctor initially failed because logs/runs/
+had not been initialized by service startup; creating that empty runtime directory made its
+existing no-history dry-run path pass. Final isolated HTTP smoke returns 10 guides, all JS
+routes, and an unconfirmed two-file validation preview with zero writes. Human visual
+validation remains pending because the browser connector exposes no browser on this host.
