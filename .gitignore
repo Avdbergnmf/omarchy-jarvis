@@ -1,0 +1,10 @@
+logs/
+skills/drafts/
+.env
+.env.*
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+overlay/dist/
+.DS_Store
