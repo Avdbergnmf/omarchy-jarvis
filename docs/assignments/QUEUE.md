@@ -4,8 +4,12 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| _(empty)_ | — | — | — | — | Add next via [README](README.md) |
+| A-007 | Slash-command autocomplete | queued | area:overlay | NO | [active/A-007-slash-command-autocomplete.md](active/A-007-slash-command-autocomplete.md) |
+| A-008 | Training mode (improvement control plane) | queued | area:overlay | NO | [active/A-008-training-mode.md](active/A-008-training-mode.md) |
+| A-009 | Human validation tests in Training mode | queued | area:overlay | NO | [active/A-009-human-validation-tests.md](active/A-009-human-validation-tests.md) |
 
-Recently completed: A-001 · A-002 · A-003 · A-004 · A-005 · A-006 (see [done/](done/)).
+Recently completed: A-001 … A-006 (see [done/](done/)).
+
+**Order (serial):** **A-007** → **A-008** → **A-009**.
 
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).
