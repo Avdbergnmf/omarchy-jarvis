@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "agents": [
+    {
+      "id": "astra-6",
+      "label": "Astra 6",
+      "kind": "cursor",
+      "status": "idle",
+      "current_assignment": null,
+      "queued_assignment_ids": [],
+      "handoff_dir": "docs/backlog/handoffs/active/"
+    },
+    {
+      "id": "claude-code",
+      "label": "Claude Code",
+      "kind": "claude-code",
+      "status": "idle",
+      "current_assignment": null,
+      "queued_assignment_ids": [],
+      "handoff_dir": "docs/backlog/handoffs/active/"
+    }
+  ]
+}

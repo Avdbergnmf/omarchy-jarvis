@@ -20,7 +20,7 @@
 - Coding agent: NEW_AGENT / CONTINUE → claim **A-010**
 
 ## Parallel agent
-- _(none — serial overlay track)_
+- Astra 6 reserved for **A-008 + A-009** after A-010/A-007 — handoff `docs/backlog/handoffs/active/astra6-A008-A009.md`. Do not start while overlay in_progress conflicts.
 
 ## Blockers
 - none

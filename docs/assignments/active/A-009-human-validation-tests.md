@@ -6,6 +6,7 @@
 - **Allowed paths:** `overlay/` (training mode), `docs/FEATURES.md`, `docs/validation/` (create), `docs/assignments/`, `brain/` (endpoints to list pending validations / record results), `actions/report_bug` wiring, `README.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `tests/`
 - **Forbidden paths:** Replacing unit/CI tests; auto-closing issues without human mark
 - **Blocks / blocked-by:** After **A-008** (lives inside Training mode)
+- **Reserved for:** Astra 6 (see `docs/backlog/handoffs/active/astra6-A008-A009.md`)
 - **Links:** Alex 2026-09-09 — agent-listed tests needing human feedback to verify features
 
 ## Goal

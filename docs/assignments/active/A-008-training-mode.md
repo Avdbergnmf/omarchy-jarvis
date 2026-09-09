@@ -6,6 +6,7 @@
 - **Allowed paths:** `overlay/`, `brain/`, `docs/assignments/`, `docs/backlog/`, `docs/FEATURES.md` (create), `docs/LOGGING.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `README.md`, `START.md` (pointer only), `scripts/`, `tests/`, `VERSION`
 - **Forbidden paths:** Implementing A-009 validation runner in full (stub hooks OK); silent auto-spend on cloud agents without explicit user confirm
 - **Blocks / blocked-by:** Prefer after **A-007** (slash + command registry). **Blocks A-009** (validation UI lives here).
+- **Reserved for:** Astra 6 (see `docs/backlog/handoffs/active/astra6-A008-A009.md`)
 - **Links:** Alex 2026-09-09 — training mode for controlling Jarvis improvement
 
 ## Goal
