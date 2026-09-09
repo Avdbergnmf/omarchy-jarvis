@@ -1,3 +1,5 @@
+**Agents:** [START.md](START.md). **Alex paste prompts:** [docs/assignments/prompts/](docs/assignments/prompts/README.md).
+
 # Omarchy Jarvis
 
 A local, keyboard-first desktop assistant for Omarchy. Press **SUPER + SHIFT + J**, type a request, and press Enter.

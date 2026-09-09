@@ -119,3 +119,9 @@ New/changed surfaces:
 
 ### Note on this session's provenance
 This pass's implementation (this dated section, ADR-017/018 polish, and this verification pass aside) was already complete and uncommitted in the shared `~/Work/omarchy-jarvis` checkout when this session picked it up — the working tree was found mid-checkout on branch `codex/agent-entrypoint-journal`, one commit ahead of the self-improve pass, with no separate git history to show whose keystrokes produced it. A peer Claude session sharing this same checkout confirmed it wasn't theirs and that the content matches this brief exactly; all of it passed the full test/lint/live-doctor suite as found, needing only this PROGRESS entry, an ADR formatting fix (ADR-017/018 were missing the standard bold Context/Decision/Consequences labels other ADRs use), and the live journal/agent-status demo above before commit. Flagged to Alex: this checkout has **no worktree isolation** between concurrent agent sessions — a second untracked pass brief (`docs/passes/active/CLAUDE_AGENT_EFFICIENCY.md`) appeared in the same directory mid-verification, from a session outside this one; it was left untouched.
+
+## 2026-09-09 — Assignment queue (desk process)
+
+- Added `docs/assignments/` with QUEUE, TEMPLATE, authoring README, active A-001..A-003, and Alex paste prompts (CONTINUE / PARALLEL / NEW_AGENT).
+- START/AGENTS/README link the queue; `docs/SESSION.md` stub; `scripts/assignment-status.sh`.
+- Docs only — no Jarvis runtime code changes.

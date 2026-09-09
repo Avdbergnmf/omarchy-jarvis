@@ -1,0 +1,3 @@
+cd ~/Work/omarchy-jarvis
+Read and implement docs/passes/active/CLAUDE_AGENT_EFFICIENCY.md (docs/script only).
+Bake into START.md + AGENTS.md: (1) Token & context discipline — continue from git/PROGRESS/active passes, never paste session logs, read-once/diff, one chunk/session. (2) Resumable checklist — maintain docs/SESSION.md with active goal, checkboxes, done evidence, single Next action; update before stopping so the next agent picks up cold. Optional: agent-status prints SESSION summary. Do not rewrite overlay/brain.

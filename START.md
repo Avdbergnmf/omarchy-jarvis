@@ -14,9 +14,29 @@ See [README](README.md) for product usage and installation.
 ## Pick a job
 
 - **Fix open issues / backlog:** follow the Issue Loop below; bugs before enhancements.
-- **Implement a pass:** select only from [passes/INDEX](docs/passes/INDEX.md) and active/.
+- **Implement an assignment / pass:** prefer [assignments/QUEUE](docs/assignments/QUEUE.md); large briefs still under [passes/INDEX](docs/passes/INDEX.md) active/.
 - **Feature from backlog:** read its [feature record](docs/backlog/README.md) and GitHub issue.
 - **Explore / debug:** find run_id in the [run journal](docs/LOGGING.md), follow prompt → process → done → eval, and use Open console. Enable module debug only for deeper investigation.
+
+## Assignments (preferred work orders)
+
+Ongoing “Alex asked for X” work lives in [docs/assignments/QUEUE.md](docs/assignments/QUEUE.md).
+**Paste prompts (easy find):** [docs/assignments/prompts/](docs/assignments/prompts/README.md)
+— CONTINUE · PARALLEL · NEW_AGENT.
+
+Desk agents (Firsty or anyone authoring work) follow [docs/assignments/README.md](docs/assignments/README.md).
+
+## Token & context discipline
+
+- Continue from the **repo**: QUEUE, [SESSION](docs/SESSION.md), git status/diff, PROGRESS, active assignments/passes — **never** paste Codex/Claude/Cursor session logs.
+- Read large files once; afterward prefer diffs.
+- One assignment chunk per session; check off boxes; stop at acceptance; commit; flush SESSION “Next action”.
+- No drive-by refactors; keep `logs/` out of context unless a specific run_id; don’t re-echo huge tool outputs.
+- Prefer Sonnet-class models for implementation unless stuck.
+
+## Resumable session
+
+Maintain [docs/SESSION.md](docs/SESSION.md) while working: active assignment id, checklist mirror, evidence, **one** Next action. Next agent: START → SESSION → QUEUE → git.
 
 ## Issue Loop
 

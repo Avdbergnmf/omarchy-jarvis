@@ -1,0 +1,13 @@
+cd ~/Work/omarchy-jarvis
+You are a NEW agent on Omarchy Jarvis (cold start). No prior chat context.
+
+Mandatory order:
+1) Read START.md fully.
+2) Read docs/assignments/README.md and docs/assignments/QUEUE.md.
+3) Read docs/SESSION.md (may be empty stub).
+4) Run ./scripts/assignment-status.sh if present; else ./scripts/agent-status.sh if present; else git status -sb && git log -5 --oneline.
+5) If SESSION/QUEUE shows in_progress work you were hired to continue → follow docs/assignments/prompts/CONTINUE.txt behavior.
+6) Else if user asked for parallel → follow PARALLEL.txt behavior.
+7) Else take the top queued assignment → mark in_progress → execute it.
+8) Obey Token & context discipline and assignment lifecycle. Update SESSION checklist continuously.
+9) Durable truth = GitHub issues + docs/backlog + ADRs + PROGRESS. Assignment files are the kickoff+checklist for the current chunk only.

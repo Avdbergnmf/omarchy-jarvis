@@ -19,3 +19,6 @@ pass/handoff lifecycle and session completion. [README](README.md) covers usage;
   in HOST/ADRs (Google Calendar is not the stock Super+Shift+C HEY binding).
 - Milestones and version tags track releases. Archive merged/closed passes and handoffs;
   never treat archived briefs as current instructions.
+
+- Work orders: [docs/assignments/QUEUE.md](docs/assignments/QUEUE.md). Paste prompts: [docs/assignments/prompts/](docs/assignments/prompts/README.md).
+  Update [docs/SESSION.md](docs/SESSION.md) checkboxes / Next action before stopping.

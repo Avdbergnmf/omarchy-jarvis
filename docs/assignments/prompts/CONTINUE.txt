@@ -1,0 +1,10 @@
+cd ~/Work/omarchy-jarvis
+You are continuing Omarchy Jarvis work. Do NOT ask for chat/session logs.
+
+1) Read START.md (skim if known), then docs/assignments/QUEUE.md and docs/SESSION.md.
+2) Take the assignment marked in_progress (only one). Read its file under docs/assignments/active/.
+3) Do the next unchecked checklist item (or SESSION "Next action"). Follow Token & context discipline in START.md.
+4) Update the assignment checklist + docs/SESSION.md as you go; before stopping, flush Next action.
+5) When the assignment’s acceptance is fully met: mark it done in QUEUE.md, move the file to docs/assignments/done/, update docs/PROGRESS.md, clear or stub SESSION.
+6) If I only said “next step” and the current assignment is already done, start the next queued item (status queued → in_progress) — still one in_progress at a time for THIS agent.
+7) Do not start parallel work unless the user said parallel. Do not rewrite unrelated modules.
