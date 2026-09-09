@@ -14,9 +14,15 @@ import core
 import server
 
 def setUpModule():
- # server.py's own startup creates this before accepting requests (see __main__);
- # tests call run-log-writing code paths directly, so mirror that precondition here.
- (ROOT/'logs/runs').mkdir(parents=True, exist_ok=True)
+ global _logs_tmp, _logs_patch
+ _logs_tmp = tempfile.TemporaryDirectory()
+ _logs_patch = patch.object(server, 'LOGS', Path(_logs_tmp.name))
+ _logs_patch.start()
+ (server.LOGS/'runs').mkdir()
+
+def tearDownModule():
+ _logs_patch.stop()
+ _logs_tmp.cleanup()
 
 class ActionsTest(unittest.TestCase):
  def test_chord_modifier_order(self):

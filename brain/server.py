@@ -17,6 +17,8 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'actions'))
+sys.path.insert(0, str(ROOT / 'brain'))
+from journal import Journal, evaluate, clean
 from core import catalog, dispatch, hypr, notify, is_overlay, redact, fill_template, slugify
 LOGS = ROOT / 'logs'
 MODEL = os.environ.get('JARVIS_MODEL', 'qwen2.5:3b')
@@ -32,7 +34,7 @@ AWAIT_TIMEOUT = 900  # seconds an awaiting-approval run may sit idle before auto
 RUN_ID_RE = re.compile(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}')
 
 def load_config():
-    defaults = {'approval_mode': 'always', 'show_notifications': True}
+    defaults = {'approval_mode': 'always', 'show_notifications': True, 'log_level': 'info'}
     path = Path(os.environ.get('JARVIS_CONFIG', str(Path.home() / '.config/jarvis/config.toml')))
     if not path.exists():
         return defaults
@@ -43,15 +45,38 @@ def load_config():
     mode = data.get('approval_mode', defaults['approval_mode'])
     if mode not in ('always', 'skills_trusted', 'off'):
         mode = defaults['approval_mode']
-    return {'approval_mode': mode, 'show_notifications': bool(data.get('show_notifications', defaults['show_notifications']))}
+    return {'log_level': data.get('log_level') if data.get('log_level') in ('info', 'debug') else 'info', 'approval_mode': mode, 'show_notifications': bool(data.get('show_notifications', defaults['show_notifications']))}
 
 CONFIG = load_config()
 
+VERSION = (ROOT / 'VERSION').read_text().strip()
+try:
+    REVISION = subprocess.run(['git', 'describe', '--always', '--dirty'], cwd=ROOT, capture_output=True, text=True, timeout=2).stdout.strip() or 'unknown'
+except (OSError, subprocess.TimeoutExpired):
+    REVISION = 'unknown'
+
+def journal_event(run_id, phase, **fields):
+    try:
+        record = Journal(LOGS, VERSION, REVISION).write(run_id, phase, **fields)
+        with STATE_LOCK:
+            if run_id in RUNS:
+                RUNS[run_id].setdefault('journal', []).append(record)
+    except (OSError, ValueError) as error:
+        print('journal unavailable: ' + type(error).__name__, file=sys.stderr)
+
 def log(run_id, event, value):
-    stamp = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='seconds')
-    line = ''.join(stamp + ' ' + event + ' ' + part + '\n' for part in (redact(value).splitlines() or ['']))
-    with (LOGS / 'runs' / (run_id + '.log')).open('a') as out:
-        out.write(line); out.flush()
+    if event == 'plan':
+        journal_event(run_id, 'process', process=clean(json.loads(value)))
+        return
+    if CONFIG.get('log_level', 'info') != 'debug':
+        return
+    try:
+        Journal(LOGS, VERSION, REVISION).append(LOGS / 'debug' / (run_id + '.jsonl'),
+            dict(ts=datetime.datetime.now(datetime.timezone.utc).isoformat(), jarvis_version=VERSION,
+                 git_describe=REVISION, run_id=run_id, module='brain', event=event, value=clean(value)))
+    except OSError:
+        pass
+
 
 def announce(run_id, message):
     message = redact(message)
@@ -63,8 +88,18 @@ def announce(run_id, message):
 
 def release_busy():
     global BUSY_RUN_ID
-    with STATE_LOCK: BUSY_RUN_ID = None
-    BUSY.release()
+    with STATE_LOCK:
+        rid = BUSY_RUN_ID
+        run = dict(RUNS.get(rid) or {})
+        BUSY_RUN_ID = None
+    try:
+        if rid and run.get('status') in ('done', 'error', 'denied'):
+            if not any(r['phase'] == 'process' for r in run.get('journal', [])):
+                journal_event(rid, 'process', process=run.get('plan') or {'actions': [], 'reply': 'No executable plan.'})
+            journal_event(rid, 'done', happened={'status': run['status'], 'reply': run.get('reply'), 'steps': run.get('steps', [])}, ok=run['status'] == 'done')
+            journal_event(rid, 'eval', eval=evaluate(run), ok=run['status'] == 'done')
+    finally:
+        BUSY.release()
 
 def expire_stale():
     with STATE_LOCK:
@@ -374,13 +409,13 @@ def last_run_info(current_id):
     idx = keys.index(current_id) if current_id in keys else len(keys)
     prev_id = keys[idx - 1] if idx > 0 else None
     if not prev_id:
-        return {'last_run_id': '(none — this is the first run)', 'last_plan': '(none)', 'last_approval': 'n/a', 'last_log_path': '(none)', 'log_excerpt': '(none)'}
+        return {'jarvis_version': VERSION, 'last_run_id': '(none — this is the first run)', 'last_plan': '(none)', 'last_approval': 'n/a', 'last_log_path': '(none)', 'log_excerpt': '(none)'}
     with STATE_LOCK: prev = dict(RUNS.get(prev_id) or {})
     plan = prev.get('plan')
     approval = {'done': 'ran', 'error': 'ran (failed)', 'denied': 'denied', 'awaiting_approval': 'n/a (still pending)', 'awaiting_answer': 'n/a (still in intake)'}.get(prev.get('status'), prev.get('status', 'n/a'))
     return {
-        'last_run_id': prev_id, 'last_plan': redact(json.dumps(plan) if plan else '(no actions)')[:600],
-        'last_approval': approval, 'last_log_path': 'logs/runs/' + prev_id + '.log', 'log_excerpt': tail_log(prev_id),
+        'jarvis_version': (prev.get('journal') or [{}])[0].get('jarvis_version', VERSION), 'last_run_id': prev_id, 'last_plan': redact(json.dumps(plan) if plan else '(no actions)')[:600],
+        'last_approval': approval, 'last_log_path': 'logs/journal/CURRENT.jsonl (or version archive); console: logs/runs/' + prev_id + '.log', 'log_excerpt': json.dumps(prev.get('journal', []), ensure_ascii=False)[:6000] or tail_log(prev_id),
     }
 
 def gather_host_facts(seed):
@@ -457,7 +492,7 @@ def finalize_intake(run_id):
     values = {
         'SEED': redact(seed) or '(none)', 'QA': redact(qa_text),
         'LAST_PLAN': context['last_plan'], 'LAST_APPROVAL': context['last_approval'],
-        'LAST_RUN_ID': context['last_run_id'], 'LAST_LOG_PATH': context['last_log_path'], 'LOG_EXCERPT': context['log_excerpt'],
+        'JARVIS_VERSION': context['jarvis_version'], 'LAST_RUN_ID': context['last_run_id'], 'LAST_LOG_PATH': context['last_log_path'], 'LOG_EXCERPT': context['log_excerpt'],
         'HOST_FACTS': context['host_facts'], 'BINDING_HITS': context['binding_hits'],
         'EXPECTED': redact(answer_by_index(answers, 0, questions)), 'ACTUAL': redact(answer_by_index(answers, 1, questions)),
         'LAYER': guess_layer(seed),
@@ -591,8 +626,9 @@ class Handler(BaseHTTPRequestHandler):
             global BUSY_RUN_ID
             with STATE_LOCK:
                 if len(RUNS)>200: RUNS.pop(next(iter(RUNS)))
-                RUNS[run_id] = {'run_id':run_id,'status':'planning','reply':'Thinking…','plan':None,'steps':[]}
+                RUNS[run_id] = {'run_id':run_id,'status':'planning','reply':'Thinking…','plan':None,'steps':[], 'prompt':prompt}
                 BUSY_RUN_ID = run_id
+            journal_event(run_id, 'prompt', prompt=prompt)
             prompt = prompt.strip()
             kind, seed = detect_intake(prompt)
             dispatch_match = DISPATCH_SLASH.match(prompt)

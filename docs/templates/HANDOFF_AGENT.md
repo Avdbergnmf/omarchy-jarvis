@@ -11,6 +11,7 @@ git checkout -b {{BRANCH}}
 Canonical path on the implementation host is `~/Work/omarchy-jarvis`. Do not use a stale `~/Projects` checkout if one exists.
 
 ## Read first
+- `START.md` — read fully; Issue Loop, area ownership and active/archive lifecycle
 - `AGENTS.md` — project goals, non-goals, safety rules, how to work in this repo
 - `docs/HOST.md` — host facts (Omarchy/Hyprland version, packages, live catalog)
 - `docs/DECISIONS.md` — ADR log, especially transparency (ADR-014/015) and anything about this issue's layer
@@ -34,7 +35,12 @@ Canonical path on the implementation host is `~/Work/omarchy-jarvis`. Do not use
 - Do not silently contact or spend credits on other agents.
 - Keep `~/Work/omarchy-jarvis` canonical; do not fork the layout.
 
+## Run evidence and ownership
+Preserve run_id, journal path and jarvis_version from the issue context above.
+Read area labels and Allowed paths / Forbidden paths before editing; missing scope does not permit parallel work.
+
 ## When done
+- On merge/close, move this handoff to archive/ and mark INDEX done. Replacements are superseded.
 - Keep `./scripts/doctor.sh` and tests green.
 - Update `docs/PROGRESS.md` and `docs/DECISIONS.md` (ADR) for any non-obvious choice.
 - Open a PR against `main` referencing issue #{{ISSUE}}; do not merge without the user's review.

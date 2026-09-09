@@ -9,6 +9,10 @@ Try:
 - “hello” — chitchat with no actions replies immediately; no approval step, no desktop change.
 - “you messed up, …” or `/report …` — file a bug. “I wish it could …” or `/feature …` — request a feature. `/backlog` lists open items. `/dispatch <issue> to <agent>` prepares a handoff prompt. See [self-improve loop](#self-improve-loop-reporting-a-miss-or-a-feature) below.
 
+## Agents and debugging
+
+Agents: read [START.md](START.md) first. Debugging: [run journal and module debug](docs/LOGGING.md).
+
 ## Human entry points — see it, control it
 
 Jarvis never runs a mutating action before you say so. Every prompt with a proposed action shows a **plan** first:
@@ -31,6 +35,7 @@ Optional config at `~/.config/jarvis/config.toml` (create it yourself; Jarvis fa
 approval_mode = "always"     # default: every action plan waits for Run
 # approval_mode = "skills_trusted"  # reviewed run_skill recipes auto-run; anything else still waits
 # approval_mode = "off"      # debugging only: everything auto-runs, overlay shows a warning
+log_level = "info"          # debug enables bounded module details; journal is always on
 show_notifications = true    # desktop "thought bubble" notifications; the overlay is always the source of truth
 ```
 
@@ -42,7 +47,7 @@ Jarvis files rich records instead of silently fixing itself. It never contacts o
 - **Request a feature:** say “I wish it could …” / “add a feature …” or type `/feature …`. Same flow, feature-flavored questions.
 - Either way, the **full draft** (title + body) is shown in the same plan/approval panel as any other action before anything happens — **Run** files a real GitHub issue (`gh issue create`) and writes a local mirror under `docs/backlog/{bugs,features}/`; **Cancel**/**Esc** files nothing.
 - **`/backlog`** lists open bugs/features (GitHub + the local `docs/backlog/INDEX.md`).
-- **`/dispatch <issue> to <agent>`** (agent = `claude-code` | `cursor` | `human`) writes a paste-ready prompt to `docs/backlog/handoffs/issue-<n>-<agent>.md` — you paste it into that agent's chat yourself. No real-send hook exists; nothing is contacted automatically.
+- **`/dispatch <issue> to <agent>`** (agent = `claude-code` | `cursor` | `human`) writes a paste-ready prompt to `docs/backlog/handoffs/active/issue-<n>-<agent>.md` — you paste it into that agent's chat yourself. No real-send hook exists; nothing is contacted automatically.
 
 See `docs/backlog/README.md` for the difficulty legend and routing guide, and ADR-016 in `docs/DECISIONS.md` for why this is scripted/deterministic rather than left to the local model.
 

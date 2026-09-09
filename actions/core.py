@@ -294,9 +294,22 @@ def prepare_handoff(issue, agent, dry=False):
         'DATE': datetime.date.today().isoformat(),
     }
     text = fill_template('HANDOFF_AGENT.md', values)
-    path = ROOT / 'docs/backlog/handoffs' / ('issue-' + str(issue) + '-' + agent + '.md')
+    path = ROOT / 'docs/backlog/handoffs/active' / ('issue-' + str(issue) + '-' + agent + '.md')
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        archive = path.parent.parent / 'archive'
+        archive.mkdir(parents=True, exist_ok=True)
+        old = archive / (path.stem + '-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ') + '.md')
+        path.rename(old)
     path.write_text(text)
+    index = path.parent.parent / 'INDEX.md'
+    entries = index.read_text() if index.exists() else '# Handoff index\n\nStatuses: active | done | superseded.\n'
+    # Replace only this handoff's active row; preserve the superseded evidence.
+    lines = [line for line in entries.splitlines() if '](' + 'active/' + path.name + ')' not in line]
+    if 'old' in locals():
+        lines.append(f'- [{old.name}](archive/{old.name}) — superseded')
+    lines.append(f'- [{path.name}](active/{path.name}) — active')
+    index.write_text('\n'.join(lines) + '\n')
     return {'issue': issue, 'agent': agent, 'path': str(path.relative_to(ROOT)), 'branch': branch}
 
 def main():
