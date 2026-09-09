@@ -1,10 +1,10 @@
 cd ~/Work/omarchy-jarvis
 You are continuing Omarchy Jarvis work. Do NOT ask for chat/session logs.
 
-1) Read START.md (skim if known), then docs/assignments/QUEUE.md and docs/SESSION.md.
-2) Take the assignment marked in_progress (only one). Read its file under docs/assignments/active/.
-3) Do the next unchecked checklist item (or SESSION "Next action"). Follow Token & context discipline in START.md.
-4) Update the assignment checklist + docs/SESSION.md as you go; before stopping, flush Next action.
-5) When the assignment’s acceptance is fully met: mark it done in QUEUE.md, move the file to docs/assignments/done/, update docs/PROGRESS.md, clear or stub SESSION.
-6) If I only said “next step” and the current assignment is already done, start the next queued item (status queued → in_progress) — still one in_progress at a time for THIS agent.
-7) Do not start parallel work unless the user said parallel. Do not rewrite unrelated modules.
+1) Run `./scripts/assignment-status.sh`. Read START.md (skim), QUEUE.md, SESSION.md.
+2) Resume the assignment marked **in_progress** that SESSION points at (or the one the user named). Read `docs/assignments/active/…`.
+3) Do the next unchecked checklist item / SESSION “Next action”.
+4) Update checklist + SESSION as you go; before stopping, flush Next action.
+5) When acceptance is met: QUEUE/INDEX → done, move file to docs/assignments/done/, PROGRESS note, stub SESSION.
+6) If user said “next step” and current is already done: run the **claimable** logic from NEW_AGENT.txt (parallel-aware). If nothing claimable → “No assignment in queue is possible…” + queue list (or empty).
+7) Do not start conflicting parallel work unless the user said parallel / NEW_AGENT and claim rules allow it.

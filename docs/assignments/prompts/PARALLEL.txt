@@ -1,10 +1,8 @@
 cd ~/Work/omarchy-jarvis
-Another agent may already own the in_progress assignment. You take a PARALLEL track.
+Another agent may already own an in_progress assignment. You take a PARALLEL track only.
 
-1) Read START.md Multi-agent / Parallel rules, docs/assignments/QUEUE.md, docs/SESSION.md.
-2) Note which assignment is in_progress and its area: / forbidden paths.
-3) Pick the first queued assignment that is parallel-ok: YES, different area: from every in_progress item, and no overlapping forbidden/allowed path conflicts. If none, STOP and say so in SESSION — do not touch the in_progress work.
-4) Mark your pick in_progress (multiple in_progress OK only when each has parallel-ok and disjoint areas). Read its active/*.md file.
-5) Work only within Allowed paths. Update that assignment’s checklist + a parallel note in SESSION.md (section “Parallel agent”).
-6) When done: mark done, move to done/, PROGRESS note. Never merge/rebase contested brain/control-plane files while another agent’s PR is open on them.
-7) No session-log pastes. Prefer git diff. One chunk; stop at acceptance.
+1) Run `./scripts/assignment-status.sh`. Read START.md parallel rules, QUEUE.md, SESSION.md.
+2) Note every `in_progress` row (area, allowed/forbidden paths in its active/*.md).
+3) Claim the first `queued` assignment with **parallel-ok: YES** that does not conflict on area or paths.
+4) If none: stop with the same **“No assignment in queue is possible right now.”** + queue list as in NEW_AGENT.txt. Do not touch in_progress work.
+5) If claimed: mark in_progress, update SESSION “Parallel agent”, work only Allowed paths, finish → done/.

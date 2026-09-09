@@ -64,3 +64,7 @@ When Alex asks for a change/add (in any chat):
 
 ## Token discipline
 Never tell Alex to paste agent session logs into the next agent. Point at QUEUE + SESSION + git.
+
+## Visibility for humans
+- **Who is working right now?** `docs/SESSION.md` (Active goal) and any QUEUE row with `in_progress`.
+- **What can a second agent take?** `./scripts/assignment-status.sh` (claim hint). New agents follow `prompts/NEW_AGENT.txt`: prefer `parallel-ok: YES` when something is already in progress; otherwise reply **No assignment in queue is possible right now** with the queue list.
