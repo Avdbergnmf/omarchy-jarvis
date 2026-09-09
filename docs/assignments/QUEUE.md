@@ -4,8 +4,11 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress`.
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| _(empty)_ | — | — | — | — | Add next via [README](README.md) |
+| A-004 | Follow-along visibility | queued | area:overlay | NO | [active/A-004-follow-along-visibility.md](active/A-004-follow-along-visibility.md) |
+| A-005 | Post-run RLHF feedback (+/neutral/−) | queued | area:overlay | NO | [active/A-005-rlhf-feedback.md](active/A-005-rlhf-feedback.md) |
 
-Recently completed (see [done/](done/) + [INDEX](INDEX.md)): A-001 efficiency/SESSION · A-002 entrypoint leftovers · A-003 run journal — closed 2026-09-09 after main merge audit (work already on `main`).
+Recently completed: A-001 · A-002 · A-003 (see [done/](done/)).
+
+**Order:** finish **A-004** before **A-005** (feedback UI on steadier overlay/focus).
 
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).
