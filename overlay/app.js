@@ -15,6 +15,7 @@ const qaAnswer=document.querySelector('#qa-answer');
 const qaSkip=document.querySelector('#qa-skip');
 const consoleBtn=document.querySelector('#console-btn');
 const feedbackSection=document.querySelector('#feedback');
+const feedbackPrompt=document.querySelector('#feedback-prompt');
 const fbGood=document.querySelector('#fb-good');
 const fbNeutral=document.querySelector('#fb-neutral');
 const fbBad=document.querySelector('#fb-bad');
@@ -22,10 +23,14 @@ const meta=document.querySelector('#meta');
 const session=fetch('/v1/session').then(r=>r.json());
 let currentRunId=null;
 let pollHandle=null;
+let lastRenderKey=null;
 
 function loadLastRun(){try{return localStorage.getItem('jarvis:lastRun');}catch(e){return null;}}
 function saveLastRun(id){try{localStorage.setItem('jarvis:lastRun',id);}catch(e){}}
-function setConsoleTarget(id){currentRunId=id;consoleBtn.disabled=!id;if(id)saveLastRun(id);}
+function setConsoleTarget(id){
+ if(id!==currentRunId)lastRenderKey=null;  // a genuinely different run must always render fresh
+ currentRunId=id;consoleBtn.disabled=!id;if(id)saveLastRun(id);
+}
 
 async function post(path,body){
  const {token}=await session;
@@ -79,23 +84,38 @@ function renderSteps(steps){
 function renderFeedback(result){
  if(result.status!=='done'&&result.status!=='error'){feedbackSection.hidden=true;return;}
  if(result.feedback){feedbackSection.hidden=true;return;}
+ feedbackPrompt.textContent=result.prompt||'';
  feedbackSection.hidden=false;
  fbGood.disabled=fbNeutral.disabled=fbBad.disabled=false;
 }
 
+// A-010: poll() re-fetches and re-renders every 700ms while a run is in progress —
+// that's what makes the live step list work — but render() used to unconditionally
+// reset qaAnswer's value/focus and runBtn's focus on *every* tick, even when nothing
+// about the question/plan had actually changed. That wiped out whatever the user had
+// already typed into the Q&A box roughly once a second. Only reset those on a real
+// transition (a new question, a newly-shown plan), tracked via a cheap signature of
+// the parts of `result` that matter for that decision.
 function render(result){
  status.className=result.status==='error'?'error':'';
  status.textContent=result.reply||result.status;
+ const key=result.status+'|'+result.reply+'|'+JSON.stringify(result.plan)+'|'+JSON.stringify(result.draft);
+ const isNewState=key!==lastRenderKey;
+ lastRenderKey=key;
  if(result.status==='awaiting_answer'){
   planSection.hidden=true;stepsSection.hidden=true;feedbackSection.hidden=true;
-  qaQuestion.textContent=result.reply;
   qaSection.hidden=false;
-  qaAnswer.value='';qaAnswer.focus();
+  if(isNewState){
+   qaQuestion.textContent=result.reply;
+   qaAnswer.value='';qaAnswer.focus();
+  }
  }else if(result.status==='awaiting_approval'){
   qaSection.hidden=true;feedbackSection.hidden=true;
-  renderPlan(result.plan||{actions:[]},result.draft);
   stepsSection.hidden=true;
-  runBtn.focus();
+  if(isNewState){
+   renderPlan(result.plan||{actions:[]},result.draft);
+   runBtn.focus();
+  }
  }else if(result.status==='running'){
   qaSection.hidden=true;planSection.hidden=true;feedbackSection.hidden=true;
   renderSteps(result.steps);
@@ -124,14 +144,15 @@ async function poll(runId){
 
 document.querySelector('#prompt-form').addEventListener('submit',async event=>{
  event.preventDefault();if(!input.value.trim()||input.disabled)return;
- input.disabled=true;status.className='';status.textContent='Thinking…';
+ const prompt=input.value.trim();
+ input.disabled=true;input.value='';status.className='';status.textContent='Thinking…';
  planSection.hidden=true;stepsSection.hidden=true;qaSection.hidden=true;feedbackSection.hidden=true;
  try{
-  const {run_id}=await post('/v1/run',{prompt:input.value.trim()});
+  const {run_id}=await post('/v1/run',{prompt});
   setConsoleTarget(run_id);
   await poll(run_id);
  }catch(error){
-  status.textContent=error.message;status.className='error';input.disabled=false;input.focus();
+  status.textContent=error.message;status.className='error';input.disabled=false;input.value=prompt;input.focus();
  }
 });
 
@@ -194,9 +215,25 @@ document.addEventListener('keydown',async event=>{
  finally{await post('/v1/close');}
 });
 
+// A-010: reopening the overlay (hotkey/Escape then hotkey again) used to always start
+// from a blank "Ready" screen, discarding the last run's reply/steps/feedback controls
+// even though the server still had them — the console button was the only thing that
+// remembered anything. Restore and re-render the last known run on load; if it's still
+// in progress (dismissed mid-flight, e.g. the hotkey's close path doesn't deny a pending
+// plan the way Escape does), resume polling it instead of leaving it to time out unseen.
 (async()=>{
  const last=loadLastRun();
- if(last)setConsoleTarget(last);
+ if(last){
+  setConsoleTarget(last);
+  try{
+   const result=await get('/v1/runs/'+last);
+   render(result);
+   if(result.status==='planning'||result.status==='awaiting_approval'||result.status==='awaiting_answer'||result.status==='running'){
+    input.disabled=true;
+    await poll(last);
+   }
+  }catch(error){/* unknown/expired run id (e.g. after a service restart) — start fresh */}
+ }
  try{
   const health=await (await fetch('/health')).json();
   meta.textContent=health.model+' · ollama '+health.ollama+(health.approval_mode==='off'?' · ⚠ approval off':'');

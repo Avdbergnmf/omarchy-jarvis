@@ -27,6 +27,13 @@ def tearDownModule():
 class ActionsTest(unittest.TestCase):
  def test_chord_modifier_order(self):
   self.assertEqual(core.chord('SUPER + ALT + S'),core.chord('ALT SUPER + S'))
+ def test_is_overlay_matches_known_and_unseen_chromium_variants(self):
+  # A-010: Chromium has derived classes ADR-013 didn't anticipate before; the match
+  # must survive a variant we haven't hardcoded, without matching unrelated windows.
+  for cls in ('jarvis-overlay','chrome-127.0.0.1__jarvis-overlay-Default','chrome-127.0.0.1__jarvis-overlay-Profile-2'):
+   self.assertTrue(core.is_overlay({'class':cls}),cls)
+  for cls in ('brave-browser','code','',None):
+   self.assertFalse(core.is_overlay({'class':cls}),cls)
  def test_workspace_ignores_special_and_fills_hole(self):
   with patch.object(core,'hypr',return_value=[{'id':1},{'id':3},{'id':-98}]):
    result=core.workspace_new(True)

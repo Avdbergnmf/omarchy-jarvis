@@ -25,6 +25,7 @@ const elements={
  '#console-btn':makeElement(),
  '#meta':makeElement(),
  '#feedback':makeElement(),
+ '#feedback-prompt':makeElement(),
  '#fb-good':makeElement(),
  '#fb-neutral':makeElement(),
  '#fb-bad':makeElement(),
@@ -75,8 +76,10 @@ const context={
 };
 vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
 (async()=>{
+ const typedPrompt=elements['#prompt'].value;
  await handlers.submit({preventDefault(){}});
- assert.equal(JSON.parse(requests.find(r=>r.path==='/v1/run').options.body).prompt,elements['#prompt'].value);
+ assert.equal(JSON.parse(requests.find(r=>r.path==='/v1/run').options.body).prompt,typedPrompt);
+ assert.equal(elements['#prompt'].value,'','the input must be cleared once the prompt is sent (A-010)');
  assert.equal(elements['#status'].textContent,'Review the plan.');
  assert.equal(elements['#plan'].hidden,false,'plan panel must be shown while awaiting approval');
  assert.equal(elements['#run-btn'].focused,true,'Run button must receive focus so Enter confirms');
@@ -123,6 +126,12 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
  assert.equal(elements['#plan'].hidden,true,'plan panel must stay hidden during intake Q&A');
  assert.equal(elements['#qa-question'].textContent,'What actually happened instead?');
 
+ // A-010 regression: a second poll tick of the *same* unanswered question (this is
+ // what happens every ~700ms while the user is typing) must not wipe their answer.
+ elements['#qa-answer'].value='partial ty';
+ context.render(await context.get('/v1/runs/qa-run'));
+ assert.equal(elements['#qa-answer'].value,'partial ty','a repeated poll of the same question must not clear in-progress typing');
+
  elements['#qa-answer'].value='it crashed';
  await handlers['qaFormsubmit']({preventDefault(){}});
  const answerReq=requests.find(r=>r.path==='/v1/runs/qa-run/answer');
@@ -135,4 +144,57 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
  qaRunState='finished'; // let any still-orphaned background poll settle to a terminal status
 
  console.log('PASS: overlay plan/approve, step completion, Escape, always-available Open console, intake Q&A + draft preview');
-})();
+})().then(testRestoreOnLoad);
+
+// A-010: reopening the overlay used to always start blank, discarding whatever the
+// last run's final state was even though the server still had it — a fresh vm context
+// (a real reload re-evaluates app.js from scratch) with localStorage pre-populated with
+// a last-run id, pointing at an already-terminal, unrated run.
+function testRestoreOnLoad(){
+ const restoreHandlers={};const restoreRequests=[];
+ const restoreElements={
+  '#prompt':{value:'',disabled:false,focused:false,focus(){this.focused=true;}},
+  '#status':makeElement(),'#plan':makeElement(),'#plan-actions':makeElement(),
+  '#draft-preview':makeElement(),'#draft-title':makeElement(),'#draft-body':makeElement(),
+  '#run-btn':makeElement(),'#cancel-btn':makeElement(),'#steps':makeElement(),'#step-list':makeElement(),
+  '#qa':makeElement(),'#qa-question':makeElement(),
+  '#qa-answer':{value:'',disabled:false,focused:false,focus(){this.focused=true;}},
+  '#qa-skip':makeElement(),'#console-btn':makeElement(),'#meta':makeElement(),
+  '#feedback':makeElement(),'#feedback-prompt':makeElement(),
+  '#fb-good':makeElement(),'#fb-neutral':makeElement(),'#fb-bad':makeElement(),
+ };
+ const restoreStore={'jarvis:lastRun':'restored-run'};
+ const restoreContext={
+  document:{
+   querySelector(selector){
+    if(restoreElements[selector])return restoreElements[selector];
+    if(selector==='#prompt-form')return {addEventListener(n,fn){restoreHandlers[n]=fn;}};
+    if(selector==='#qa-form')return {addEventListener(n,fn){restoreHandlers['qaForm'+n]=fn;}};
+    throw new Error('unexpected selector '+selector);
+   },
+   createElement(){return makeElement();},
+   addEventListener(n,fn){restoreHandlers[n]=fn;},
+  },
+  localStorage:{getItem(k){return restoreStore[k]||null;},setItem(k,v){restoreStore[k]=v;}},
+  setTimeout(fn){fn();},
+  clearTimeout(){},
+  fetch:async(path,options)=>{
+   restoreRequests.push({path,options});
+   if(path==='/v1/session')return {ok:true,json:async()=>({token:'test'})};
+   if(path==='/health')return {ok:true,json:async()=>({model:'qwen2.5:3b',ollama:'ok',approval_mode:'always'})};
+   if(path==='/v1/runs/restored-run')return {ok:true,json:async()=>({status:'done',reply:'Completed: scratch toggle.',prompt:'toggle scratchpad',plan:{actions:[{tool:'scratch_toggle',arguments:{}}]},steps:[{tool:'scratch_toggle',label:'scratch toggle',status:'done',summary:'ok'}]})};
+   return {ok:true,json:async()=>({ok:true})};
+  },
+ };
+ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),restoreContext);
+ // app.js's own startup IIFE is unawaited from here (nothing to grab a promise from) —
+ // give its awaited chain (session -> get -> render) real wall-clock time to settle.
+ return new Promise(resolve=>setTimeout(resolve,50)).then(()=>{
+  assert(restoreRequests.some(r=>r.path==='/v1/runs/restored-run'),'page load must fetch the last known run, not start blank');
+  assert.equal(restoreElements['#status'].textContent,'Completed: scratch toggle.','the last reply must be restored, not "Ready"');
+  assert.equal(restoreElements['#feedback'].hidden,false,'feedback controls must be restored for an unrated terminal run');
+  assert.equal(restoreElements['#feedback-prompt'].textContent,'toggle scratchpad','the rated prompt must be shown next to the feedback controls');
+  assert.equal(restoreElements['#console-btn'].disabled,false,'Open console must point at the restored run');
+  console.log('PASS: reopening the overlay restores the last run\'s state instead of starting blank');
+ });
+}

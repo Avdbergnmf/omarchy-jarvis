@@ -12,7 +12,17 @@ from core import hypr, dispatch, is_overlay
 with (ROOT/'logs/overlay.lock').open('w') as lock:
  fcntl.flock(lock,fcntl.LOCK_EX)
  clients=hypr('clients'); active=hypr('activewindow')
- existing=next((c for c in clients if is_overlay(c)),None)
+ overlays=[c for c in clients if is_overlay(c)]
+ if len(overlays)>1:
+  # Self-heal a stray duplicate (e.g. a Chromium relaunch under a class variant
+  # is_overlay() didn't recognize yet, or two invocations racing) instead of
+  # leaving the user with a "second mysterious copy" they can't find (A-010).
+  # Keep whichever one is currently focused, or the first, and close the rest.
+  keep=next((c for c in overlays if c['address']==active.get('address')),overlays[0])
+  for c in overlays:
+   if c['address']!=keep['address']: dispatch('closewindow','address:'+c['address'])
+  overlays=[keep]
+ existing=overlays[0] if overlays else None
  if existing:
   if active.get('address')==existing['address']: dispatch('closewindow','address:'+existing['address'])
   else:

@@ -33,7 +33,13 @@ def fill_template(name, values):
     return text
 
 def is_overlay(client):
-    return client.get('class') in ('jarvis-overlay', 'chrome-127.0.0.1__jarvis-overlay-Default')
+    # Chromium has historically derived a different class on repeat launches
+    # (ADR-013) rather than honoring --class; matching the literal known-good
+    # class OR any class containing it survives a variant we haven't seen yet,
+    # without risking a false match against an unrelated window (nothing else
+    # would coincidentally embed this literal string).
+    cls = client.get('class') or ''
+    return cls == 'jarvis-overlay' or 'jarvis-overlay' in cls
 
 def command(argv, dry=False):
     if dry:
