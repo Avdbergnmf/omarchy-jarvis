@@ -619,8 +619,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.host_ok(): return self.reply(403, {'error':'Invalid host'})
         if self.path == '/health': return self.reply(200, {'service':'omarchy-jarvis','model':MODEL,'ollama':ollama_health(),'approval_mode':CONFIG['approval_mode']})
-        if self.path in ('/','/jarvis-overlay','/app.js','/style.css'):
-            name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css')}[self.path]
+        if self.path in ('/','/jarvis-overlay','/app.js','/style.css','/commands.js'):
+            name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css'),'/commands.js':('commands.js','text/javascript')}[self.path]
             return self.reply(200,(ROOT/'overlay'/name).read_text(),mime)
         if self.path == '/v1/session': return self.reply(200, {'token':TOKEN})
         if self.path.startswith('/v1/runs/'):

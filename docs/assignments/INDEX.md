@@ -8,8 +8,8 @@
 | A-004 | done | Follow-along visibility |
 | A-005 | done | Post-run RLHF feedback (+/neutral/−) |
 | A-006 | done | Log hygiene (gitignore, retention, temps) |
-| A-007 | queued | Slash-command autocomplete |
-| A-008 | queued | Training mode (improvement control plane) |
+| A-007 | done | Slash-command autocomplete |
+| A-008 | in_progress | Training mode (improvement control plane) |
 | A-009 | queued | Human validation tests in Training mode |
 | A-010 | done | Overlay lifecycle, single-instance, feedback bugs |
 | A-011 | queued | Open apps by name (Spotify + fuzzy match) |

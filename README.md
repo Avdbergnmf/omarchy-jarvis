@@ -66,3 +66,5 @@ Model: local **qwen2.5:3b** via Ollama. Version: see `VERSION`.
 ---
 
 **Coding agents:** ignore the rest of this file’s tone — start at [`START.md`](START.md) (invariants also in [`AGENTS.md`](AGENTS.md)).
+
+Type `/` for command suggestions. Use ↑/↓ to select, Tab/Enter to complete, then Enter to submit. Esc dismisses suggestions first. The single UI registry is `overlay/commands.js`; add deterministic commands there when extending the server.

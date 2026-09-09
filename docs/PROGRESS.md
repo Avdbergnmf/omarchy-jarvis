@@ -201,3 +201,10 @@ While verifying the input-clear fix, `node tests/overlay.test.cjs` started hangi
 ### Verification
 - `python3 -m unittest discover -s tests` — **71 tests** pass (1 new). `node tests/overlay.test.cjs` — both scenarios pass. `shellcheck`/`doctor.sh --syntax` clean.
 - Live on this host (service restarted to load the change): `toggle-overlay.py` verified branch-by-branch via `hyprctl` — open when none exists, focus (not close) when it exists but isn't the active window, and — after manually granting it real focus via `dispatch('focuswindow', …)`, since spawning it through this sandboxed session doesn't grant real window focus the way a user's keypress would (the same documented limitation noted in `scripts/verify-host.py`) — correctly closes when it *is* focused. A real `toggle scratchpad` run was submitted, approved, and completed through the live service; `GET /v1/runs/<id>` confirmed `prompt`/`status`/`feedback` are all present and correct for the restore-on-reopen path to consume. A genuine multi-window self-heal scenario could not be reliably reproduced live in this environment for the reason above; that branch is covered by code review and the straightforward nature of the list-filter logic rather than a live repro.
+
+## 2026-09-09 — A-007 slash autocomplete (Codex)
+Implemented a single UI registry for report/feature/backlog/dispatch, prefix suggestions,
+arrow navigation, Tab/Enter completion and first-Escape dismissal. Completion sends no run;
+arguments remain untouched. Existing routes and approvals are unchanged.
+Validation: 71 Python tests and overlay tests pass, including completion/no-send/Escape cases.
+A-010 restore/input-preservation scenarios remain green. Next authorized assignment: A-008.

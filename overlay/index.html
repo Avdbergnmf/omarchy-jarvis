@@ -3,7 +3,8 @@
 <body><main>
 <form id="prompt-form">
 <label for="prompt">JARVIS <span>LOCAL · OMARCHY</span></label>
-<input id="prompt" autofocus autocomplete="off" maxlength="2000" placeholder="What would you like to do?" aria-describedby="status">
+<input id="prompt" autofocus autocomplete="off" maxlength="2000" placeholder="What would you like to do?" aria-describedby="status" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="command-list">
+<ul id="command-list" role="listbox" aria-label="Slash commands" hidden></ul>
 </form>
 <section id="qa" hidden>
 <h2>Quick question</h2>
@@ -47,4 +48,4 @@
 <button id="console-btn" type="button" disabled>Open console</button>
 <span id="meta"></span>
 </footer>
-</main><script src="/app.js"></script></body></html>
+</main><script src="/commands.js"></script><script src="/app.js"></script></body></html>

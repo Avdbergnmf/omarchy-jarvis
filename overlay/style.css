@@ -40,3 +40,8 @@ output.error{color:#ffb3a8}
 footer{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:10px;color:#8994a7}
 footer #meta.warn{color:#ffcf8f}
 footer #console-btn{padding:5px 10px;font-size:11px}
+
+[hidden]{display:none!important}
+#command-list{margin-top:8px;border:1px solid #343c4b;border-radius:6px;max-height:180px}
+#command-list li{cursor:pointer;border-radius:0}
+#command-list li[aria-selected="true"]{background:#22523f;color:#fff}

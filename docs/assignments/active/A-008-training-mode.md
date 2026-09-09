@@ -1,6 +1,6 @@
 # A-008 — Training mode (improvement control plane)
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:overlay (+ `area:brain` for APIs; `area:docs` for feature/metrics surfaces)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/`, `brain/`, `docs/assignments/`, `docs/backlog/`, `docs/FEATURES.md` (create), `docs/LOGGING.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `README.md`, `START.md` (pointer only), `scripts/`, `tests/`, `VERSION`
