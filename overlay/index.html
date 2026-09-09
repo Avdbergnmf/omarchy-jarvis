@@ -80,6 +80,16 @@
 </div>
 <section id="train-preview" hidden><h2>Review changes</h2><p id="train-preview-message"></p><pre id="train-preview-files" tabindex="0"></pre><button id="train-confirm" type="button">Confirm — write these files</button><button id="train-cancel" type="button">Cancel</button></section>
 <section id="train-result" hidden><h2>Prepared locally</h2><p id="train-result-message"></p><textarea id="train-handoff" readonly aria-label="Paste-ready handoff"></textarea><button id="train-copy" type="button">Copy handoff</button><pre id="train-paths"></pre></section>
-<div id="validation-root"></div>
+<section id="validation-root" aria-label="Validate features">
+<h2>Validate features</h2><p class="muted">Human checks complement automated tests. Follow the steps yourself; no desktop actions run from this panel.</p>
+<label class="validation-toggle"><input id="validation-show-all" type="checkbox"> Include previously validated features</label>
+<p id="validation-count"></p><div id="validation-list" class="training-list"></div>
+<section id="validation-guide" hidden><h2 id="validation-title"></h2><p id="validation-version" class="muted"></p>
+<div id="validation-steps"></div><h3>Expected outcome</h3><p id="validation-expected"></p>
+<label for="validation-notes">What actually happened / notes</label><textarea id="validation-notes" maxlength="1200"></textarea>
+<label for="validation-run">Evidence run id (optional; use the run you tested)</label><input id="validation-run" maxlength="80" placeholder="Run id from Open console">
+<div class="validation-buttons"><button id="validation-verify" type="button" disabled>Verify — preview result</button><button id="validation-fail" type="button">Fail — preview result</button></div>
+<p id="validation-last" class="muted"></p><button id="validation-report" type="button" hidden>Draft bug report in chat</button>
+</section></section>
 </section>
-</main><script src="/commands.js"></script><script src="/app.js"></script><script src="/training.js"></script></body></html>
+</main><script src="/commands.js"></script><script src="/app.js"></script><script src="/training.js"></script><script src="/validation.js"></script></body></html>

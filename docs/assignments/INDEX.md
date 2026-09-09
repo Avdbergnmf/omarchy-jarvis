@@ -10,7 +10,7 @@
 | A-006 | done | Log hygiene (gitignore, retention, temps) |
 | A-007 | done | Slash-command autocomplete |
 | A-008 | done | Training mode (improvement control plane) |
-| A-009 | in_progress | Human validation tests in Training mode |
+| A-009 | done | Human validation tests in Training mode |
 | A-010 | done | Overlay lifecycle, single-instance, feedback bugs |
 | A-011 | queued | Open apps by name (Spotify + fuzzy match) |
 | A-012 | queued | Open YouTube + honest open plans |

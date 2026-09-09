@@ -127,3 +127,12 @@ source fingerprints before creating an assignment/handoff or updating slot metad
 **Consequences:** no extra run-poll I/O or cloud spending. GitHub outages retain local context.
 Busy slots support a persistent local queue, not automatic sending. Real agent presence is
 unknown. Preparing work does not claim ownership; the receiving agent still reads SESSION.
+
+## ADR-025 — Human validation definitions and evidence
+**Context:** CI and tool return codes cannot establish that desktop behavior met Alex's intent.
+**Decision:** keep JSON feature guides with explicit steps/expected outcomes, and record human
+Verify/Fail only through a confirmed preview. Hash guide definitions to invalidate stale
+validation, retain tested version/revision/notes, and generate FEATURES from the catalog.
+**Consequences:** automated checks never manufacture human validation. Failures remain local
+until the user drafts and approves an issue through existing intake. Source run context is
+explicit, avoiding attribution to an unrelated recent run. Verification auto-closes nothing.

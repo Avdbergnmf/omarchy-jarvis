@@ -221,3 +221,20 @@ returned 4 assignments and 24 problem records; unauthenticated GET rejected; wor
 listed 3 files and wrote none. Live Doctor passed. Browser connector reported no browser,
 so rendered visual QA remains a human validation task. Version 0.5.0 resets the current
 journal on the next service restart/write. Next authorized assignment: A-009.
+
+## 2026-09-09 — A-009 human validation (Codex)
+Added the JSON feature catalog and generated FEATURES index, guided steps and expected
+outcomes, explicit human Verify/Fail previews, version/revision/date/notes/run evidence,
+and definition hashes that require retesting changed guides. All seeded features remain
+unvalidated; automated checks do not create human evidence. Failed results can open the
+existing deterministic intake with the tested feature's context, and still await reviewed
+Run before filing. Verify closes no issues. START and assignment authoring rules require
+future feature work to update human validation entries.
+Validation: 82 Python tests and all four UI smoke scenarios pass; tests cover confirmation,
+changed guides, correct failed-run attribution and no automatic filing. Isolated real HTTP
+smoke on localhost:17421 returned 9 guides and a two-file result preview with zero writes;
+all three new JavaScript routes returned 200. No visual browser surface was available.
+Version 0.5.1 archives CURRENT on restart/first write. The shared checkout was switched by
+another session during A-009; its named stash 5b29ade was preserved and restored without
+loss into ~/Work/omarchy-jarvis-training. The other session's cherry-pick was left alone.
+The authorized A-007 → A-008 → A-009 batch is implemented; next is PR integration/checks.

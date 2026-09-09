@@ -67,3 +67,11 @@ textarea{min-height:80px;resize:vertical}
 #training-view pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;max-height:220px;overflow:auto}
 #train-preview,#train-result{margin-top:14px}
 #train-message.error{color:#ffb3a8}
+#validation-root{margin-top:20px}
+.validation-toggle,.validation-step{display:flex;align-items:flex-start;gap:10px;margin:10px 0;font-size:13px;line-height:1.5}
+#training-view input[type=checkbox]{width:auto;flex:0 0 auto;margin-top:3px}
+.validation-step span{color:#e8edf5}
+.validation-buttons{display:flex;gap:8px;margin-top:10px}
+#validation-guide{margin-top:12px}
+#validation-guide h3{font-size:12px;color:#9dd9d2}
+#validation-guide p{font-size:13px;line-height:1.5}

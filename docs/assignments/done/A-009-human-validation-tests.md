@@ -1,6 +1,6 @@
 # A-009 — Human validation tests in Training mode
 
-- **Status:** in_progress
+- **Status:** done
 - **Area:** area:overlay (+ `area:docs` feature catalog; light `area:brain`)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/` (training mode), `docs/FEATURES.md`, `docs/validation/` (create), `docs/assignments/`, `brain/` (endpoints to list pending validations / record results), `actions/report_bug` wiring, `README.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `tests/`
@@ -19,11 +19,11 @@ For each pending item, Alex can **run the guided test** (steps the coding agent 
 Coding agents, when finishing a feature assignment, must **add or update** a validation entry (steps + expected) so it shows up here until Alex verifies.
 
 ## Checklist
-- [ ] Define catalog schema (id, title, area, steps[], expected, status: unvalidated|validated|failed, last_run, jarvis_version)
-- [ ] Seed catalog from existing features (planning, scratch-and-mail, report/feature, RLHF, follow-along, …)
-- [ ] Training mode: “Validate features” list + run UI + verify / file-bug actions
-- [ ] Document in START/assignments README: agents must add validation entries when shipping features
-- [ ] Tests; PROGRESS + ADR; QUEUE → done
+- [x] Define catalog schema (id, title, area, steps[], expected, status: unvalidated|validated|failed, last_run, jarvis_version)
+- [x] Seed catalog from existing features (planning, scratch-and-mail, report/feature, RLHF, follow-along, …)
+- [x] Training mode: “Validate features” list + run UI + verify / file-bug actions
+- [x] Document in START/assignments README: agents must add validation entries when shipping features
+- [x] Tests; PROGRESS + ADR; QUEUE → done
 
 ## Out of scope
 Automating GUI judgment without Alex; flaky full Hyprland CI in GitHub Actions.

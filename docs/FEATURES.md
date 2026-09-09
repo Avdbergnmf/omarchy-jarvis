@@ -1,17 +1,16 @@
-# Jarvis feature catalog (agent-friendly)
+# Jarvis feature catalog
 
-Coding agents: when you ship a user-visible feature, **add/update a row** and a matching validation entry under `docs/validation/` (see `docs/validation/catalog.schema.md`). Training mode (A-008/A-009) lists `status: unvalidated` items for Alex.
+Source of truth: [validation/catalog.json](validation/catalog.json). Training lists pending and failed human tests.
+Agents must update definitions when shipping user-visible behavior. Automated tests never mark a feature human-validated.
 
-| id | title | area | status | notes |
-|----|-------|------|--------|-------|
-| feat-overlay-chat | Overlay chat + plan/approve/execute | overlay | unvalidated | Super+Shift+J |
-| feat-open-planning | open-planning skill | skills | unvalidated | Todoist+GCal+Outlook+WhatsApp |
-| feat-scratch-mail | scratch-and-mail skill | skills | unvalidated | |
-| feat-report-feature | /report /feature intake | brain | unvalidated | |
-| feat-rlhf | Post-run +/neutral/− feedback | overlay | unvalidated | A-005 |
-| feat-follow-along | Overlay stays through execute / follow-along | overlay | unvalidated | A-004 |
-| feat-slash | Slash autocomplete | overlay | unvalidated | A-007 (when done) |
-| feat-train | Training mode | overlay | unvalidated | A-008 |
-| feat-validate | Human validation queue in Training | overlay | unvalidated | A-009 |
-
-Status values: `unvalidated` | `validated` | `failed`.
+| id | title | area | status | last tested version |
+|---|---|---|---|---|
+| feat-overlay-chat | Overlay chat and approval | overlay | unvalidated | — |
+| feat-open-planning | Open planning workspace | skills | unvalidated | — |
+| feat-scratch-mail | Scratchpad and Outlook | skills | unvalidated | — |
+| feat-report-feature | Bug and feature intake | brain | unvalidated | — |
+| feat-rlhf | Post-run feedback | overlay | unvalidated | — |
+| feat-follow-along | Follow execution and reopen state | overlay | unvalidated | — |
+| feat-slash | Slash-command autocomplete | overlay | unvalidated | — |
+| feat-train | Training and confirmed handoffs | overlay | unvalidated | — |
+| feat-validate | Guided human validation | overlay | unvalidated | — |

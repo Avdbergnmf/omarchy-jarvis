@@ -20,6 +20,7 @@ sys.path.insert(0, str(ROOT / 'actions'))
 sys.path.insert(0, str(ROOT / 'brain'))
 from journal import Journal, evaluate, clean
 import training
+import validation
 from core import catalog, dispatch, hypr, notify, is_overlay, redact, fill_template, slugify
 LOGS = ROOT / 'logs'
 MODEL = os.environ.get('JARVIS_MODEL', 'qwen2.5:3b')
@@ -481,10 +482,10 @@ def answer_by_index(answers, idx, questions):
         if a['question'] == questions[idx]: return a['answer']
     return '(not answered)'
 
-def start_intake(run_id, kind, seed, target, source_run_id=None):
+def start_intake(run_id, kind, seed, target, source_run_id=None, context_override=None):
     try:
         announce(run_id, 'Gathering context for your ' + kind + ' report…')
-        context = gather_context(run_id, seed, source_run_id)
+        context = context_override if context_override is not None else gather_context(run_id, seed, source_run_id)
         questions = BUG_QUESTIONS if kind == 'bug' else FEATURE_QUESTIONS
         with STATE_LOCK:
             RUNS[run_id]['intake'] = {'kind': kind, 'seed': seed, 'context': context, 'questions': questions, 'index': 0, 'answers': [], 'target': target}
@@ -508,7 +509,7 @@ def finalize_intake(run_id):
         'LAST_PLAN': context['last_plan'], 'LAST_APPROVAL': context['last_approval'],
         'JARVIS_VERSION': context['jarvis_version'], 'LAST_RUN_ID': context['last_run_id'], 'LAST_LOG_PATH': context['last_log_path'], 'LOG_EXCERPT': context['log_excerpt'],
         'HOST_FACTS': context['host_facts'], 'BINDING_HITS': context['binding_hits'],
-        'EXPECTED': redact(answer_by_index(answers, 0, questions)), 'ACTUAL': redact(answer_by_index(answers, 1, questions)),
+        'EXPECTED': redact(answer_by_index(answers, 0, questions) if answers else context.get('validation_expected', '(not answered)')), 'ACTUAL': redact(answer_by_index(answers, 1, questions) if len(answers)>1 else context.get('validation_actual', '(not answered)')),
         'LAYER': guess_layer(seed),
         'ACCEPTANCE': 'Bug is fixed and covered by a regression test.' if kind == 'bug' else 'Feature behaves as described above and is covered by a test.',
         'MILESTONE': 'M5', 'DIFFICULTY': difficulty, 'SOLVER': SOLVER_FOR[difficulty], 'SOLVER_WHY': SOLVER_WHY[difficulty],
@@ -597,6 +598,33 @@ def start_fixed_plan(run_id, plan, target):
     except Exception as e:
         fail_run(run_id, e)
 
+def start_validation_report(feature_id, record_id):
+    item, evidence, seed = validation.report_evidence(ROOT, feature_id, record_id)
+    source = evidence.get('run_id')
+    with STATE_LOCK: source_run = dict(RUNS.get(source) or {})
+    context = run_info(source, source_run)
+    if source and not source_run:
+        context.update(last_run_id=source, last_log_path='logs/runs/'+source+'.log', log_excerpt=tail_log(source))
+    context.update(jarvis_version=evidence['jarvis_version'], host_facts='Guided human validation; no automatic desktop snapshot.',
+                   binding_hits='(not collected)', validation_expected=item['expected'], validation_actual=evidence['notes'])
+    if not BUSY.acquire(blocking=False): raise RuntimeError('A chat run is active; finish or cancel it before drafting the report')
+    global BUSY_RUN_ID
+    rid = str(uuid.uuid4())
+    try:
+        with STATE_LOCK:
+            if len(RUNS)>200: RUNS.pop(next(iter(RUNS)))
+            RUNS[rid] = dict(run_id=rid, status='planning', reply='Preparing validation report…', plan=None, steps=[], prompt=seed[:5000])
+            BUSY_RUN_ID = rid
+        journal_event(rid, 'prompt', prompt=seed[:5000])
+        threading.Thread(target=start_intake, args=(rid, 'bug', seed[:5000], None, source, context), daemon=True).start()
+    except Exception:
+        with STATE_LOCK:
+            RUNS.pop(rid, None)
+            BUSY_RUN_ID = None
+        BUSY.release()
+        raise
+    return dict(run_id=rid, status='planning', reply='Preparing validation report…')
+
 def ollama_health():
     try:
         with urlopen('http://127.0.0.1:11434/api/tags', timeout=2): return 'ok'
@@ -620,8 +648,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.host_ok(): return self.reply(403, {'error':'Invalid host'})
         if self.path == '/health': return self.reply(200, {'service':'omarchy-jarvis','model':MODEL,'ollama':ollama_health(),'approval_mode':CONFIG['approval_mode']})
-        if self.path in ('/','/jarvis-overlay','/app.js','/style.css','/commands.js','/training.js'):
-            name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css'),'/commands.js':('commands.js','text/javascript'),'/training.js':('training.js','text/javascript')}[self.path]
+        if self.path in ('/','/jarvis-overlay','/app.js','/style.css','/commands.js','/training.js','/validation.js'):
+            name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css'),'/commands.js':('commands.js','text/javascript'),'/training.js':('training.js','text/javascript'),'/validation.js':('validation.js','text/javascript')}[self.path]
             return self.reply(200,(ROOT/'overlay'/name).read_text(),mime)
         if self.path == '/v1/session': return self.reply(200, {'token':TOKEN})
         if self.path == '/v1/training':
@@ -638,17 +666,23 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.host_ok() or self.headers.get('Origin') not in (None,'http://127.0.0.1:7421') or self.headers.get('X-Jarvis-Token') != TOKEN:
             return self.reply(403, {'error':'Invalid origin or token'})
-        if self.path in ('/v1/training/preview', '/v1/training/confirm'):
+        if self.path in ('/v1/training/preview', '/v1/training/confirm', '/v1/training/report'):
             try:
                 length = int(self.headers.get('Content-Length', '0'))
                 if not 0 < length <= 8192: raise ValueError('Invalid request size')
                 if self.headers.get('Content-Type') != 'application/json': raise ValueError('Expected application/json')
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict): raise ValueError('Expected an object')
-                result = training.preview(ROOT, body) if self.path.endswith('/preview') else training.confirm(ROOT, body.get('preview_id'))
+                if self.path.endswith('/report'):
+                    result = start_validation_report(body.get('feature_id'), body.get('record_id'))
+                elif self.path.endswith('/preview'):
+                    result = training.preview(ROOT, body, VERSION, REVISION)
+                else:
+                    result = training.confirm(ROOT, body.get('preview_id'))
                 return self.reply(200, result)
             except ValueError as error: return self.reply(400, {'error': str(error)})
             except OSError as error: return self.reply(503, {'error': str(error)})
+            except RuntimeError as error: return self.reply(409, {'error': str(error)})
         if self.path == '/v1/close':
             try:
                 for c in hypr('clients'):

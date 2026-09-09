@@ -10,6 +10,7 @@ import threading
 import time
 
 from journal import clean
+import validation
 
 LOCK = threading.RLock()
 PREVIEWS = {}
@@ -102,10 +103,12 @@ def dashboard(root, version, revision):
     for r in neutral[-30:]:
         problems.append(dict(id='neutral:'+r.get('run_id','unknown'), title=r.get('prompt','Review run'), source='Neutral feedback', run_id=r.get('run_id')))
     problems.extend(flags[-30:])
+    validations = validation.list_features(root)
+    problems.extend(dict(id='validation:'+v['id'], title=v['title'], source='Failed human test') for v in validations if v['status']=='failed')
     for slot in registry['agents']:
         slot['busy'] = busy(slot, queue)
     return dict(version=version, revision=revision, metrics=metrics, sampled=sampled, period='Today UTC, current journal only', problems=problems,
-                assignments=queue, agents=registry['agents'], warnings=warnings,
+                assignments=queue, agents=registry['agents'], warnings=warnings, validations=validations,
                 context=['START.md','docs/SESSION.md',QUEUE,'docs/DECISIONS.md','docs/LOGGING.md'], session=read(root, 'docs/SESSION.md')[:5000])
 
 
@@ -117,9 +120,13 @@ def append_row(text, row):
 
 
 
-def preview(root, data):
+def preview(root, data, version='unknown', revision='unknown'):
     if not isinstance(data, dict): raise ValueError('Expected an object')
     with LOCK:
+        if data.get('operation') == 'validation':
+            changes, message, result = validation.prepare(root, data, version, revision)
+            before = {p:read(root,p) for p in changes}
+            return store_preview(root, before, changes, message, validation_result=result)
         queue = assignments(root)
         registry = slots(root)
         before = {p: read(root, p) for p in (QUEUE, INDEX, SLOTS, 'docs/SESSION.md')}
@@ -158,7 +165,7 @@ def preview(root, data):
                 aid = f'A-{max(ids, default=0)+1:03d}'
                 path = f'docs/assignments/active/{aid}-training.md'
                 if (root/path).exists(): raise ValueError('Assignment id already exists; refresh')
-                forbidden = ', '.join(a+'/' for a in AREAS if a != area)
+                forbidden = ', '.join(a+'/' for a in AREAS if a != area and a != 'docs')
                 body = f'''# {aid} — {title}
 
 - **Status:** queued
@@ -211,13 +218,17 @@ Unrelated queue work, unreviewed skills, silent cloud spending.
             slot['last_handoff'] = hp
         changes[SLOTS] = json.dumps(registry, indent=2)+'\n'
         for path in changes: before.setdefault(path, read(root, path))
-        now = time.monotonic()
-        for key in list(PREVIEWS):
-            if PREVIEWS[key]['expires'] < now: PREVIEWS.pop(key)
-        if len(PREVIEWS) >= 32: PREVIEWS.pop(next(iter(PREVIEWS)))
-        token = secrets.token_urlsafe(24)
-        PREVIEWS[token] = dict(root=str(root), before=before, changes=changes, message=message, handoff=handoff, expires=now+900)
-        return dict(preview_id=token, message=message, files=[dict(path=p, content=v) for p,v in changes.items()], handoff=handoff)
+        return store_preview(root, before, changes, message, handoff)
+
+
+def store_preview(root, before, changes, message, handoff='', validation_result=None):
+    now = time.monotonic()
+    for key in list(PREVIEWS):
+        if PREVIEWS[key]['expires'] < now: PREVIEWS.pop(key)
+    if len(PREVIEWS) >= 32: PREVIEWS.pop(next(iter(PREVIEWS)))
+    token = secrets.token_urlsafe(24)
+    PREVIEWS[token] = dict(root=str(root), before=before, changes=changes, message=message, handoff=handoff, expires=now+900, validation=validation_result)
+    return dict(preview_id=token, message=message, files=[dict(path=p, content=v) for p,v in changes.items()], handoff=handoff)
 
 
 def confirm(root, token):
@@ -247,4 +258,4 @@ def confirm(root, token):
                 if old: (root/path).write_text(old)
                 else: (root/path).unlink(missing_ok=True)
             raise
-        return dict(message=proposal['message'], handoff=proposal['handoff'], paths=list(proposal['changes']))
+        return dict(message=proposal['message'], handoff=proposal['handoff'], paths=list(proposal['changes']), validation=proposal.get('validation'))

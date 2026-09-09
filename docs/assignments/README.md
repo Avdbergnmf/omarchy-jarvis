@@ -88,3 +88,10 @@ and reject intervening changes to SESSION, QUEUE, INDEX, slots or target files. 
 serialized in-process, replaced per-file and rolled back on ordinary I/O failure; a process
 crash during a multi-file write can require git/status review. External editors must follow
 ownership rules; they do not share the process lock.
+
+## Feature completion requires a human test entry
+For each user-visible feature, add/update `docs/validation/catalog.json` and regenerate
+`docs/FEATURES.md` per [the schema](../validation/catalog.schema.md). Include concrete steps,
+expected behavior and shipped version; leave it unvalidated for Alex. Unit/CI checks remain
+mandatory and do not substitute for human validation. Training's Verify/Fail confirmations
+record the human's date/version/notes. Failing can draft a reviewed bug; verifying closes no issue.

@@ -88,7 +88,10 @@ trainEl('confirm').addEventListener('click',async()=>{
  try{
   const result=await post('/v1/training/confirm',{preview_id:id});trainEl('preview').hidden=true;
   trainEl('result-message').textContent=result.message;trainEl('handoff').value=result.handoff;
-  trainEl('paths').textContent=result.paths.join('\n');trainEl('result').hidden=false;await refreshTraining();
+  trainEl('paths').textContent=result.paths.join('\n');trainEl('result').hidden=false;
+  trainEl('copy').hidden=!result.handoff;trainEl('handoff').hidden=!result.handoff;
+  await refreshTraining();
+  if(result.validation&&typeof validationSaved==='function')validationSaved(result.validation);
  }catch(error){trainMessage(error.message,true);}
  finally{trainEl('confirm').disabled=false;}
 });

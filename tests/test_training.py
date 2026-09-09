@@ -33,6 +33,9 @@ class TrainingTest(unittest.TestCase):
         self.assertEqual((self.root/training.QUEUE).read_text(), old)
         self.assertFalse((self.root/training.SLOTS).exists())
         expected = {f['path']:f['content'] for f in result['files']}
+        brief=next(content for path,content in expected.items() if path.startswith('docs/assignments/active/'))
+        forbidden=next(line for line in brief.splitlines() if '**Forbidden paths:**' in line)
+        self.assertNotIn('docs/',forbidden,'metadata docs are explicitly allowed, so must not be forbidden')
         committed = training.confirm(self.root,result['preview_id'])
         for path, content in expected.items(): self.assertEqual((self.root/path).read_text(),content)
         self.assertIn('no agent was contacted',committed['message'])
