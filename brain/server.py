@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'actions'))
 sys.path.insert(0, str(ROOT / 'brain'))
 from journal import Journal, evaluate, clean
+import training
 from core import catalog, dispatch, hypr, notify, is_overlay, redact, fill_template, slugify
 LOGS = ROOT / 'logs'
 MODEL = os.environ.get('JARVIS_MODEL', 'qwen2.5:3b')
@@ -619,10 +620,14 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.host_ok(): return self.reply(403, {'error':'Invalid host'})
         if self.path == '/health': return self.reply(200, {'service':'omarchy-jarvis','model':MODEL,'ollama':ollama_health(),'approval_mode':CONFIG['approval_mode']})
-        if self.path in ('/','/jarvis-overlay','/app.js','/style.css','/commands.js'):
-            name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css'),'/commands.js':('commands.js','text/javascript')}[self.path]
+        if self.path in ('/','/jarvis-overlay','/app.js','/style.css','/commands.js','/training.js'):
+            name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css'),'/commands.js':('commands.js','text/javascript'),'/training.js':('training.js','text/javascript')}[self.path]
             return self.reply(200,(ROOT/'overlay'/name).read_text(),mime)
         if self.path == '/v1/session': return self.reply(200, {'token':TOKEN})
+        if self.path == '/v1/training':
+            if self.headers.get('X-Jarvis-Token') != TOKEN: return self.reply(403, {'error':'Invalid token'})
+            try: return self.reply(200, training.dashboard(ROOT, VERSION, REVISION))
+            except (OSError, ValueError) as error: return self.reply(503, {'error': str(error)})
         if self.path.startswith('/v1/runs/'):
             if self.headers.get('X-Jarvis-Token') != TOKEN: return self.reply(403, {'error':'Invalid token'})
             expire_stale()
@@ -633,6 +638,17 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.host_ok() or self.headers.get('Origin') not in (None,'http://127.0.0.1:7421') or self.headers.get('X-Jarvis-Token') != TOKEN:
             return self.reply(403, {'error':'Invalid origin or token'})
+        if self.path in ('/v1/training/preview', '/v1/training/confirm'):
+            try:
+                length = int(self.headers.get('Content-Length', '0'))
+                if not 0 < length <= 8192: raise ValueError('Invalid request size')
+                if self.headers.get('Content-Type') != 'application/json': raise ValueError('Expected application/json')
+                body = json.loads(self.rfile.read(length))
+                if not isinstance(body, dict): raise ValueError('Expected an object')
+                result = training.preview(ROOT, body) if self.path.endswith('/preview') else training.confirm(ROOT, body.get('preview_id'))
+                return self.reply(200, result)
+            except ValueError as error: return self.reply(400, {'error': str(error)})
+            except OSError as error: return self.reply(503, {'error': str(error)})
         if self.path == '/v1/close':
             try:
                 for c in hypr('clients'):

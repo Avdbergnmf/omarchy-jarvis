@@ -220,3 +220,6 @@ function testRestoreOnLoad(){
   console.log('PASS: reopening the overlay restores the last run\'s state instead of starting blank');
  });
 }
+
+// Keep Training's browser-free UI smoke in the existing CI entrypoint.
+require('./training.test.cjs');

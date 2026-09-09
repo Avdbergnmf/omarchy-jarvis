@@ -68,3 +68,21 @@ Model: local **qwen2.5:3b** via Ollama. Version: see `VERSION`.
 **Coding agents:** ignore the rest of this file’s tone — start at [`START.md`](START.md) (invariants also in [`AGENTS.md`](AGENTS.md)).
 
 Type `/` for command suggestions. Use ↑/↓ to select, Tab/Enter to complete, then Enter to submit. Esc dismisses suggestions first. The single UI registry is `overlay/commands.js`; add deterministic commands there when extending the server.
+
+## Training mode
+
+Choose **Training** or type `/train` to review issues, local backlog, neutral feedback and
+journal flags. Refresh loads evidence on demand; run polling stays unchanged. Metrics cover
+today UTC in the current journal and explicitly identify a bounded sample when needed.
+Back to chat / Esc leaves Training without cancelling the chat run.
+
+Select a problem, add comments/acceptance, choose an area and agent slot, then **Preview
+assignment & handoff**. Review the full file contents and choose **Confirm — write these
+files**. Cancel writes nothing. Work on an existing assignment similarly prepares a
+NEW_AGENT or CONTINUE prompt. Copy/paste it into the target chat yourself.
+
+The agent monitor combines QUEUE/SESSION with local slots; it cannot detect live chats.
+Mark a slot busy/idle through a confirmation preview. Prepare now rejects busy slots;
+Queue until free records intent locally and does not send automatically. Once free,
+select the queued assignment and prepare its handoff. New slots are created with their
+first confirmed handoff. No connector sends messages or spends credits.

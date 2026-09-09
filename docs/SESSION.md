@@ -1,14 +1,14 @@
 # Session (in-flight agent work)
 
 ## Active goal
-- Assignment: A-008 (Codex)
+- Assignment: A-009 (Codex)
 - Area: area:overlay; brain/control-plane reserved for A-008/A-009 next
 - Branch: codex/training-track
 - Batch: A-007 → A-008 → A-009, explicitly authorized by Alex
 
 ## Checklist
 - [x] A-007 slash registry and autocomplete
-- [ ] A-008 Training mode and confirmed handoffs
+- [x] A-008 Training mode and confirmed handoffs
 - [ ] A-009 human validation catalog and guided tests
 
 ## Evidence
@@ -16,7 +16,7 @@
 - Baseline: 71 Python tests and both overlay scenarios pass.
 
 ## Next action
-Implement A-008 Training dashboard and confirmed assignment/handoff preparation.
+Implement A-009 versioned human validation catalog and guided Verify/Fail flow.
 
 ## Parallel agent
 A-011 remains available in actions/. Do not edit overlay/ or brain/ during this batch.

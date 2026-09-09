@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jarvis</title><link rel="stylesheet" href="/style.css"></head>
 <body><main>
+<div id="chat-view">
 <form id="prompt-form">
 <label for="prompt">JARVIS <span>LOCAL · OMARCHY</span></label>
 <input id="prompt" autofocus autocomplete="off" maxlength="2000" placeholder="What would you like to do?" aria-describedby="status" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="command-list">
@@ -45,7 +46,40 @@
 </section>
 <output id="status" aria-live="polite">Ready</output>
 <footer>
+<button id="train-btn" type="button">Training</button>
 <button id="console-btn" type="button" disabled>Open console</button>
 <span id="meta"></span>
 </footer>
-</main><script src="/commands.js"></script><script src="/app.js"></script></body></html>
+</div>
+<section id="training-view" hidden aria-label="Training mode">
+<header class="training-header"><h1>Training</h1><button id="train-back" type="button">Back to chat <kbd>Esc</kbd></button></header>
+<p class="muted">Review what happened. Prepare the next improvement. You decide what runs.</p>
+<div class="training-header"><span id="train-version"></span><button id="train-refresh" type="button">Refresh</button></div>
+<p id="train-message" role="status" aria-live="polite"></p>
+<div id="train-metrics" class="metric-grid"></div>
+<p id="train-period" class="muted"></p>
+<details><summary>Agent context</summary><div id="train-context"></div><pre id="train-session"></pre></details>
+<h2>Problems to review</h2><div id="train-problems" class="training-list"></div>
+<form id="assignment-form">
+<h2>Prepare an improvement</h2>
+<label for="train-title">Problem / title</label><input id="train-title" maxlength="140" required placeholder="What should improve?">
+<label for="train-comments">Comments and acceptance</label><textarea id="train-comments" maxlength="1200" placeholder="What did you expect? What should the agent check?"></textarea>
+<label for="train-area">Area</label><select id="train-area"><option>overlay</option><option>brain</option><option>actions</option><option>skills</option><option>docs</option></select>
+<button type="submit">Preview assignment &amp; handoff</button>
+</form>
+<h2>Assignments</h2><div id="train-assignments" class="training-list"></div>
+<form id="work-form"><label for="train-assignment">Work on assignment</label><select id="train-assignment"></select>
+<label for="train-template">Prompt</label><select id="train-template"><option value="NEW_AGENT">New agent — cold start</option><option value="CONTINUE">Continue an existing chat</option></select>
+<button type="submit">Preview work handoff</button></form>
+<h2>Agent monitor</h2><p class="muted">Local slots describe intended work. They do not detect live chats or send messages.</p><div id="train-agents" class="training-list"></div>
+<div class="training-fields">
+<label for="train-slot">Prepare for</label><select id="train-slot"><option value="new">New agent slot</option></select>
+<label for="train-agent-label">New slot name</label><input id="train-agent-label" maxlength="60" value="My coding agent">
+<label for="train-kind">New slot type</label><select id="train-kind"><option value="claude-code">Claude Code</option><option value="cursor">Cursor / Codex</option><option value="human">Human</option></select>
+<label for="train-mode">Delivery</label><select id="train-mode"><option value="now">Prepare now if idle — paste yourself</option><option value="queue">Queue locally until free — no automatic send</option></select>
+</div>
+<section id="train-preview" hidden><h2>Review changes</h2><p id="train-preview-message"></p><pre id="train-preview-files" tabindex="0"></pre><button id="train-confirm" type="button">Confirm — write these files</button><button id="train-cancel" type="button">Cancel</button></section>
+<section id="train-result" hidden><h2>Prepared locally</h2><p id="train-result-message"></p><textarea id="train-handoff" readonly aria-label="Paste-ready handoff"></textarea><button id="train-copy" type="button">Copy handoff</button><pre id="train-paths"></pre></section>
+<div id="validation-root"></div>
+</section>
+</main><script src="/commands.js"></script><script src="/app.js"></script><script src="/training.js"></script></body></html>

@@ -208,3 +208,16 @@ arrow navigation, Tab/Enter completion and first-Escape dismissal. Completion se
 arguments remain untouched. Existing routes and approvals are unchanged.
 Validation: 71 Python tests and overlay tests pass, including completion/no-send/Escape cases.
 A-010 restore/input-preservation scenarios remain green. Next authorized assignment: A-008.
+
+## 2026-09-09 — A-008 Training mode (Codex)
+Added /train and Training/Back controls, issues/backlog/neutral/eval panels, version and
+bounded current-journal metrics, SESSION/QUEUE context, confirmed assignment generation,
+NEW_AGENT/CONTINUE handoffs and local slots with busy rejection / queue-until-free intent.
+Preview does not write; confirmation is single-use and refuses stale ownership/file state.
+No real agent dispatch exists, and copy/status text explicitly says prepared locally.
+Evidence: 77 Python tests pass; Training UI mock covers enter/back, preview/cancel/confirm
+and duplicate-click prevention. Existing overlay scenarios pass. Live authenticated API
+returned 4 assignments and 24 problem records; unauthenticated GET rejected; work preview
+listed 3 files and wrote none. Live Doctor passed. Browser connector reported no browser,
+so rendered visual QA remains a human validation task. Version 0.5.0 resets the current
+journal on the next service restart/write. Next authorized assignment: A-009.

@@ -1,6 +1,6 @@
 # A-009 — Human validation tests in Training mode
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:overlay (+ `area:docs` feature catalog; light `area:brain`)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/` (training mode), `docs/FEATURES.md`, `docs/validation/` (create), `docs/assignments/`, `brain/` (endpoints to list pending validations / record results), `actions/report_bug` wiring, `README.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `tests/`

@@ -118,3 +118,12 @@ Format: **ADR-NNN — Title** (date). Context → Decision → Consequences.
 with keyboard/mouse. Completion inserts text only; a separate submit follows existing routes.
 **Consequences:** no network calls per keystroke, accessible listbox semantics, and first Esc
 closes suggestions before the overlay. New deterministic commands must update this registry.
+
+## ADR-024 — Training prepares confirmed local work
+**Context:** improvement context was spread across issues, journals and assignment files.
+**Decision:** an authenticated, on-demand dashboard exposes bounded evidence and local agent
+slots. Preview freezes exact file contents; an explicit single-use confirmation checks
+source fingerprints before creating an assignment/handoff or updating slot metadata.
+**Consequences:** no extra run-poll I/O or cloud spending. GitHub outages retain local context.
+Busy slots support a persistent local queue, not automatic sending. Real agent presence is
+unknown. Preparing work does not claim ownership; the receiving agent still reads SESSION.
