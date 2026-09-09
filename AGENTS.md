@@ -17,9 +17,9 @@ Read this before changing anything. Optimize for **agent development** and **hum
 ## Where things live on this machine
 | Path | Role |
 |------|------|
-| `~/Projects/omarchy-jarvis/` | This repo (also symlink `~/jarvis` if present) |
+| `~/Work/omarchy-jarvis/` | This repo on the implementation host |
 | `~/.config/hypr/bindings.lua` | User keybind overrides only |
-| Omarchy defaults | `~/.local/share/omarchy/default/hypr/bindings/*.lua` |
+| Omarchy defaults | `/usr/share/omarchy/default/hypr/bindings/*.lua` |
 | Live catalog | `omarchy menu keybindings --print` |
 | Notifications | `omarchy-notification-send … [--exec cmd args…]` |
 | Webapps | `omarchy-launch-webapp URL` / `omarchy-launch-or-focus-webapp NAME URL` |

@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""Open a floating foot console following a run through log rotation."""
+import argparse
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+ROOT = Path(__file__).resolve().parents[1]
+p = argparse.ArgumentParser(description=__doc__)
+p.add_argument('run_id', help='Run id, or brain for the service log')
+p.add_argument('--follow', action='store_true', help='Follow in the current terminal')
+p.add_argument('--dry-run', action='store_true')
+a = p.parse_args()
+if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}', a.run_id):
+    p.error('Invalid run id')
+path = ROOT / 'logs' / ('brain.log' if a.run_id == 'brain' else 'runs/' + a.run_id + '.log')
+if a.dry_run:
+    import json
+    print(json.dumps({'argv': ['tail', '-n', '100', '-F', str(path)]})); sys.exit(0)
+path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+path.touch(mode=0o600, exist_ok=True)
+if a.follow:
+    os.execvp('tail', ['tail', '-n', '100', '-F', str(path)])
+# org.omarchy.terminal already receives the stock floating-terminal rule.
+subprocess.Popen(['foot', '--app-id=org.omarchy.terminal', '--title=Jarvis · ' + a.run_id, str(Path(__file__).resolve()), a.run_id, '--follow'], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
