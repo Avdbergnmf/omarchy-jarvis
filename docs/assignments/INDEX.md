@@ -2,6 +2,6 @@
 
 | id | status | title |
 |----|--------|-------|
-| A-001 | queued | Agent efficiency + SESSION resume |
-| A-002 | queued | Finish entrypoint pass leftovers |
-| A-003 | queued | Run journal prompt→process→done→eval |
+| A-001 | done | Agent efficiency + SESSION resume |
+| A-002 | done | Finish entrypoint pass leftovers |
+| A-003 | done | Run journal prompt→process→done→eval |

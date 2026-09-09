@@ -125,3 +125,10 @@ This pass's implementation (this dated section, ADR-017/018 polish, and this ver
 - Added `docs/assignments/` with QUEUE, TEMPLATE, authoring README, active A-001..A-003, and Alex paste prompts (CONTINUE / PARALLEL / NEW_AGENT).
 - START/AGENTS/README link the queue; `docs/SESSION.md` stub; `scripts/assignment-status.sh`.
 - Docs only — no Jarvis runtime code changes.
+
+## 2026-09-09 — Post-merge housekeeping
+
+- Audited main (`7b26886`): transparency / self-improve / entrypoint+journal / assignments present; tests green.
+- Archived completed pass briefs + prompts under `docs/passes/archive/`; INDEX now shows active empty.
+- Marked assignments A-001..A-003 **done** (moved to `docs/assignments/done/`); QUEUE empty for new asks.
+- Left **M4** (skill confirm UI) open as intentional product backlog, not silently closed.
