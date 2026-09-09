@@ -5,7 +5,7 @@
 - **parallel-ok:** YES
 - **Allowed paths:** `actions/` (esp. open helpers, catalog), `brain/tools.json`, `brain/system_prompt.md`, `brain/server.py` (tool allowlist / plan examples only if required), `skills/examples/` (optional thin skill), `docs/PROGRESS.md`, `docs/DECISIONS.md`, `docs/FEATURES.md`, `docs/validation/`, `tests/`, `README.md`
 - **Forbidden paths:** `overlay/` (owned by A-010/A-007 track); training mode A-008/A-009
-- **Blocks / blocked-by:** none — may run parallel with overlay work
+- **Blocks / blocked-by:** none — may run parallel with overlay work. Related: **A-012** (YouTube + no false “opening…” plans).
 - **Converted from:** GitHub #11 / `docs/backlog/bugs/converted/bug-spotify.md`
 - **Links:** run_id `4fdd44c0-0202-45ce-affb-d0bca61aa230`; Alex: “spotify” → expected open Spotify; wants general exact/close app-name matching
 
