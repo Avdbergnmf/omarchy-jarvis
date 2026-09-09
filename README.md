@@ -51,6 +51,11 @@ show_notifications = true
 | Decisions / progress | [`docs/DECISIONS.md`](docs/DECISIONS.md) · [`docs/PROGRESS.md`](docs/PROGRESS.md) |
 | How runs are logged | [`docs/LOGGING.md`](docs/LOGGING.md) |
 
+`logs/` is never committed and self-trims automatically (oldest run logs/journal
+archives drop off past a cap); run `./scripts/clean-temp-logs.sh` any time — before
+a commit, say — to also clear one-off scratch files (`--profile` additionally clears
+the overlay's Chromium cache, skipped automatically if the overlay is currently open).
+
 ## Status
 
 Working on this host: overlay + approve flow, planning/scratch recipes, report/feature intake, run journal.  

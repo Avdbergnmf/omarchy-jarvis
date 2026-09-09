@@ -8,6 +8,27 @@ import threading
 
 LOCK = threading.Lock()
 
+# Retention caps (A-006): logs/ is gitignored and local-only, but still grows with every
+# run — these keep it bounded without a human/agent having to remember to clean up.
+# Checked once per new run (the 'prompt' phase), not per poll or per debug event, so
+# retention never touches a hot path (ADR-018's "GET polls stay quiet" constraint).
+RUN_LOG_KEEP = 200    # logs/runs/*.log — mirrors brain/server.py's in-memory RUNS cap
+DEBUG_KEEP = 200      # logs/debug/<run_id>.jsonl — only written when log_level=debug
+ARCHIVE_KEEP = 20     # logs/journal/archive/*.jsonl — only grows on a VERSION bump
+
+
+def prune(directory, pattern, keep):
+    """Delete the oldest files under directory matching pattern beyond the newest `keep`
+    (by mtime). No-ops on a missing directory. Returns the removed filenames."""
+    if not directory.exists():
+        return []
+    files = sorted(directory.glob(pattern), key=lambda p: p.stat().st_mtime, reverse=True)
+    removed = []
+    for stale in files[keep:]:
+        stale.unlink(missing_ok=True)
+        removed.append(stale.name)
+    return removed
+
 
 def clean(value):
     if isinstance(value, dict):
@@ -70,8 +91,14 @@ class Journal:
                     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
                     safe = re.sub(r'[^\w.-]', '_', old)
                     current.rename(archive / f'v{safe}-{stamp}.jsonl')
+                    prune(archive, '*.jsonl', ARCHIVE_KEEP)
             self.append(current, record)
             # Console-compatible projection; only the four journal phases at info.
             path = self.logs / 'runs' / (run_id + '.log')
             self.append(path, record)
+            if phase == 'prompt':
+                # Once per new run, not per poll/debug event: bound the two directories
+                # that grow one file per run.
+                prune(self.logs / 'runs', '*.log', RUN_LOG_KEEP)
+                prune(self.logs / 'debug', '*.jsonl', DEBUG_KEEP)
         return record

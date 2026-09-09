@@ -3,41 +3,44 @@
 > Agents: update before stopping. Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Assignment: _(none — A-005 done; only A-006 queued, unclaimed)_
-- Area: area:overlay / area:brain
+- Assignment: _(none — A-006 done; queue empty)_
+- Area: area:docs
 - Branch: main
 
 ## Checklist
 - [x] A-004 follow-along visibility — done
-- [x] A-005 RLHF feedback — done, see `docs/assignments/done/A-005-rlhf-feedback.md`
+- [x] A-005 RLHF feedback — done
+- [x] A-006 log hygiene — done, see `docs/assignments/done/A-006-log-hygiene.md`
 
 ## Done this session (evidence)
-- Found A-005 already substantially implemented uncommitted in this shared checkout
-  (server endpoint, overlay UI, tests) by a concurrent session — verified rather than
-  redone: compiled, ran the full suite (65 tests, all new `FeedbackTest` cases pass),
-  `node tests/overlay.test.cjs`, shellcheck, `doctor.sh --syntax` and live.
-- Wrote the pieces that were still missing: ADR-020, `docs/PROGRESS.md` entry, assignment
-  checklist ticked off and moved to `done/`, QUEUE/INDEX updated.
-- Live-verified all three feedback paths on this host (service restarted to load code):
-  real 👍 (journaled), real 🤔 (appended to `logs/feedback/needs-review.jsonl`, second
-  rating on same run correctly rejected 400), real 👎 on an approved `scratch_toggle` run
-  — new bug-intake run's context `last_run_id` matched the *rated* run exactly, not
-  whatever ran in between. Confirmed rating a **denied** run correctly 409s (intentional
-  — nothing executed to rate).
-- Note: this host had several other sessions restarting `jarvis.service` concurrently
-  during verification (visible in `journalctl --user -u jarvis.service`) — caused a few
-  transient 409s unrelated to this change; documented in PROGRESS.md rather than chased
-  further.
+- Audited `logs/`: nothing was ever tracked (`git ls-files logs/` empty); the existing
+  bare `logs/` `.gitignore` line already covers everything recursively — no `.gitignore`
+  change or `git rm --cached` needed.
+- Added automatic retention: `brain/journal.py::prune()` + `RUN_LOG_KEEP`/`DEBUG_KEEP`
+  (200 each, checked once per new run)/`ARCHIVE_KEEP` (20, checked once per version-bump
+  rotation) — never on a poll or per-debug-event write.
+- Added `scripts/clean-temp-logs.sh` (manual, not wired into doctor or a hook): clears
+  known one-off scratch + `__pycache__`; `--profile` also clears the overlay's Chromium
+  cache, gated on a live `hyprctl` check that no overlay window is open.
+- Caught and fixed a real bug in that safety check itself before it shipped: an initial
+  `pgrep -f 'chromium.*jarvis-overlay'` guard false-positived by matching the checking
+  shell's own command-line text; replaced with the same `hyprctl`-based `is_overlay()`
+  check the rest of the codebase already uses.
+- `docs/LOGGING.md` retention section, README pointer, ADR-021, PROGRESS.md entry.
+- Tests: 6 new in `tests/test_journal.py` (70 total, all green). `node
+  tests/overlay.test.cjs`, shellcheck, `doctor.sh --syntax` and live all pass.
+- Live-verified on this host: ran the cleanup script for real (removed 5 stray files +
+  4 `__pycache__` dirs), then `--profile` with the overlay closed (cleared 154MB,
+  confirmed the overlay still opens/toggles/closes correctly with a fresh profile after).
 - Committing to `main` next (see git log after this).
 
 ## Next action (one concrete step)
-- Nothing in_progress. Only **A-006** (log hygiene, `parallel-ok: YES`, area:docs) is
-  queued — read `docs/assignments/active/A-006-log-hygiene.md` before claiming it. Not
-  started this session (one assignment chunk per session per START.md's token discipline).
+- Nothing queued. QUEUE.md is empty — a desk agent (Firsty) files the next assignment
+  there when Alex asks for something; a coding agent picks up from QUEUE + SESSION as
+  usual, not from chat history.
 
 ## Parallel agent
-- _(none currently claimed — A-006 is open for any agent, including a second one running
-  alongside overlay/brain work elsewhere, since its area is disjoint)_
+- _(none — queue is empty)_
 
 ## Blockers
 - none

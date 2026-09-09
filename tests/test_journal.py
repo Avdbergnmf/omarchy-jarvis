@@ -1,6 +1,7 @@
 """Journal acceptance without Ollama, desktop changes or network calls."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -11,7 +12,8 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'brain'))
 import server
-from journal import Journal, clean, evaluate
+import journal
+from journal import Journal, clean, evaluate, prune
 
 spec = importlib.util.spec_from_file_location('agent_status', ROOT / 'scripts/agent-status.py')
 status = importlib.util.module_from_spec(spec)
@@ -31,6 +33,51 @@ class JournalTest(unittest.TestCase):
             self.assertEqual(record['git_describe'], 'def')
             self.assertEqual((logs / 'runs/old.log').read_bytes(), old)
             self.assertEqual((logs / 'journal/CURRENT.jsonl').stat().st_mode & 0o777, 0o600)
+
+    def test_prune_keeps_newest_and_deletes_oldest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            for i in range(5):
+                path = directory / f'{i}.log'
+                path.write_text('x')
+                os.utime(path, (i, i))  # distinct, ascending mtimes: 4.log is newest
+            removed = prune(directory, '*.log', 2)
+            remaining = {p.name for p in directory.iterdir()}
+        self.assertEqual(remaining, {'4.log', '3.log'})
+        self.assertEqual(set(removed), {'0.log', '1.log', '2.log'})
+
+    def test_prune_missing_directory_is_a_noop(self):
+        self.assertEqual(prune(Path('/nonexistent-jarvis-test-dir'), '*.log', 5), [])
+
+    def test_prune_under_the_cap_removes_nothing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            (directory / 'only.log').write_text('x')
+            self.assertEqual(prune(directory, '*.log', 5), [])
+
+    def test_write_prunes_run_logs_only_on_a_new_run(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(journal, 'RUN_LOG_KEEP', 2):
+            logs = Path(tmp)
+            runs = logs / 'runs'; runs.mkdir(parents=True)
+            for i in range(4):
+                path = runs / f'old-{i}.log'
+                path.write_text('x'); os.utime(path, (i, i))
+            j = Journal(logs, '1', 'abc')
+            j.write('current-run', 'prompt', prompt='hi')  # new run -> should trigger prune
+            self.assertEqual(len(list(runs.glob('*.log'))), 2, 'RUN_LOG_KEEP=2 must include the just-created run')
+            self.assertTrue((runs / 'current-run.log').exists())
+            j.write('current-run', 'process', process={'actions': [], 'reply': 'hi'})  # not a 'prompt' phase
+            self.assertEqual(len(list(runs.glob('*.log'))), 2, 'a non-prompt phase must not re-scan/prune')
+
+    def test_write_prunes_journal_archive_on_rotation(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(journal, 'ARCHIVE_KEEP', 1):
+            logs = Path(tmp)
+            Journal(logs, '1', 'a').write('r1', 'prompt', prompt='hi')
+            Journal(logs, '2', 'b').write('r2', 'prompt', prompt='hi')  # archives v1
+            Journal(logs, '3', 'c').write('r3', 'prompt', prompt='hi')  # archives v2, prunes v1
+            archived = list((logs / 'journal/archive').glob('*.jsonl'))
+        self.assertEqual(len(archived), 1)
+        self.assertIn('v2', archived[0].name)
 
     def test_redaction_and_bounds(self):
         value = clean({'password': 'private', 'prompt': 'token=private sk-1234567890123456', 'list': ['a'*2000]*20})

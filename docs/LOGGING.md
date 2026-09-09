@@ -77,3 +77,37 @@ no git calls occur during runs or polls. To investigate old behavior, use the ar
 journal's git_describe to find the producing commit (a dirty suffix means uncommitted
 changes were present). Git history retains code/schema, **not** ignored private logs;
 keep local archives if old run evidence is needed. Per-run console projections survive rotation.
+
+## Retention and temp cleanup (A-006)
+
+All of `logs/` is gitignored — nothing here is ever tracked or pushed (`git ls-files logs/`
+is always empty; verify with `git check-ignore -v logs/journal/CURRENT.jsonl` after touching
+`.gitignore`). Two separate mechanisms keep it from growing forever:
+
+**Automatic retention** — `brain/journal.py`'s `prune(directory, pattern, keep)` deletes the
+oldest files (by mtime) beyond a cap, checked once per *new run* (the `prompt` phase), never
+per poll or per debug event, so it can't slow a hot path:
+
+| Directory | Cap | Constant | Checked |
+|---|---|---|---|
+| `logs/runs/*.log` | 200 | `RUN_LOG_KEEP` | every new run (mirrors `brain/server.py`'s in-memory `RUNS` cap) |
+| `logs/debug/*.jsonl` | 200 | `DEBUG_KEEP` | every new run |
+| `logs/journal/archive/*.jsonl` | 20 | `ARCHIVE_KEEP` | right after each version-bump rotation (rare) |
+
+`logs/feedback/needs-review.jsonl` (A-005) is **not** auto-pruned — it's a short, append-only
+list meant for a human to skim and clear manually; auto-deleting entries before they're
+reviewed would defeat its purpose.
+
+**Manual temp cleanup** — `./scripts/clean-temp-logs.sh` removes one-off scratch that isn't
+part of the rotating set above: stale evidence dumps from `scripts/demo-test.py`/
+`scripts/verify-host.py` (`demo-evidence.json`, `host-evidence.json`), ad-hoc redirects
+(`doctor-final.txt`, `manual-actions.jsonl`, `clients-after-*.json`), `*.tmp` files, and
+`__pycache__` directories anywhere in the repo. It never touches `logs/runs/`, `logs/journal/`,
+`logs/debug/`, `logs/feedback/` or `logs/overlay-profile/` by default. Pass `--profile` to
+also clear the (large — the Chromium profile cache easily reaches 100MB+) `logs/overlay-profile/`
+cache; it first checks via `hyprctl` (not a fragile process-name match) that no overlay window
+is currently open and skips with a warning if one is, since deleting a running profile's
+directory out from under it would be disruptive. A fresh profile is recreated automatically
+on the next overlay launch either way. Not run automatically by `doctor.sh` (which is meant to
+be a non-destructive health check) or as a git hook (optional, not mandatory for every clone)
+— run it yourself before a commit if you want a tidy `logs/` first.

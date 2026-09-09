@@ -1,6 +1,6 @@
 # A-006 — Log hygiene (gitignore, retention, temp cleanup)
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:docs (plus small `scripts/` / journal retention helpers)
 - **parallel-ok:** YES
 - **Allowed paths:** `.gitignore`, `logs/` (local only — should stay untracked), `docs/LOGGING.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `README.md`, `scripts/` (cleanup/retention helpers, doctor notes), `brain/journal.py` (retention/rotation only), `tests/test_journal.py` if needed
@@ -16,13 +16,15 @@ Logging should stay useful for debug/agents **without** polluting git or growing
 3. **Ephemeral / temp:** classify “temp any time” artifacts (doctor scraps, demo-evidence, clients-after-*.json, overlay-profile caches if safe, `__pycache__`, etc.). Remove them on **new build/commit** via a small script hooked from doctor or a `scripts/clean-temp-logs.sh` that agents/CI run; document in START/README that commits should be preceded by temp clean (or add a trivial git pre-commit local hook **optional**, not mandatory for all clones).
 
 ## Checklist
-- [ ] Audit what’s in `logs/` today + `git check-ignore` / `git ls-files logs`
-- [ ] Fix `.gitignore`; remove any tracked log artifacts from the index (keep files on disk)
-- [ ] Implement retention for run logs + journal archives (defaults sane; document)
-- [ ] Implement temp cleanup script + when it runs (doctor / explicit / optional hook)
-- [ ] Update `docs/LOGGING.md` + short README pointer
-- [ ] ADR + PROGRESS; tests for retention if non-trivial
-- [ ] QUEUE/INDEX → done; move this file to `docs/assignments/done/`
+- [x] Audit what’s in `logs/` today + `git check-ignore` / `git ls-files logs` — `git ls-files logs/` was empty; `logs/` (bare, in `.gitignore`) already covers everything recursively.
+- [x] Fix `.gitignore`; remove any tracked log artifacts from the index (keep files on disk) — nothing to fix or untrack; already fully covered.
+- [x] Implement retention for run logs + journal archives (defaults sane; document) — `brain/journal.py::prune()`, `RUN_LOG_KEEP=200`/`DEBUG_KEEP=200`/`ARCHIVE_KEEP=20`, checked once per new run / per rotation. Documented in `docs/LOGGING.md`.
+- [x] Implement temp cleanup script + when it runs (doctor / explicit / optional hook) — `scripts/clean-temp-logs.sh`, explicit/manual (not wired into doctor or a mandatory hook, per the note allowing that to stay optional); `--profile` for the overlay Chromium cache, gated on a live `hyprctl` open-overlay check.
+- [x] Update `docs/LOGGING.md` + short README pointer — done.
+- [x] ADR + PROGRESS; tests for retention if non-trivial — ADR-021; PROGRESS.md entry; 6 new tests in `tests/test_journal.py`.
+- [x] QUEUE/INDEX → done; move this file to `docs/assignments/done/`
+
+Live-verified on this host: ran `clean-temp-logs.sh` for real (removed 5 stray scratch files + 4 `__pycache__` dirs), then `--profile` with the overlay closed (cleared the 154MB `logs/overlay-profile/`, confirmed the overlay still opens/toggles/closes correctly afterward with a freshly recreated profile). Caught and fixed a real bug in the safety check itself along the way: an initial `pgrep -f` guard false-positived by matching the checking shell's own command-line text; replaced with the same `hyprctl`-based check the rest of the codebase uses.
 
 ## Out of scope
 Changing journal schema phases; RLHF; follow-along overlay behavior.
