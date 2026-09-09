@@ -219,3 +219,11 @@ While verifying the input-clear fix, `node tests/overlay.test.cjs` started hangi
 
 ### A note on working in parallel with another agent in the same checkout
 This repo has no worktree isolation between concurrent sessions by default (noted in earlier passes). For this assignment specifically, `git worktree add` was used to get a clean, isolated `main` checkout for A-011's own commit, rather than risking `git checkout`/`stash` against a shared tree that had another agent's uncommitted, differently-branched work sitting in it. Recommend this as the default pattern whenever two assignments are genuinely running in parallel on this host.
+
+## 2026-09-09 — A-013: isolated worktrees by default for parallel agents
+
+Shipped ADR-024 and mandatory concurrent-agent isolation in START, AGENTS, desk README and CONTINUE/PARALLEL/NEW_AGENT prompts. Exact commands cover a unique branch from origin/main, reuse of assigned trees, branch push, and clean/merged/unowned cleanup without force. Serial work remains optional. Chose documented commands rather than a helper. This applies A-011's lesson: uncommitted training-track work in the shared checkout made checkout/stash unsafe; a separate main-based worktree let A-011 ship.
+
+`assignment-status.sh` now lists branches/worktrees and cleanliness with optional git locks disabled, warns about dirty other branches, and explains that QUEUE/SESSION are branch-local snapshots requiring claim reconciliation. It prints no changed filenames or contents and never modifies other trees. Policy retains area/path restrictions, shared-service coordination, and merge reconciliation for common bookkeeping.
+
+Verification: all **80 Python tests** pass; shellcheck across scripts/skills, `doctor.sh --syntax`, JS syntax, both overlay test scenarios, and `git diff --check` pass. Running status on this host identified the dirty A-012 tree and current A-013 changes while the primary/training trees were clean. Live `doctor.sh` could not complete within the sandbox (Ollama/Hyprland/local socket and GitHub connectivity checks failed; report-last-failure lacks a local prior run). No product changes or service restarts. A-013 moved to done; QUEUE/INDEX/SESSION updated. Work stayed in `/home/omarchy/Work/omarchy-jarvis-a013`; delivery branch `a013-parallel-worktrees`. Batch size 1: A-012 and overlay work remain untouched.

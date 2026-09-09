@@ -48,6 +48,19 @@ When Alex asks for a change/add (in any chat):
    - second agent while first busy → `prompts/PARALLEL.txt`
 7. Do **not** implement Jarvis product code in the desk role unless Alex asked that agent to build — desk default is **queue + prompts only**.
 
+### Parallel dispatch uses isolated worktrees
+
+Concurrent coding agents **must** each have a dedicated branch and worktree;
+single-agent serial work may use the canonical checkout. Follow the exact
+[creation, push and cleanup commands in START](../../START.md#required-isolation-for-concurrent-agents).
+Dispatch the absolute working directory with the prompt; an already assigned
+isolated tree must be reused. Never send parallel agents a blanket `cd` to the
+canonical tree. Record owner + branch + worktree in the desk claim and the
+worker's SESSION before implementation. Reconcile claims read-only across
+`git worktree list` and the desk queue: branch-local QUEUE/SESSION can be stale.
+Worktrees do not relax area/path restrictions or isolate live services. Merge
+shared bookkeeping carefully, preserving other workers' claims and evidence.
+
 ### Constraints for good assignments
 - **One area** when possible; if multi-area, split into two assignments.
 - Checklist items must be **verifiable**.

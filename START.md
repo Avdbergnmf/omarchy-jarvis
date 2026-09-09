@@ -43,7 +43,7 @@ Maintain [docs/SESSION.md](docs/SESSION.md) while working: active assignment id,
 ## Issue Loop
 
 ```bash
-cd ~/Work/omarchy-jarvis
+# Stay in your assigned Jarvis checkout/worktree.
 ./scripts/agent-status.sh
 gh issue list --repo Avdbergnmf/omarchy-jarvis --state open
 gh issue list --repo Avdbergnmf/omarchy-jarvis --label jarvis-reported --state open
@@ -64,6 +64,63 @@ Never parallelize approve/execute or brain/server.py redesign. Merge before hand
 contested files. agent-status groups issues by area and warns about shared areas, path
 collisions and missing scope; warnings require human review, not automatic scheduling.
 Labels permit coordination; they do not authorize agent spending or spawning.
+
+### Required isolation for concurrent agents
+
+Each parallel coding agent must use its own git worktree and dedicated branch,
+even when the shared checkout is clean. Single-agent serial work may stay in the
+canonical `~/Work/omarchy-jarvis`. If Alex supplied an isolated working directory,
+stay there; do not create another or switch back to the canonical checkout.
+Never checkout, stash, reset, clean, or edit another agent's tree. See
+[ADR-024](docs/DECISIONS.md#adr-024--isolated-worktrees-for-concurrent-agents-2026-09-09).
+
+```bash
+# Run from the current Jarvis checkout; replace slug/branch with your assignment.
+git worktree list
+git status --short --branch
+git fetch origin
+jarvis_task=a014-example
+jarvis_tree="$HOME/Work/omarchy-jarvis-$jarvis_task"
+git worktree add -b "$jarvis_task" "$jarvis_tree" origin/main
+cd "$jarvis_tree"
+git status --short --branch
+```
+
+Use a unique branch based on `origin/main` (or an explicitly agreed base).
+If offline, use locally verified `main` and report that it may be stale. For an
+existing assigned tree, verify its branch and resume there; do not use `--force`
+or `-B` to bypass an occupied branch/path. Worktree creation needs writable access
+to both the destination and the repository's shared git metadata.
+
+Before claiming, inspect QUEUE/SESSION and active scopes in the other listed
+trees **read-only** and coordinate with the desk agent: these files are separate
+branch snapshots, not a live cross-worktree lock. Record assignment, owner,
+branch, absolute worktree path and Batch in your own SESSION; desk records each
+dispatched claim in its QUEUE. A stale queued row does not free an owned task.
+Scope rules still apply; isolation does not make overlapping product work safe.
+Shared bookkeeping (QUEUE/INDEX/SESSION/PROGRESS/ADRs) must be reconciled on merge,
+preserving other assignments' statuses and evidence; never overwrite another
+agent's SESSION. Live services/ports and the desktop are shared too: coordinate
+live testing; do not restart another track's service.
+
+Commit only your assignment's files, push your branch, and report its name or PR:
+
+```bash
+git push -u origin HEAD
+```
+
+After merge and handoff, from a remaining checkout, verify the task tree is clean
+and its work is merged before removing it (substitute the actual path/branch):
+
+```bash
+git -C "$HOME/Work/omarchy-jarvis-a014-example" status --short
+git worktree remove "$HOME/Work/omarchy-jarvis-a014-example"
+git branch -d a014-example
+```
+
+Never force removal; retain trees with WIP or an active owner. Squash merges may
+make `branch -d` refuse: leave the branch for human review. No helper script is
+needed for this small, explicit lifecycle.
 
 ## Passes and handoffs
 

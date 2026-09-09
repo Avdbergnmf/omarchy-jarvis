@@ -14,4 +14,4 @@
 | A-010 | done | Overlay lifecycle, single-instance, feedback bugs |
 | A-011 | done | Open apps by name (Spotify + fuzzy match) |
 | A-012 | queued | Open YouTube + honest open plans |
-| A-013 | in_progress | Parallel agents: default git worktrees |
+| A-013 | done | Parallel agents: default git worktrees |
