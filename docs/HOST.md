@@ -35,3 +35,11 @@ omarchy-launch-floating-terminal-with-presentation <cmd>   # useful for console 
 
 ## Customization log
 `~/Documents/Omarchy-customizations.md`
+
+## Verified implementation update — 2026-09-09
+- Checkout: `/home/omarchy/Work/omarchy-jarvis` (not `~/Projects`).
+- Default webapp browser is **Brave**; actual classes include `brave-outlook.live.com__mail_-Default`. Chromium is used only for the isolated local overlay.
+- Hyprland requires Lua dispatcher expressions (`hl.dsp.*`) on this installed version.
+- User services `ollama.service` and `jarvis.service` installed and enabled. qwen2.5:3b downloaded (~1.9 GB).
+- SUPER+SHIFT+J was free and is now the Jarvis overlay binding; installed float size 520×150.
+- Desktop/session access requires leaving the agent workspace sandbox. Browser/native UI automation connector returned no available surfaces, so native action/Hyprland state tests are the available verification path.

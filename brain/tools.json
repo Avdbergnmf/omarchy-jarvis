@@ -1,0 +1,146 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "run_skill",
+      "description": "Execute an approved recipe. Use open-planning for planning; scratch-and-mail for moving current window to scratchpad and opening email.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "skill": {
+            "type": "string",
+            "enum": [
+              "open-planning",
+              "scratch-and-mail"
+            ]
+          }
+        },
+        "required": [
+          "skill"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "catalog_bindings",
+      "description": "Query live keybindings by description or chord.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "run_binding",
+      "description": "Execute an exact reviewed live binding description or chord.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "binding": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "binding"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "workspace_new",
+      "description": "Switch to lowest unused positive numbered workspace.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "workspace_switch",
+      "description": "Switch to a numbered workspace.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "workspace": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9999
+          }
+        },
+        "required": [
+          "workspace"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "scratch_toggle",
+      "description": "Show or hide the scratchpad.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "scratch_move_here",
+      "description": "Move the focused application into scratchpad without following it.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "open_webapp",
+      "description": "Open or focus a supported webapp.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "Todoist",
+              "Google Calendar",
+              "Outlook",
+              "WhatsApp"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+]
