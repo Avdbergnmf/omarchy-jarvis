@@ -331,4 +331,50 @@ class SelfImproveServerTest(unittest.TestCase):
   self.assertEqual(server.RUNS[rid]['plan']['actions'][0]['tool'],'list_backlog')
   server.handle_deny(rid)
 
+class FeedbackTest(unittest.TestCase):
+ def test_good_feedback_is_cheap_and_terminal(self):
+  rid='fb-good-unit'; server.RUNS[rid]={'run_id':rid,'status':'done','reply':'Completed: x.','prompt':'toggle scratchpad','steps':[]}
+  with patch.object(server,'journal_event') as journal:
+   result=server.handle_feedback(rid,'good')
+  self.assertEqual(result['run_id'],rid)
+  self.assertEqual(server.RUNS[rid]['feedback'],'good')
+  journal.assert_called_once_with(rid,'feedback',feedback={'rating':'good'})
+ def test_neutral_feedback_appends_needs_review_without_github(self):
+  rid='fb-neutral-unit'; server.RUNS[rid]={'run_id':rid,'status':'error','reply':'Stopped: nope.','prompt':'move window','steps':[]}
+  with patch.object(server,'journal_event'):
+   server.handle_feedback(rid,'neutral')
+  path=server.LOGS/'feedback'/'needs-review.jsonl'
+  self.assertTrue(path.exists())
+  record=json.loads(path.read_text().splitlines()[-1])
+  self.assertEqual(record['run_id'],rid); self.assertEqual(record['prompt'],'move window')
+ def test_feedback_rejects_run_not_in_terminal_state(self):
+  rid='fb-pending-unit'; server.RUNS[rid]={'status':'awaiting_approval'}
+  self.assertIsNone(server.handle_feedback(rid,'good'))
+ def test_feedback_rejects_second_rating_for_same_run(self):
+  rid='fb-twice-unit'; server.RUNS[rid]={'run_id':rid,'status':'done','reply':'Done.','prompt':'x','steps':[],'feedback':'good'}
+  with self.assertRaises(ValueError): server.handle_feedback(rid,'neutral')
+ def test_feedback_rejects_unknown_rating(self):
+  rid='fb-badrating-unit'; server.RUNS[rid]={'run_id':rid,'status':'done','reply':'Done.','prompt':'x','steps':[]}
+  with self.assertRaises(ValueError): server.handle_feedback(rid,'awful')
+ def test_bad_feedback_starts_bug_intake_with_source_run_attached(self):
+  rid='fb-bad-unit'; server.RUNS[rid]={'run_id':rid,'status':'error','reply':'Stopped: failed.','prompt':'the scratchpad toggle did nothing','steps':[]}
+  active={'address':'0x123','class':'code'}
+  with patch.object(server,'hypr',return_value=active),patch.object(server,'is_overlay',return_value=False),patch.object(server,'announce'),patch.object(server,'log'),patch.object(server,'gather_host_facts',return_value='(skipped)'),patch.object(server,'gather_binding_hits',return_value='(skipped)'):
+   result=server.handle_feedback(rid,'bad')
+   new_id=result['run_id']
+   self.assertNotEqual(new_id,rid)
+   self.assertEqual(server.RUNS[new_id]['status'],'awaiting_answer')
+   context=server.RUNS[new_id]['intake']['context']
+   self.assertEqual(context['last_run_id'],rid,'the bug report context must reference the rated run, not whatever ran most recently')
+   server.handle_deny(new_id)
+  self.assertEqual(server.RUNS[rid]['feedback'],'bad')
+ def test_bad_feedback_refuses_when_a_run_is_already_busy(self):
+  rid='fb-bad-busy-unit'; server.RUNS[rid]={'run_id':rid,'status':'done','reply':'Done.','prompt':'x','steps':[]}
+  server.BUSY.acquire()
+  try:
+   with patch.object(server,'hypr',return_value={'address':None,'class':''}),patch.object(server,'is_overlay',return_value=False):
+    with self.assertRaises(RuntimeError): server.handle_feedback(rid,'bad')
+  finally:
+   server.BUSY.release()
+
 if __name__=='__main__': unittest.main()

@@ -13,6 +13,15 @@ Every record includes `ts` (ISO-8601 UTC), `jarvis_version` (VERSION), `git_desc
 - done: `happened` with terminal status, reply and tool steps/results; `ok` reports execution success.
 - eval: `eval: {ok, flag, note}`, where flag is null, suspicious, mismatch or partial;
   top-level `ok` still reports execution success. A successful tool may have a flagged evaluation.
+- feedback (optional, A-005): `feedback: {rating}` where rating is good/neutral/bad, appended
+  only if the user rates the run from the overlay after it reaches `done`/`error`. At most one
+  per run — `POST /v1/runs/<id>/feedback` rejects a second rating for the same run. `neutral`
+  additionally appends a line (`ts`, `run_id`, redacted `prompt`/`reply`) to the local-only
+  `logs/feedback/needs-review.jsonl` — deliberately **not** a GitHub issue, so idle "meh" clicks
+  can't spam the tracker; `bad` reuses the deterministic bug-intake flow (`start_intake`) with
+  the *rated* run's own prompt as the seed and its own plan/log excerpt pre-attached as context
+  (not whatever ran most recently), so the filed issue describes the run that was actually
+  flagged. See ADR-020.
 
 Strings are limited to 1,500 characters, lists to 12 entries, dictionaries to 30 keys.
 Secret-shaped strings and sensitive dictionary values are redacted before writing.

@@ -14,6 +14,10 @@ const qaQuestion=document.querySelector('#qa-question');
 const qaAnswer=document.querySelector('#qa-answer');
 const qaSkip=document.querySelector('#qa-skip');
 const consoleBtn=document.querySelector('#console-btn');
+const feedbackSection=document.querySelector('#feedback');
+const fbGood=document.querySelector('#fb-good');
+const fbNeutral=document.querySelector('#fb-neutral');
+const fbBad=document.querySelector('#fb-bad');
 const meta=document.querySelector('#meta');
 const session=fetch('/v1/session').then(r=>r.json());
 let currentRunId=null;
@@ -72,25 +76,33 @@ function renderSteps(steps){
  stepsSection.hidden=(steps||[]).length===0;
 }
 
+function renderFeedback(result){
+ if(result.status!=='done'&&result.status!=='error'){feedbackSection.hidden=true;return;}
+ if(result.feedback){feedbackSection.hidden=true;return;}
+ feedbackSection.hidden=false;
+ fbGood.disabled=fbNeutral.disabled=fbBad.disabled=false;
+}
+
 function render(result){
  status.className=result.status==='error'?'error':'';
  status.textContent=result.reply||result.status;
  if(result.status==='awaiting_answer'){
-  planSection.hidden=true;stepsSection.hidden=true;
+  planSection.hidden=true;stepsSection.hidden=true;feedbackSection.hidden=true;
   qaQuestion.textContent=result.reply;
   qaSection.hidden=false;
   qaAnswer.value='';qaAnswer.focus();
  }else if(result.status==='awaiting_approval'){
-  qaSection.hidden=true;
+  qaSection.hidden=true;feedbackSection.hidden=true;
   renderPlan(result.plan||{actions:[]},result.draft);
   stepsSection.hidden=true;
   runBtn.focus();
  }else if(result.status==='running'){
-  qaSection.hidden=true;planSection.hidden=true;
+  qaSection.hidden=true;planSection.hidden=true;feedbackSection.hidden=true;
   renderSteps(result.steps);
  }else{
   qaSection.hidden=true;planSection.hidden=true;
   renderSteps(result.steps);
+  renderFeedback(result);
  }
 }
 
@@ -113,7 +125,7 @@ async function poll(runId){
 document.querySelector('#prompt-form').addEventListener('submit',async event=>{
  event.preventDefault();if(!input.value.trim()||input.disabled)return;
  input.disabled=true;status.className='';status.textContent='Thinking…';
- planSection.hidden=true;stepsSection.hidden=true;qaSection.hidden=true;
+ planSection.hidden=true;stepsSection.hidden=true;qaSection.hidden=true;feedbackSection.hidden=true;
  try{
   const {run_id}=await post('/v1/run',{prompt:input.value.trim()});
   setConsoleTarget(run_id);
@@ -143,6 +155,26 @@ consoleBtn.addEventListener('click',async()=>{
  try{await post('/v1/runs/'+id+'/console');}
  catch(error){status.textContent=error.message;status.className='error';}
 });
+
+async function sendFeedback(rating){
+ if(!currentRunId)return;
+ fbGood.disabled=fbNeutral.disabled=fbBad.disabled=true;
+ try{
+  const result=await post('/v1/runs/'+currentRunId+'/feedback',{rating});
+  if(rating==='bad'&&result.run_id){
+   setConsoleTarget(result.run_id);
+   await poll(result.run_id);
+  }else{
+   feedbackSection.hidden=true;
+  }
+ }catch(error){
+  status.textContent=error.message;status.className='error';
+  fbGood.disabled=fbNeutral.disabled=fbBad.disabled=false;
+ }
+}
+fbGood.addEventListener('click',()=>sendFeedback('good'));
+fbNeutral.addEventListener('click',()=>sendFeedback('neutral'));
+fbBad.addEventListener('click',()=>sendFeedback('bad'));
 
 async function answer(text){
  if(!currentRunId||!text)return;

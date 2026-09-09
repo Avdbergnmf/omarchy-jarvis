@@ -24,6 +24,10 @@ const elements={
  '#qa-skip':makeElement(),
  '#console-btn':makeElement(),
  '#meta':makeElement(),
+ '#feedback':makeElement(),
+ '#fb-good':makeElement(),
+ '#fb-neutral':makeElement(),
+ '#fb-bad':makeElement(),
 };
 const store={};
 let runState='awaiting_approval';
@@ -54,6 +58,12 @@ const context={
   if(path==='/v1/runs/test-run/approve'){runState='done';return {ok:true,json:async()=>({status:'running'})};}
   if(path==='/v1/runs/test-run/deny')return {ok:true,json:async()=>({status:'denied'})};
   if(path==='/v1/close')return {ok:true,json:async()=>({ok:true})};
+  if(path==='/v1/runs/test-run/feedback'){
+   const rating=JSON.parse(options.body).rating;
+   if(rating==='bad')return {ok:true,json:async()=>({run_id:'fb-bug-run',status:'planning',reply:'Thinking…'})};
+   return {ok:true,json:async()=>({run_id:'test-run',status:'done',reply:'Completed: open-planning.',feedback:rating,plan:{actions:[{tool:'run_skill',arguments:{skill:'open-planning'}}]},steps:[{tool:'run_skill',label:'open-planning',status:'done',summary:'ok'}]})};
+  }
+  if(path==='/v1/runs/fb-bug-run')return {ok:true,json:async()=>({status:'awaiting_answer',reply:'What did you expect to happen?',plan:null,steps:[]})};
   if(path==='/v1/runs/qa-run')return {ok:true,json:async()=>{
    if(qaRunState==='fresh')return {status:'awaiting_answer',reply:'What actually happened instead?',plan:null,steps:[]};
    if(qaRunState==='finished')return {status:'done',reply:'Cancelled — no actions were run.',plan:null,steps:[]};
@@ -77,11 +87,31 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
  assert.equal(elements['#status'].textContent,'Completed: open-planning.');
  assert.equal(elements['#prompt'].disabled,false);
 
+ assert.equal(elements['#feedback'].hidden,false,'feedback controls must show once a run reaches a terminal status');
+ await elements['#fb-good'].handlers.click();
+ assert(requests.some(r=>r.path==='/v1/runs/test-run/feedback'&&JSON.parse(r.options.body).rating==='good'),'thumbs-up must post rating=good');
+ assert.equal(elements['#feedback'].hidden,true,'feedback controls must hide once a rating is recorded');
+
  await handlers.keydown({key:'Escape',preventDefault(){}});
  assert(requests.some(r=>r.path==='/v1/close'),'Escape must close the overlay');
 
  await elements['#console-btn'].handlers.click();
  assert(requests.some(r=>r.path==='/v1/runs/test-run/console'),'Open console must target the current/last run');
+
+ // Re-fetch a fresh done state (no feedback recorded yet) so the controls show again.
+ context.render(await context.get('/v1/runs/test-run'));
+ assert.equal(elements['#feedback'].hidden,false);
+ // Exercise the thumbs-down -> bug-intake handoff directly via post/render (not the
+ // real button click): fb-bug-run always answers 'awaiting_answer', and this mock's
+ // synchronous setTimeout would otherwise recurse sendFeedback's own poll() forever
+ // (same hazard the qa-run scenario below already avoids the same way).
+ const fbBad=await context.post('/v1/runs/test-run/feedback',{rating:'bad'});
+ assert(requests.some(r=>r.path==='/v1/runs/test-run/feedback'&&JSON.parse(r.options.body).rating==='bad'),'thumbs-down must post rating=bad');
+ assert.equal(fbBad.run_id,'fb-bug-run','thumbs-down must hand off to the new intake run id the server returns');
+ context.setConsoleTarget(fbBad.run_id);
+ context.render(await context.get('/v1/runs/fb-bug-run'));
+ assert.equal(elements['#qa'].hidden,false,'thumbs-down must enter the bug-intake Q&A flow on the new run it returns');
+ assert.equal(elements['#qa-question'].textContent,'What did you expect to happen?');
 
  // Single get+render (not the auto-continuing poll loop) — this mock's setTimeout
  // fires synchronously/immediately rather than after a real delay, so letting

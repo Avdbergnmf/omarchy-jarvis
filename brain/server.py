@@ -409,19 +409,20 @@ def tail_log(run_id, lines=12):
     if not path.exists(): return '(no log)'
     return redact('\n'.join(path.read_text(errors='replace').splitlines()[-lines:]))[:1500] or '(empty)'
 
-def last_run_info(current_id):
+def run_info(run_id, run):
+    if not run_id or not run:
+        return {'jarvis_version': VERSION, 'last_run_id': '(none — this is the first run)', 'last_plan': '(none)', 'last_approval': 'n/a', 'last_log_path': '(none)', 'log_excerpt': '(none)'}
+    plan = run.get('plan')
+    approval = {'done': 'ran', 'error': 'ran (failed)', 'denied': 'denied', 'awaiting_approval': 'n/a (still pending)', 'awaiting_answer': 'n/a (still in intake)'}.get(run.get('status'), run.get('status', 'n/a'))
+    return {
+        'jarvis_version': (run.get('journal') or [{}])[0].get('jarvis_version', VERSION), 'last_run_id': run_id, 'last_plan': redact(json.dumps(plan) if plan else '(no actions)')[:600],
+        'last_approval': approval, 'last_log_path': 'logs/journal/CURRENT.jsonl (or version archive); console: logs/runs/' + run_id + '.log', 'log_excerpt': json.dumps(run.get('journal', []), ensure_ascii=False)[:6000] or tail_log(run_id),
+    }
+
+def previous_run_id(current_id):
     with STATE_LOCK: keys = list(RUNS.keys())
     idx = keys.index(current_id) if current_id in keys else len(keys)
-    prev_id = keys[idx - 1] if idx > 0 else None
-    if not prev_id:
-        return {'jarvis_version': VERSION, 'last_run_id': '(none — this is the first run)', 'last_plan': '(none)', 'last_approval': 'n/a', 'last_log_path': '(none)', 'log_excerpt': '(none)'}
-    with STATE_LOCK: prev = dict(RUNS.get(prev_id) or {})
-    plan = prev.get('plan')
-    approval = {'done': 'ran', 'error': 'ran (failed)', 'denied': 'denied', 'awaiting_approval': 'n/a (still pending)', 'awaiting_answer': 'n/a (still in intake)'}.get(prev.get('status'), prev.get('status', 'n/a'))
-    return {
-        'jarvis_version': (prev.get('journal') or [{}])[0].get('jarvis_version', VERSION), 'last_run_id': prev_id, 'last_plan': redact(json.dumps(plan) if plan else '(no actions)')[:600],
-        'last_approval': approval, 'last_log_path': 'logs/journal/CURRENT.jsonl (or version archive); console: logs/runs/' + prev_id + '.log', 'log_excerpt': json.dumps(prev.get('journal', []), ensure_ascii=False)[:6000] or tail_log(prev_id),
-    }
+    return keys[idx - 1] if idx > 0 else None
 
 def gather_host_facts(seed):
     text = seed.lower()
@@ -443,8 +444,15 @@ def gather_binding_hits(seed):
     except Exception as e:
         return '(catalog query failed: ' + redact(str(e))[:200] + ')'
 
-def gather_context(current_run_id, seed):
-    context = last_run_info(current_run_id)
+def gather_context(current_run_id, seed, source_run_id=None):
+    """By default the context references the run immediately before this one (the
+    manual /report flow: whatever the user just did). A-005's thumbs-down button
+    passes source_run_id explicitly — the *rated* run itself, not whatever else may
+    have run since — so the filed issue's LAST_PLAN/LAST_APPROVAL/log excerpt always
+    describe the run the user actually flagged."""
+    ref_id = source_run_id or previous_run_id(current_run_id)
+    with STATE_LOCK: ref_run = dict(RUNS.get(ref_id) or {}) if ref_id else {}
+    context = run_info(ref_id, ref_run)
     context['host_facts'] = gather_host_facts(seed)
     context['binding_hits'] = gather_binding_hits(seed)
     return context
@@ -472,10 +480,10 @@ def answer_by_index(answers, idx, questions):
         if a['question'] == questions[idx]: return a['answer']
     return '(not answered)'
 
-def start_intake(run_id, kind, seed, target):
+def start_intake(run_id, kind, seed, target, source_run_id=None):
     try:
         announce(run_id, 'Gathering context for your ' + kind + ' report…')
-        context = gather_context(run_id, seed)
+        context = gather_context(run_id, seed, source_run_id)
         questions = BUG_QUESTIONS if kind == 'bug' else FEATURE_QUESTIONS
         with STATE_LOCK:
             RUNS[run_id]['intake'] = {'kind': kind, 'seed': seed, 'context': context, 'questions': questions, 'index': 0, 'answers': [], 'target': target}
@@ -534,6 +542,52 @@ def handle_answer(run_id, text):
         log(run_id, 'question', question)
         announce(run_id, question + ' (reply, or type "skip" to file now)')
     with STATE_LOCK: return dict(RUNS[run_id])
+
+# --- A-005: post-run feedback (+/neutral/-) ---------------------------------
+# Good/neutral are just a journal record (cheap, no questions per the assignment).
+# Neutral additionally gets a local-only "review later" line — never a GitHub issue,
+# so a stream of "meh" clicks can't spam the tracker (see ADR-020). Bad reuses the
+# existing deterministic bug-intake flow (start_intake) with the *rated* run's own
+# prompt as the seed and its own context pre-attached via source_run_id, instead of
+# guessing from freeform chat text like the manual /report path does.
+FEEDBACK_RATINGS = ('good', 'neutral', 'bad')
+
+def record_needs_review(run_id, run):
+    record = {'ts': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'jarvis_version': VERSION,
+              'run_id': run_id, 'prompt': redact(run.get('prompt', ''))[:500], 'reply': redact(run.get('reply', ''))[:500]}
+    Journal(LOGS, VERSION, REVISION).append(LOGS / 'feedback' / 'needs-review.jsonl', record)
+
+def handle_feedback(run_id, rating):
+    if rating not in FEEDBACK_RATINGS:
+        raise ValueError('Rating must be good, neutral or bad')
+    with STATE_LOCK:
+        run = RUNS.get(run_id)
+        if not run or run.get('status') not in ('done', 'error'):
+            return None
+        if run.get('feedback'):
+            raise ValueError('Feedback already recorded for this run')
+        run['feedback'] = rating
+        seed, snapshot = run.get('prompt', ''), dict(run)
+    journal_event(run_id, 'feedback', feedback={'rating': rating})
+    if rating == 'neutral':
+        record_needs_review(run_id, snapshot)
+    if rating != 'bad':
+        with STATE_LOCK: return dict(RUNS[run_id])
+    active = hypr('activewindow'); target = active.get('address')
+    if is_overlay(active):
+        target = json.loads((LOGS / 'overlay-target.json').read_text()).get('address')
+    if not BUSY.acquire(blocking=False):
+        raise RuntimeError('A desktop run is already active')
+    new_run_id = str(uuid.uuid4())
+    (LOGS / 'runs' / (new_run_id + '.log')).touch(mode=0o600)
+    global BUSY_RUN_ID
+    with STATE_LOCK:
+        if len(RUNS) > 200: RUNS.pop(next(iter(RUNS)))
+        RUNS[new_run_id] = {'run_id': new_run_id, 'status': 'planning', 'reply': 'Thinking…', 'plan': None, 'steps': [], 'prompt': seed}
+        BUSY_RUN_ID = new_run_id
+    journal_event(new_run_id, 'prompt', prompt=seed)
+    threading.Thread(target=start_intake, args=(new_run_id, 'bug', seed, target, run_id), daemon=True).start()
+    return {'run_id': new_run_id, 'status': 'planning', 'reply': 'Thinking…'}
 
 def start_fixed_plan(run_id, plan, target):
     try:
@@ -600,6 +654,20 @@ class Handler(BaseHTTPRequestHandler):
                 subprocess.Popen([str(ROOT/'console/jarvis-console'), console_id], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
                 return self.reply(200, {'ok':True})
             except Exception as e: return self.reply(500, {'error':str(e)})
+        feedback_id = self.run_id_from('/feedback')
+        if feedback_id:
+            try:
+                length = int(self.headers.get('Content-Length', '0'))
+                if not 0 < length <= 256: raise ValueError('Invalid request size')
+                if self.headers.get('Content-Type') != 'application/json': raise ValueError('Expected application/json')
+                rating = json.loads(self.rfile.read(length)).get('rating')
+            except (ValueError, AttributeError) as e: return self.reply(400, {'error': str(e)})
+            try:
+                result = handle_feedback(feedback_id, rating)
+            except ValueError as e: return self.reply(400, {'error': str(e)})
+            except RuntimeError as e: return self.reply(409, {'error': str(e)})
+            if result is None: return self.reply(409, {'error': 'Run is not in a terminal state'})
+            return self.reply(202 if 'run_id' in result and result['run_id'] != feedback_id else 200, result)
         answer_id = self.run_id_from('/answer')
         if answer_id:
             try:
