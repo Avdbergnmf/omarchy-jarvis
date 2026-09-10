@@ -498,3 +498,18 @@ validation remains pending because the browser connector exposes no browser on t
 - Ambiguous multi-match open failed at execute; Alex wants top match + later “other one” with preference weights.
 - Split: [A-024](assignments/active/A-024-open-ambiguous-app-top-match.md) actions top-match; [A-025](assignments/active/A-025-app-open-preferences-and-correction.md) preferences/correction.
 - Backlog bug moved to `bugs/converted/`; GH #16 left open until both done.
+
+## 2026-09-10 — A-024 ambiguous open_app_by_name → top match
+- `resolve_app()` raised "Multiple installed apps match…" whenever a tier (exact/prefix/
+  substring) had more than one candidate — e.g. two `.desktop` stems both named "Bitwarden"
+  (native + Flatpak) — so `open bitwarden` planned fine but failed at execute.
+- Fix: each tier is still checked in the same exact > prefix > substring > fuzzy priority
+  order, but a tier with multiple candidates now opens its first (top) entry instead of
+  raising — deterministic because `desktop_entries()` already orders most-local-directory
+  first, then alphabetically. `open_by_name()`'s result already names the chosen app
+  (`entry['name']`), so the reply stays honest about which one launched with no extra change.
+  A-025 can build preference weights / "the other one" correction on top of this later.
+- Evidence: 143 Python tests pass (2 new: substring-tier tie-break, and a duplicate-Name
+  fixture matching the actual #16 shape); `doctor.sh --syntax` passes.
+- Out of scope here (left for A-025): learning/preference store, correction utterances,
+  closing the wrong window after a correction.

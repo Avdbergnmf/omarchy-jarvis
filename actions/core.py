@@ -232,21 +232,21 @@ def desktop_entries():
     return entries
 
 def resolve_app(name, entries=None):
-    """Exact match wins outright; otherwise an unambiguous prefix/substring match;
-    otherwise the single closest fuzzy match. Ties raise rather than guess."""
+    """Exact match wins outright; otherwise the best prefix/substring match; otherwise
+    the single closest fuzzy match. A tier with several candidates (e.g. duplicate
+    .desktop entries with the same display Name under different stems — A-024/#16)
+    opens its top-ranked one rather than hard-failing: desktop_entries() already orders
+    entries most-local-directory-first then alphabetically, so that ranking, not a
+    guess, decides. The reply still names the actual app opened, so the choice is honest."""
     query = (name or '').strip().lower()
     if not query:
         raise ValueError('App name required')
     entries = desktop_entries() if entries is None else entries
     exact = [e for e in entries if e['name'].lower() == query]
-    if len(exact) == 1: return exact[0]
     starts = [e for e in entries if e['name'].lower().startswith(query)]
-    if len(starts) == 1: return starts[0]
     contains = [e for e in entries if query in e['name'].lower()]
-    if len(contains) == 1: return contains[0]
-    ambiguous = exact or starts or contains
-    if len(ambiguous) > 1:
-        raise ValueError('Multiple installed apps match ' + repr(name) + ': ' + ', '.join(sorted({e['name'] for e in ambiguous})) + ' — be more specific')
+    ranked = exact or starts or contains
+    if ranked: return ranked[0]
     close = difflib.get_close_matches(query, [e['name'].lower() for e in entries], n=1, cutoff=0.6)
     if close:
         return next(e for e in entries if e['name'].lower() == close[0])

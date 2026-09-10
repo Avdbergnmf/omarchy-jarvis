@@ -25,5 +25,5 @@
 | A-021 | Empty Enter skips report / how-did-that-go Q&A | done | area:overlay | YES | [done/A-021-empty-enter-skips-report-qa.md](done/A-021-empty-enter-skips-report-qa.md) |
 | A-022 | Fix open cliamp plan/tooling (issue #15) | queued | area:brain | NO | [active/A-022-training.md](active/A-022-training.md) |
 | A-023 | Simplify assignment scope (area + worktree, soft paths) | done | area:docs | YES | [done/A-023-simplify-assignment-path-scope.md](done/A-023-simplify-assignment-path-scope.md) |
-| A-024 | Ambiguous open_app_by_name → top match (Bitwarden #16) | queued | area:actions | YES | [active/A-024-open-ambiguous-app-top-match.md](active/A-024-open-ambiguous-app-top-match.md) |
+| A-024 | Ambiguous open_app_by_name → top match (Bitwarden #16) | done | area:actions | YES | [done/A-024-open-ambiguous-app-top-match.md](done/A-024-open-ambiguous-app-top-match.md) |
 | A-025 | App-open preferences + “the other one” correction (#16) | queued | area:brain | NO | [active/A-025-app-open-preferences-and-correction.md](active/A-025-app-open-preferences-and-correction.md) |

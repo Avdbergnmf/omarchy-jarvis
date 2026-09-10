@@ -1,6 +1,6 @@
 # A-024 — Ambiguous open_app_by_name → open top match (Bitwarden #16 part 1)
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:actions
 - **parallel-ok:** YES
 - **Soft path hints:** `actions/` (esp. resolve/open_by_name), `tests/`, docs bookkeeping
@@ -13,11 +13,17 @@ Today `open bitwarden` plans correctly but **execution fails** with “Multiple 
 Preserve plan → approve → execute. Reply should name which app was chosen when useful.
 
 ## Checklist
-- [ ] Reproduce multiple-match failure for `bitwarden` (and a synthetic multi-match unit fixture)
-- [ ] Change resolver: ranked candidates → launch/focus **best** match; stop hard-failing on ties/multiples (define stable ranking: exact > prefix > substring > fuzzy; break ties deterministically)
-- [ ] Surface chosen desktop name/id in action result/summary for honesty
-- [ ] Regression tests; PROGRESS; SESSION; QUEUE/INDEX → done
-- [ ] Leave preference weights / “the other one” to **A-025** (optional hook: return alternate candidates in result metadata for later)
+- [x] Reproduce multiple-match failure for `bitwarden` (and a synthetic multi-match unit fixture)
+- [x] Change resolver: ranked candidates → launch/focus **best** match; stop hard-failing on ties/multiples (define stable ranking: exact > prefix > substring > fuzzy; break ties deterministically)
+- [x] Surface chosen desktop name/id in action result/summary for honesty (already free via existing `entry['name']` in `open_by_name()`'s result)
+- [x] Regression tests; PROGRESS; SESSION; QUEUE/INDEX → done
+- [x] Leave preference weights / “the other one” to **A-025** (optional metadata hook skipped — not required, A-025 can resolve again itself)
+
+## Resolution (2026-09-10)
+`resolve_app()` in `actions/core.py` no longer raises when a tier has multiple candidates —
+it returns the first (top) one, deterministic via `desktop_entries()`'s own most-local-dir-
+first ordering. Covered by `tests/test_jarvis.py::test_resolve_app_exact_prefix_fuzzy_and_ambiguous`
+(updated) and new `test_resolve_app_picks_top_match_for_duplicate_desktop_entries`.
 
 ## Out of scope
 - Learning/preference store and correction utterances (A-025)

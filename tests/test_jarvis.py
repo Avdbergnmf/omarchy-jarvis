@@ -520,12 +520,22 @@ class OpenByNameTest(unittest.TestCase):
   self.assertEqual(core.resolve_app('spotify',entries)['name'],'Spotify')  # case-insensitive exact
   self.assertEqual(core.resolve_app('Discor',entries)['name'],'Discord')  # unambiguous prefix
   self.assertEqual(core.resolve_app('Discrod',entries)['name'],'Discord')  # fuzzy typo
-  with self.assertRaisesRegex(ValueError,'Multiple installed apps match'):
-   core.resolve_app('ify',entries)  # substring of both "Spotify" and "Spotify Beta"
+  # A-024/#16: several installed apps sharing a tier (substring "ify" matches both
+  # Spotify and Spotify Beta) open the top-ranked one — desktop_entries()' own
+  # most-local-dir-first order — instead of hard-failing on the human to disambiguate.
+  self.assertEqual(core.resolve_app('ify',entries)['name'],'Spotify')
   with self.assertRaisesRegex(ValueError,'No installed app matches'):
    core.resolve_app('totally-unrelated-xyz',entries)
   with self.assertRaises(ValueError):
    core.resolve_app('',entries)
+ def test_resolve_app_picks_top_match_for_duplicate_desktop_entries(self):
+  # The actual #16 shape: two .desktop stems (e.g. a native + Flatpak install) both
+  # display the exact same Name, so the "exact" tier itself has more than one entry.
+  entries=[{'name':'Bitwarden','exec':'bitwarden','stem':'bitwarden','wmclass':'bitwarden'},
+           {'name':'Bitwarden','exec':'flatpak run com.bitwarden.desktop','stem':'com.bitwarden.desktop','wmclass':'com.bitwarden.desktop'}]
+  chosen=core.resolve_app('bitwarden',entries)
+  self.assertEqual(chosen['name'],'Bitwarden')
+  self.assertEqual(chosen['stem'],'bitwarden','the first (most-local-priority) duplicate wins deterministically')
  def test_launch_command_drops_field_codes_not_just_the_token_value(self):
   entry={'name':'Spotify','exec':'spotify --uri=%u','stem':'spotify','wmclass':'spotify'}
   self.assertEqual(core.launch_command_for(entry),'spotify')
