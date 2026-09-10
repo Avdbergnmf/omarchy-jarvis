@@ -19,6 +19,7 @@ You are a NEW agent on Omarchy Jarvis (cold start). No prior chat context.
 A) If Alex named an assignment id → only if free or they said take over; else report conflict.
 B) Else compute **claimable** queued rows:
    - `status=queued`
+   - Skip any queued row whose brief has unmet `Blocked-by` (trust `./scripts/assignment-status.sh` claim hint / Blocked-by section).
    - If any `in_progress`: only `parallel-ok: YES` with an `area:` different from every in_progress row's area; never claim `parallel-ok: NO` while something else is in_progress; never same area as an in_progress, even if that row's active/*.md lists path hints — paths are optional context, never a gate that excuses a same-area claim.
    - If nothing in_progress → first queued row.
 C) Claimed → mark in_progress in QUEUE+INDEX, fill SESSION, **commit and push straight to `origin/main`** (see "Required worktree setup" below) *before* opening your worktree or writing product code, then execute.

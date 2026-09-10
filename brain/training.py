@@ -51,7 +51,12 @@ def assignments(root):
             priority = metadata(body, 'Priority').split(' ')[0] if path else ''
             # A-037: Blocked-by/Gate are optional structured metadata (not new QUEUE columns) —
             # assignment-status.sh and this board compute claimability by cross-referencing ids.
-            blocked_by = re.findall(r'A-\d{3,}', metadata(body, 'Blocked-by')) if path else []
+            # A-037 hardening: strip parentheticals and em-dash prose before extracting ids; dedupe while preserving order.
+            blocked_by_raw = metadata(body, 'Blocked-by') if path else ''
+            blocked_by_clean = re.sub(r'\([^)]*\)', '', blocked_by_raw)  # strip parentheticals
+            blocked_by_clean = re.sub(r' [—–].*', '', blocked_by_clean)  # strip em-dash/en-dash prose
+            blocked_by_ids = re.findall(r'A-\d{3,}', blocked_by_clean)
+            blocked_by = list(dict.fromkeys(blocked_by_ids))  # dedupe while preserving order
             gate = metadata(body, 'Gate') if path else ''
             result.append(dict(id=cols[1], title=cols[2], status=cols[3], area=cols[4], parallel=cols[5], path=path,
                                 priority=priority if priority in PRIORITIES else None,

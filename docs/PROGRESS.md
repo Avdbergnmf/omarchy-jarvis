@@ -692,10 +692,22 @@ validation remains pending because the browser connector exposes no browser on t
   `training-dispatch`); A-027 correctly gets `Blocked-by: none` (blocked on Alex's hosting/plan
   choice, not an id).
 - Evidence: `tests/test_assignments.py::test_blocked_by_and_gate_are_structured_optional_hints`
-  (format validation, editor round-trip, `unmet_blocked_by` narrowing once a blocker is marked
+  (format validation, editor round-trip, `unmet_blocked_by` narrowing once a blocker   is marked
   done); `node tests/overlay.test.cjs` (5 suites) and `./scripts/test-full.sh` pass. Found and
   fixed a real bug before committing: the first cut of the unmet-blocker lookup used `QUEUE.md`,
   which delists `done` rows entirely, so it permanently misreported a done-and-delisted blocker
   (A-036, in A-037's own brief) as still unmet — switched the status lookup to `INDEX.md`, which
   retains every id including `done`, and verified against all 10 migrated briefs by hand before
   and after the fix.
+
+## 2026-09-10 — post-A-037: harden Blocked-by parsing
+- Small follow-up to address parsing issues found when reviewing the live queue after A-037.
+- Cleaned A-031 brief: `Blocked-by: A-028, A-030` only (moved transitive note to Goal prose).
+- Cleaned A-027 brief: `Blocked-by: none` only (moved human decision explanation to Goal prose).
+- Hardened both `scripts/assignment-status.sh` and `brain/training.py` parsers: strip
+  parentheticals and em-dash prose before extracting ids; dedupe while preserving order.
+- Updated NEW_AGENT/PARALLEL/CONTINUE prompts: claim rules now mention skipping unmet Blocked-by.
+- Enhanced `assignment-status.sh`: show `HUMAN-BLOCKED` rows when status=blocked but no id deps.
+- Test coverage: `test_blocked_by_parser_strips_prose_and_dedupes` covers parentheticals,
+  em-dash prose, and duplicate collapsing.
+- PR #17 to main.

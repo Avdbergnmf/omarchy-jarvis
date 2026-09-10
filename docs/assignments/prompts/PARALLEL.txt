@@ -3,7 +3,7 @@ Another agent may already own an in_progress assignment. You take a PARALLEL tra
 
 1) Run `./scripts/assignment-status.sh` (fetches + reads canonical `origin/main`, not your local branch). Read START.md parallel rules, QUEUE.md, SESSION.md.
 2) Note every `in_progress` row's `area:` on `origin/main` (and any optional path hints in its active/*.md — context only).
-3) Claim the first `queued` assignment with **parallel-ok: YES** whose `area:` differs from every in_progress row's area. Path hints never override this — same area, no claim, even if paths look disjoint.
+3) Claim the first `queued` assignment with **parallel-ok: YES** whose `area:` differs from every in_progress row's area, skipping any row with unmet `Blocked-by` (trust `./scripts/assignment-status.sh` claim hint). Path hints never override this — same area, no claim, even if paths look disjoint.
 4) If none: stop immediately with the short **“No assignment in queue is possible right now.”** reply (see below). Do not touch in_progress work. Do not explore or invent tasks.
 5) If claimed: mark in_progress, update SESSION “Parallel agent”, **push that claim to `origin/main` before opening a worktree** (see below), work within the assignment's area/goal/out-of-scope (any path hints are non-binding), finish → done/, then **land on main** before stopping.
 

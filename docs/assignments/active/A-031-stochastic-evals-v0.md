@@ -5,13 +5,13 @@
 - **parallel-ok:** NO (protected evaluator/runner work is serial)
 - **Recommended depth:** high
 - **Soft path hints:** `tests/`, `scripts/`, `docs/evals/`
-- **Blocked-by:** A-028, A-030 (transitively also needs A-038, via A-028)
+- **Blocked-by:** A-028, A-030
 - **Gate:** control-plane
 - **Links:** SELF_IMPROVE_ROADMAP · ChatGPT step 4 · A-032 review
 
 ## Goal
 For 10–20 critical **planner-only** behaviors, run repeated fresh-context trials under a
-pinned A-038 evidence envelope. Measure first-answer reliability without approving or
+pinned A-038 evidence envelope. Note: A-031 transitively also needs A-038 via A-028. Measure first-answer reliability without approving or
 executing desktop actions. This is a calibrated diagnostic before it becomes a promotion
 threshold.
 
