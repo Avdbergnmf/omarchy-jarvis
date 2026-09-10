@@ -19,4 +19,4 @@
 | A-015 | Richer readable plan details on approve | done | area:overlay | NO | [done/A-015-training.md](done/A-015-training.md) |
 | A-016 | Training window overhaul (Problems-first) | done | area:overlay | NO | [done/A-016-training-window-overhaul.md](done/A-016-training-window-overhaul.md) |
 | A-017 | Training Assignments panel (list/edit/generate/handoff) | done | area:overlay | NO | [done/A-017-training-assignments-panel.md](done/A-017-training-assignments-panel.md) |
-| A-018 | Training Agent monitor (tiles + visible windows) | in_progress | area:overlay | NO | [active/A-018-training-agent-monitor.md](active/A-018-training-agent-monitor.md) |
+| A-018 | Training Agent monitor (tiles + visible windows) | done | area:overlay | NO | [done/A-018-training-agent-monitor.md](done/A-018-training-agent-monitor.md) |

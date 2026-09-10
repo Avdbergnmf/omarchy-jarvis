@@ -226,3 +226,4 @@ require('./training.test.cjs');
 require('./validation.test.cjs');
 
 require('./assignments.test.cjs');
+require('./agents.test.cjs');

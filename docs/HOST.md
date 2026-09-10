@@ -43,3 +43,19 @@ omarchy-launch-floating-terminal-with-presentation <cmd>   # useful for console 
 - User services `ollama.service` and `jarvis.service` installed and enabled. qwen2.5:3b downloaded (~1.9 GB).
 - SUPER+SHIFT+J was free and is now the Jarvis overlay binding; installed float size 520×150.
 - Desktop/session access requires leaving the agent workspace sandbox. Browser/native UI automation connector returned no available surfaces, so native action/Hyprland state tests are the available verification path.
+
+## Agent monitor window rules — A-018 (2026-09-10)
+- Only `foot` is installed as a terminal binary (`alacritty`/`kitty`/`ghostty` have config
+  dirs but no binary); `claude` and `codex` CLIs are both installed and on `PATH`.
+- `scripts/open-agent.py` opens/focuses one **real** terminal window per local agent slot —
+  never a hidden background job — via `omarchy-launch-or-focus-tui --app-id=jarvis-agent-<slot
+  id> <claude|codex>` (the same launch-or-focus primitive ADR-023's `open_app_by_name` uses
+  for webapps, here wrapping a TUI instead). The `--app-id` becomes the window's class, so
+  each slot gets its own addressable, re-focusable window even with several agents running
+  at once; a second click focuses the existing window instead of relaunching.
+- `claude-code` kind → `claude`; `cursor` kind → `codex` (the installed CLI matching that
+  slot's existing "Cursor / Codex" label). `human` kind has no process for Jarvis to
+  launch — those slots are worked by Alex himself in his own terminal.
+- Per-slot launch state lives under `logs/agent-windows/<slot-id>.{log,lock}` (gitignored,
+  same pattern as `logs/training-window.log`); the lock only prevents a double-launch race
+  from a rapid second click before the window appears.

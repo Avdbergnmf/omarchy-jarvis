@@ -243,6 +243,15 @@ def busy(slot, queue):
     return slot.get('status') == 'busy' or any(a['id'] == slot.get('current_assignment') and a['status'] == 'in_progress' for a in queue)
 
 
+def find_slot(root, slot_id):
+    """Look up a registered agent slot by id, verifying its own recorded kind rather
+    than trusting a client-supplied one (A-018: the Open agent window launch command
+    is chosen from this kind server-side, never from request input directly)."""
+    slot = next((s for s in slots(root)['agents'] if s['id'] == slot_id), None)
+    if not slot: raise ValueError('Unknown agent slot')
+    return slot
+
+
 def tail_json(root, path, limit=2_000_000):
     target = root / path
     if not target.exists(): return [], False
