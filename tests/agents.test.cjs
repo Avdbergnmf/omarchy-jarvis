@@ -2,7 +2,7 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 function element(){return {value:'',hidden:true,disabled:false,className:'',textContent:'',children:[],handlers:{},
  set innerHTML(value){this.children=[];},addEventListener(event,fn){this.handlers[event]=fn;},appendChild(child){this.children.push(child);},setAttribute(name,value){this[name]=value;},focus(){this.focused=true;},select(){}};}
 const els={},requests=[];const $=id=>els[id]||(els[id]=element());
-const claudeSlot={id:'slot-a1',label:'My coding agent',kind:'claude-code',status:'idle',computed_status:'waiting',current_assignment:null,queued_assignment_ids:['A-021'],personal_queue:[{id:'A-021',title:'Other',queue_status:'ready-next'}],busy:false,last_handoff:null,effective_reasoning_effort:null,reasoning_effort_source:null};
+const claudeSlot={id:'slot-a1',label:'My coding agent',kind:'claude-code',status:'idle',computed_status:'waiting',current_assignment:null,queued_assignment_ids:['A-021'],personal_queue:[{id:'A-021',title:'Other',queue_status:'ready-next'}],busy:false,last_handoff:null,reasoning_effort:'max',effective_reasoning_effort:'max',reasoning_effort_source:'slot launch setting'};
 const codexSlot={id:'slot-c1',label:'Codex deep',kind:'cursor',status:'idle',current_assignment:null,queued_assignment_ids:[],busy:false,last_handoff:null,reasoning_effort:'xhigh',effective_reasoning_effort:'xhigh',reasoning_effort_source:'slot launch setting'};
 const humanSlot={id:'slot-h1',label:'Alex himself',kind:'human',status:'idle',current_assignment:'A-020',queued_assignment_ids:[],busy:true,last_handoff:'docs/backlog/handoffs/active/x.md'};
 const data={agents:[claudeSlot,codexSlot,humanSlot],available_assignments:[{id:'A-021',title:'Other',status:'queued',area:'skills'}],assignments:[{id:'A-020',title:'Fix focus',status:'in_progress',area:'overlay',parallel:'NO'},{id:'A-021',title:'Other',status:'queued',area:'skills',parallel:'YES'},{id:'A-022',title:'Waiting',status:'blocked',area:'docs',parallel:'NO'}]};
@@ -29,10 +29,18 @@ vm.runInNewContext(fs.readFileSync('overlay/agents.js','utf8'),ctx);
  assert.equal($('#agent-toggle-status').textContent,'Mark slot busy');
  assert.match($('#agent-status-note').textContent,/Local status only/);
  assert.equal($('#train-slot').value,'slot-a1','selecting a tile prepares that slot');
+ assert.equal($('#train-effort').disabled,false,'Claude Code slots can choose depth');
+ assert.equal($('#train-effort').value,'max');
+ assert.ok($('#train-effort').children.some(option=>option.value==='max'),'Claude Code lists Max');
+ assert.match($('#agent-effort-summary').textContent,/Max.*slot launch setting/);
+ assert.match($('#agent-effort-help').textContent,/claude --effort.*new window/);
 
  ctx.selectAgent('slot-h1');
  assert.equal($('#agent-open-window').hidden,true,'human slots have nothing for Jarvis to open');
  assert.match($('#agent-current').textContent,/A-020/);
+ assert.equal($('#train-effort').disabled,true,'human slots cannot choose depth');
+ assert.match($('#agent-effort-help').textContent,/does not control reasoning depth/);
+ assert.match($('#agent-effort-summary').textContent,/unavailable/);
 
  $('#agent-toggle-status').handlers.click();
  assert.equal(ctx.lastPreview.operation,'slot');assert.equal(ctx.lastPreview.slot_id,'slot-h1');
@@ -41,6 +49,7 @@ vm.runInNewContext(fs.readFileSync('overlay/agents.js','utf8'),ctx);
  ctx.selectAgent('slot-c1');
  assert.match($('#agent-effort-summary').textContent,/Ultra \(xhigh\).*slot launch setting/);
  assert.equal($('#train-effort').value,'xhigh');assert.equal($('#train-effort').disabled,false);
+ assert.ok(!$('#train-effort').children.some(option=>option.value==='max'),'Codex does not list Max');
  assert.match($('#agent-effort-help').textContent,/new Codex window/);
 
  ctx.selectAgent('slot-a1');
@@ -58,6 +67,13 @@ vm.runInNewContext(fs.readFileSync('overlay/agents.js','utf8'),ctx);
 
  $('#train-mode').value='queue';$('#train-mode').handlers.change();
  assert.match($('#agent-delivery-help').textContent,/ordered queue.*never.*paste|ordered queue/);
+
+ $('#train-kind').value='cursor';$('#train-kind').handlers.change();
+ assert.equal($('#train-effort').disabled,false);
+ assert.ok(!$('#train-effort').children.some(option=>option.value==='max'),'new Codex slot omits Max');
+ $('#train-kind').value='claude-code';$('#train-kind').handlers.change();
+ assert.equal($('#train-effort').disabled,false);
+ assert.ok($('#train-effort').children.some(option=>option.value==='max'),'new Claude slot lists Max');
 
  console.log('PASS: agent depth, clear delivery/status controls, visible window launch, active-work strip, queue board');
 })().catch(error=>{console.error(error);process.exitCode=1;});

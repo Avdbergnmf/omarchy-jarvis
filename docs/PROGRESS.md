@@ -954,3 +954,22 @@ validation remains pending because the browser connector exposes no browser on t
   `./scripts/test-full.sh` green — 281 Python tests; journal-archive prune flake did
   not appear. Log: `logs/tests/full-20260910-164357.log`. PR #35.
 
+## 2026-09-10 — Claude Code Agent Manager `--effort` (ADR-039 follow-up)
+- Alex: Agent Manager disabled `#train-effort` unless `kind==='cursor'`; brain/`open-agent.py`
+  rejected effort for Claude. The installed Claude Code CLI accepts `--effort` with
+  `low|medium|high|xhigh|max`; default may be non-secret `effortLevel` in
+  `~/.claude/settings.json`.
+- Overlay: depth control enabled for `claude-code` as well as Cursor. Claude lists **Max**;
+  Codex stays Low/Medium/High/Ultra (`xhigh`) and never receives `max`. Help text: Claude
+  applies `claude --effort` only on a **new** window; focusing an existing session does not
+  change that session (same as Codex).
+- `brain/training.py`: persist/validate `reasoning_effort` per kind. Dashboard
+  `effective_reasoning_effort` / source for Claude is slot override or read-only settings
+  `effortLevel` (missing/invalid = unknown). Human slots still have no effort.
+- `scripts/open-agent.py`: `claude --effort <level>` for Claude; Codex `-c` path unchanged.
+  Invalid combos rejected. `server.py` already forwarded slot effort; now Claude slots can
+  store a value for it to pass.
+- Docs: ADR-039 amended; HOST; `feat-agent-monitor` guide; VERSION 0.5.12. A-043–A-046
+  untouched. Host restart after merge so the live overlay loads the new JS.
+
+

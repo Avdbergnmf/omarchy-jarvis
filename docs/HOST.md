@@ -56,6 +56,11 @@ omarchy-launch-floating-terminal-with-presentation <cmd>   # useful for console 
 - `claude-code` kind → `claude`; `cursor` kind → `codex` (the installed CLI matching that
   slot's existing "Cursor / Codex" label). `human` kind has no process for Jarvis to
   launch — those slots are worked by Alex himself in his own terminal.
+- New Claude windows may add `--effort <low|medium|high|xhigh|max>` from the slot's saved
+  `reasoning_effort`. New Codex windows may add `-c model_reasoning_effort="…"` with
+  `low|medium|high|xhigh` only (`max` is Claude-only). Focusing an existing window does
+  not change that session's depth. Claude's non-secret default, when no slot override is
+  set, is `effortLevel` in `~/.claude/settings.json` (missing/invalid = unknown).
 - Per-slot launch state lives under `logs/agent-windows/<slot-id>.{log,lock}` (gitignored,
   same pattern as `logs/training-window.log`); the lock only prevents a double-launch race
   from a rapid second click before the window appears.

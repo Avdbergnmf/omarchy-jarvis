@@ -44,6 +44,16 @@ class OpenAgentScriptTest(unittest.TestCase):
             self.assertEqual(args, ['omarchy-launch-or-focus-tui', '--app-id=jarvis-agent-slot-a1', 'claude'])
             dispatch.assert_called_once_with('focuswindow', 'address:0xdef')
 
+    def test_claude_kind_launches_with_effort_flag(self):
+        client = dict(address='0xdef', **{'class': 'jarvis-agent-slot-a1'})
+        with tempfile.TemporaryDirectory() as tmp, patch.object(open_agent_module, 'ROOT', Path(tmp)), \
+             patch.object(open_agent_module, 'urlopen', return_value=io.BytesIO(b'{"service":"omarchy-jarvis"}')), \
+             patch.object(open_agent_module, 'hypr', side_effect=[[], [client]]), \
+             patch.object(open_agent_module, 'dispatch'), \
+             patch.object(open_agent_module.subprocess, 'Popen') as launch:
+            open_agent_module.open_agent('slot-a1', 'claude-code', 'max')
+            self.assertEqual(launch.call_args.args[0], ['omarchy-launch-or-focus-tui', '--app-id=jarvis-agent-slot-a1', 'claude', '--effort', 'max'])
+
     def test_cursor_kind_launches_codex(self):
         client = dict(address='0x1', **{'class': 'jarvis-agent-slot-b2'})
         with tempfile.TemporaryDirectory() as tmp, patch.object(open_agent_module, 'ROOT', Path(tmp)), \
@@ -54,11 +64,15 @@ class OpenAgentScriptTest(unittest.TestCase):
             open_agent_module.open_agent('slot-b2', 'cursor', 'xhigh')
             self.assertEqual(launch.call_args.args[0], ['omarchy-launch-or-focus-tui', '--app-id=jarvis-agent-slot-b2', 'codex', '-c', 'model_reasoning_effort="xhigh"'])
 
-    def test_reasoning_effort_is_bounded_to_codex_slots(self):
-        with self.assertRaisesRegex(ValueError, 'only for Cursor / Codex'):
-            open_agent_module.open_agent('slot-a1', 'claude-code', 'high')
-        with self.assertRaisesRegex(ValueError, 'only for Cursor / Codex'):
+    def test_reasoning_effort_is_validated_per_kind(self):
+        with self.assertRaisesRegex(ValueError, 'not valid for this slot type'):
+            open_agent_module.open_agent('slot-a1', 'claude-code', 'ultra')
+        with self.assertRaisesRegex(ValueError, 'not valid for this slot type'):
+            open_agent_module.open_agent('slot-b2', 'cursor', 'max')
+        with self.assertRaisesRegex(ValueError, 'not valid for this slot type'):
             open_agent_module.open_agent('slot-b2', 'cursor', 'ultra')
+        with self.assertRaisesRegex(ValueError, 'own terminal'):
+            open_agent_module.open_agent('slot-c3', 'human', 'high')
 
     def test_human_kind_has_nothing_to_launch(self):
         with patch.object(open_agent_module.subprocess, 'Popen') as launch:
@@ -93,7 +107,7 @@ class AgentWindowRouteTest(unittest.TestCase):
         path = self.root/training.SLOTS
         path.parent.mkdir(parents=True)
         path.write_text(json.dumps({'version': 1, 'agents': [
-            dict(id='slot-a1', label='My coding agent', kind='claude-code', status='idle', current_assignment=None, queued_assignment_ids=[]),
+            dict(id='slot-a1', label='My coding agent', kind='claude-code', status='idle', current_assignment=None, queued_assignment_ids=[], reasoning_effort='max'),
             dict(id='slot-b2', label='Codex', kind='cursor', status='idle', current_assignment=None, queued_assignment_ids=[], reasoning_effort='high')]}))
 
     def tearDown(self):
@@ -132,6 +146,15 @@ class AgentWindowRouteTest(unittest.TestCase):
         argv = run.call_args.args[0]
         self.assertEqual(argv[argv.index('--reasoning-effort')+1], 'high')
 
+    def test_registered_claude_effort_is_passed_to_launcher(self):
+        with patch.object(server, 'ROOT', self.root), patch.object(server.subprocess, 'run') as run:
+            run.return_value = subprocess.CompletedProcess([], 0, '', '')
+            status, body = self.request({'slot_id': 'slot-a1', 'reasoning_effort': 'low'})
+        self.assertEqual(status, 200)
+        argv = run.call_args.args[0]
+        self.assertEqual(argv[argv.index('--kind')+1], 'claude-code')
+        self.assertEqual(argv[argv.index('--reasoning-effort')+1], 'max')
+
     def test_script_failure_surfaces_as_conflict(self):
         with patch.object(server, 'ROOT', self.root), patch.object(server.subprocess, 'run') as run:
             run.return_value = subprocess.CompletedProcess([], 1, '', 'Agent window did not appear')
@@ -159,6 +182,16 @@ class FindSlotTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Unknown agent slot'):
             training.find_slot(self.root, 'slot-nope')
 
+    def test_stored_effort_must_match_kind(self):
+        path = self.root/training.SLOTS
+        path.write_text(json.dumps({'version': 1, 'agents': [
+            dict(id='slot-b2', label='Bad', kind='cursor', status='idle', current_assignment=None, queued_assignment_ids=[], reasoning_effort='max')]}))
+        with self.assertRaisesRegex(ValueError, 'Invalid agent reasoning effort'):
+            training.slots(self.root)
+        path.write_text(json.dumps({'version': 1, 'agents': [
+            dict(id='slot-a1', label='Ok', kind='claude-code', status='idle', current_assignment=None, queued_assignment_ids=[], reasoning_effort='max')]}))
+        self.assertEqual(training.slots(self.root)['agents'][0]['reasoning_effort'], 'max')
+
     def test_codex_config_effort_is_bounded(self):
         config = self.root/'config.toml'
         config.write_text('model_reasoning_effort = "medium"\n')
@@ -166,16 +199,34 @@ class FindSlotTest(unittest.TestCase):
         config.write_text('model_reasoning_effort = "ultra"\n')
         self.assertIsNone(training.codex_default_reasoning_effort(config))
 
+    def test_claude_settings_effort_is_bounded(self):
+        settings = self.root/'settings.json'
+        settings.write_text('{"effortLevel": "high"}\n')
+        self.assertEqual(training.claude_default_reasoning_effort(settings), 'high')
+        settings.write_text('{"effortLevel": "max"}\n')
+        self.assertEqual(training.claude_default_reasoning_effort(settings), 'max')
+        settings.write_text('{"effortLevel": "ultra", "apiKey": "secret"}\n')
+        self.assertIsNone(training.claude_default_reasoning_effort(settings))
+        settings.write_text('not json')
+        self.assertIsNone(training.claude_default_reasoning_effort(settings))
+
     def test_dashboard_reports_config_default_and_slot_override(self):
         path = self.root/training.SLOTS
         path.write_text(json.dumps({'version': 1, 'agents': [
             dict(id='slot-a1', label='Default', kind='cursor', status='idle', current_assignment=None, queued_assignment_ids=[]),
-            dict(id='slot-b2', label='Override', kind='cursor', status='idle', current_assignment=None, queued_assignment_ids=[], reasoning_effort='high')]}))
+            dict(id='slot-b2', label='Override', kind='cursor', status='idle', current_assignment=None, queued_assignment_ids=[], reasoning_effort='high'),
+            dict(id='slot-c3', label='Claude default', kind='claude-code', status='idle', current_assignment=None, queued_assignment_ids=[]),
+            dict(id='slot-d4', label='Claude override', kind='claude-code', status='idle', current_assignment=None, queued_assignment_ids=[], reasoning_effort='max'),
+            dict(id='slot-e5', label='Human', kind='human', status='idle', current_assignment=None, queued_assignment_ids=[])]}))
         with patch.object(training, 'codex_default_reasoning_effort', return_value='medium'), \
+             patch.object(training, 'claude_default_reasoning_effort', return_value='high'), \
              patch.object(training.subprocess, 'run', side_effect=OSError('offline')):
             agents = training.dashboard(self.root, 'test', 'abc')['agents']
         self.assertEqual((agents[0]['effective_reasoning_effort'], agents[0]['reasoning_effort_source']), ('medium', 'Codex config'))
         self.assertEqual((agents[1]['effective_reasoning_effort'], agents[1]['reasoning_effort_source']), ('high', 'slot launch setting'))
+        self.assertEqual((agents[2]['effective_reasoning_effort'], agents[2]['reasoning_effort_source']), ('high', 'Claude settings'))
+        self.assertEqual((agents[3]['effective_reasoning_effort'], agents[3]['reasoning_effort_source']), ('max', 'slot launch setting'))
+        self.assertEqual((agents[4]['effective_reasoning_effort'], agents[4]['reasoning_effort_source']), (None, None))
 
 
 if __name__ == '__main__':

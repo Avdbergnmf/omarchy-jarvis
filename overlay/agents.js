@@ -1,12 +1,27 @@
 const agentEl=id=>document.querySelector('#agent-'+id);
 let selectedAgent=null;
-const effortLabels={low:'Low',medium:'Medium',high:'High',xhigh:'Ultra (xhigh)'};
+const effortLabels={low:'Low',medium:'Medium',high:'High',xhigh:'Ultra (xhigh)',max:'Max'};
+const cursorEffortOptions=[['','Use Codex config'],['low','Low'],['medium','Medium'],['high','High'],['xhigh','Ultra (xhigh)']];
+const claudeEffortOptions=[['','Use Claude settings'],['low','Low'],['medium','Medium'],['high','High'],['xhigh','Ultra (xhigh)'],['max','Max']];
+function fillEffortOptions(kind,selected){
+ const effort=trainEl('effort');
+ const rows=kind==='cursor'?cursorEffortOptions:kind==='claude-code'?claudeEffortOptions:[['','Not used']];
+ effort.innerHTML='';
+ for(const [value,label] of rows){
+  const option=document.createElement('option');option.value=value;option.textContent=label;effort.appendChild(option);
+ }
+ const allowed=new Set(rows.map(row=>row[0]));
+ effort.value=allowed.has(selected||'')?selected:'';
+}
 function updateAgentControls(slot=null){
  const kind=slot?slot.kind:trainEl('kind').value,effort=trainEl('effort');
- effort.disabled=kind!=='cursor';
- effort.value=kind==='cursor'&&slot&&slot.reasoning_effort?slot.reasoning_effort:'';
+ const supports=kind==='cursor'||kind==='claude-code';
+ effort.disabled=!supports;
+ fillEffortOptions(kind,supports&&slot&&slot.reasoning_effort?slot.reasoning_effort:'');
  agentEl('effort-help').textContent=kind==='cursor'
   ?'Applied only when a new Codex window starts. Opening an existing window only focuses it; that session keeps its current depth.'
+  :kind==='claude-code'
+  ?'Applied as claude --effort on a new window start. Opening an existing window only focuses it; that session keeps its current depth.'
   :'This launcher does not control reasoning depth for this slot type.';
 }
 function updateDeliveryHelp(){
@@ -75,9 +90,9 @@ function fillAgentDetail(slot,setPreparedFor=true){
  selectedAgent=slot;agentEl('hint').hidden=true;agentEl('detail').hidden=false;
  agentEl('heading').textContent=slot.label+' ('+slot.id+')';
  agentEl('status').textContent=slot.kind+' · '+(slot.computed_status||(slot.busy?'working':'idle'));
- agentEl('effort-summary').textContent=slot.kind==='cursor'
-  ?'Reasoning depth: '+(slot.effective_reasoning_effort?(effortLabels[slot.effective_reasoning_effort]||slot.effective_reasoning_effort)+' · '+slot.reasoning_effort_source:'unknown — choose a launch setting below')
-  :'Reasoning depth: unavailable for this launcher.';
+ agentEl('effort-summary').textContent=slot.kind==='human'
+  ?'Reasoning depth: unavailable for this launcher.'
+  :'Reasoning depth: '+(slot.effective_reasoning_effort?(effortLabels[slot.effective_reasoning_effort]||slot.effective_reasoning_effort)+' · '+slot.reasoning_effort_source:'unknown — choose a launch setting below');
  agentEl('current').textContent='Current assignment: '+(slot.current_assignment||'none');
  agentEl('queued').textContent='Personal queue: '+(personalQueue(slot,trainingData).map(item=>item.id+' (queued-to-this-agent · '+item.queue_status+')').join(', ')||'empty');
  agentEl('handoff').textContent=slot.last_handoff?'Last handoff: '+slot.last_handoff:'No handoff prepared yet.';

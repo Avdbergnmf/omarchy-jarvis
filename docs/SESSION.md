@@ -4,6 +4,7 @@
 
 ## Active goal
 - **A-047** queued — Agent monitor dynamic status + simpler send (Alex JARVIS)
+- **Claude Code `--effort`** done — depth picker for claude-code slots (ADR-039 follow-up); landing PR
 - **A-046** queued — Validate features overhaul (simple cards; Alex JARVIS)
 - **A-044** in_progress — Agent manager: Copy handoff fix (Claude, worktree omarchy-jarvis-a044-agent-copy-handoff-fix)
 - **A-045** queued — Agent manager: opt-in auto-send prompt (blocked-by gate:training-ux via A-044)
@@ -16,6 +17,7 @@
 - **A-031** done — merged PR #25 / ADR-051
 
 ## Checklist
+- [x] Focused fix: Claude Code slots can select/persist/launch `--effort` (low|medium|high|xhigh|max)
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
 - [x] A-036 Agent monitor usability — done
 - [x] A-040 Test suite token optimization — done, merged to main, worktree/branch removed

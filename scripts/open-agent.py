@@ -21,7 +21,9 @@ from core import hypr, dispatch
 # One real CLI per known agent kind; 'human' has no process for Jarvis to launch —
 # a human slot means Alex works it himself in his own terminal.
 AGENT_COMMANDS = {'claude-code': ['claude'], 'cursor': ['codex']}
-REASONING_EFFORTS = ('low', 'medium', 'high', 'xhigh')
+CURSOR_REASONING_EFFORTS = ('low', 'medium', 'high', 'xhigh')
+CLAUDE_REASONING_EFFORTS = ('low', 'medium', 'high', 'xhigh', 'max')
+REASONING_EFFORTS = tuple(dict.fromkeys((*CURSOR_REASONING_EFFORTS, *CLAUDE_REASONING_EFFORTS)))
 
 
 def app_id(slot_id):
@@ -39,9 +41,12 @@ def open_agent(slot_id, kind, reasoning_effort=None):
     if not command:
         raise ValueError('Human slots are worked in your own terminal; there is nothing for Jarvis to open.')
     if reasoning_effort is not None:
-        if kind != 'cursor' or reasoning_effort not in REASONING_EFFORTS:
-            raise ValueError('Reasoning effort is supported only for Cursor / Codex slots')
-        command = [*command, '-c', f'model_reasoning_effort="{reasoning_effort}"']
+        if kind == 'cursor' and reasoning_effort in CURSOR_REASONING_EFFORTS:
+            command = [*command, '-c', f'model_reasoning_effort="{reasoning_effort}"']
+        elif kind == 'claude-code' and reasoning_effort in CLAUDE_REASONING_EFFORTS:
+            command = [*command, '--effort', reasoning_effort]
+        else:
+            raise ValueError('Reasoning effort is not valid for this slot type')
     with urlopen('http://127.0.0.1:7421/health', timeout=2) as response:
         if json.load(response).get('service') != 'omarchy-jarvis':
             raise RuntimeError('Start Jarvis before opening an agent window')
