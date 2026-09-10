@@ -67,12 +67,18 @@ Read the issue and local mirror. Fix bugs before enhancements. One PR per issue 
 to comment. Never close without evidence. Reports and handoffs link run_id, journal/console
 path and jarvis_version. Do not silently expand a pass into unrelated open issues.
 
-## GitHub branch protection (read this)
+## GitHub and Control Plane review (read this)
 
 Repo is **public**. An active ruleset on `main` requires a **PR**, requires the **`test`**
 check, and blocks force-push/deletion (ADR-049; supersedes ADR-046). Land work via PR — do not
-expect direct pushes to `main` to work. Unattended Forge stays parked — see docs/FUTURE.md.
+expect direct pushes to `main` to work. Required approving reviews are still **0** and
+CODEOWNERS is an ownership map, not an extra required-review gate. Unattended Forge stays
+parked — see docs/FUTURE.md.
 
+A candidate change must not also weaken the existing protected regression/oracle,
+authorization, trusted-skill, ledger-integrity, workflow, or promotion policy used to accept
+it. Ordinary feature tests may ride with a feature; mixed candidate + Control Plane changes
+require Alex to explicitly scope the Control Plane change. See `docs/control-plane/README.md`.
 
 ## Parallel work
 

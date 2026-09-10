@@ -1,0 +1,24 @@
+# A-030: ownership map only. The live ruleset does not require code-owner review.
+/.github/CODEOWNERS @Avdbergnmf
+/.github/workflows/** @Avdbergnmf
+/.github/ISSUE_TEMPLATE/** @Avdbergnmf
+/actions/** @Avdbergnmf
+/brain/** @Avdbergnmf
+/docs/control-plane/** @Avdbergnmf
+/docs/assignments/prompts/** @Avdbergnmf
+/docs/evals/** @Avdbergnmf
+/docs/ledger/** @Avdbergnmf
+/docs/validation/** @Avdbergnmf
+/scripts/** @Avdbergnmf
+/skills/examples/** @Avdbergnmf
+/tests/test_jarvis.py @Avdbergnmf
+/AGENTS.md @Avdbergnmf
+/README.md @Avdbergnmf
+/START.md @Avdbergnmf
+/VERSION @Avdbergnmf
+/docs/DECISIONS.md @Avdbergnmf
+/docs/assignments/README.md @Avdbergnmf
+/docs/assignments/TEMPLATE.md @Avdbergnmf
+/docs/FEATURES.md @Avdbergnmf
+/docs/FUTURE.md @Avdbergnmf
+/docs/SELF_IMPROVE_ROADMAP.md @Avdbergnmf

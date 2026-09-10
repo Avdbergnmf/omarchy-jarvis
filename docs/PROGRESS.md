@@ -851,3 +851,10 @@ validation remains pending because the browser connector exposes no browser on t
   ADR-049 supersedes ADR-046's "no protection" guidance. Unattended Forge remains parked in FUTURE.md.
 - Left A-030 `in_progress` claim untouched aside from the parallel-ok reason line.
 
+## 2026-09-10 — A-030 Control Plane boundary v1 (ADR-050)
+- Added `docs/control-plane/boundary-v1.json` + README: a versioned threat/classification map for authorization/execution, success definitions, trust (`skills_trusted` bundled recipes), evidence, work allocation/promotion, deployment identity and ledger integrity.
+- Added `.github/CODEOWNERS` as an ownership map and `scripts/check-control-plane.py` in CI. It rejects unclassified files under broad boundary roots, missing required authority paths, unclassified protected-regression oracle sources, and CODEOWNERS/manifest drift.
+- Ownership is intentionally coarse across mixed `brain/`, `actions/`, and `scripts/`; filed `feat-self-improve-control-plane-extraction` rather than claiming physical separation.
+- Reconciled `.github/ISSUE_TEMPLATE/workstream.md` with ADR-034: area + isolated worktree is the parallel rule; paths are optional soft hints. `START.md` rejects mixed candidate + grader/authorization/trusted-skill/ledger/workflow/promotion changes without explicit Alex scope.
+- Live API evidence (ruleset `22779389`) confirms ADR-049: PR + `test` are required and bypass/force-push/deletion are blocked; approving reviews and code-owner review remain off. CODEOWNERS is not overstated as an enforced human-review gate.
+- A-031 unblocked (`Blocked-by: none`, status queued). Six new focused tests, smoke, and the full suite pass (229 tests total); full log: `logs/tests/full-20260910-163429.log`.

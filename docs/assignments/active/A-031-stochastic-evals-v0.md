@@ -1,11 +1,11 @@
 # A-031 — Stochastic planner evals v0 (10–20 critical behaviors)
 
-- **Status:** blocked
+- **Status:** queued
 - **Area:** area:docs (+ light tests/scripts)
 - **parallel-ok:** NO (control-plane: protected evaluator/runner — ADR-048)
 - **Recommended depth:** high
 - **Soft path hints:** `tests/`, `scripts/`, `docs/evals/`
-- **Blocked-by:** A-028, A-030
+- **Blocked-by:** none
 - **Gate:** control-plane
 - **Links:** SELF_IMPROVE_ROADMAP · ChatGPT step 4 · A-032 review
 

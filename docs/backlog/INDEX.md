@@ -30,6 +30,7 @@ _Converted:_ bug-open-bitwarden → assignments A-024 + A-025 (`bugs/converted/`
 | feat-self-improve-friction-metrics | feature | Jarvis friction metrics | M | open | — |
 | feat-self-improve-skill-manifests | feature | Versioned skill manifests (perms, tests, deps) | M | open | — |
 | feat-self-improve-arch-boundary-tests | feature | Architectural boundary tests | M | open | — |
+| feat-self-improve-control-plane-extraction | feature | Extract mixed Control Plane modules | L | open | — |
 | feat-self-improve-memory-consolidation | feature | Episodic→durable memory consolidation | L | open | — |
 | feat-self-improve-maintainability-gate | feature | Maintainability multi-signal gate on candidates | M | open | — |
 | feat-self-improve-prompt-config-semver | feature | Trace prompt/config versions like code | M | converted | A-038 |
