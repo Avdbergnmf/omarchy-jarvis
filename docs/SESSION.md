@@ -6,6 +6,7 @@
 - **A-026** in_progress — Claude @ `a026-improvement-ledger-v0` / `~/Work/omarchy-jarvis-a026-improvement-ledger-v0` (claim committed to main first, per ADR-038)
 - **A-038** done — see [done/A-038-evidence-identity-durable-bundles-v0.md](assignments/done/A-038-evidence-identity-durable-bundles-v0.md) / ADR-042
 - **A-037** done — see [done/A-037-assignment-stages.md](assignments/done/A-037-assignment-stages.md) / ADR-041
+- **A-041** filed — Agent Monitor tiles + per-agent auto-queue redesign (queued, area:overlay, depth high, gate training-dispatch)
 
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
@@ -14,6 +15,7 @@
 - [x] A-037 Release gates + claimability visibility — done, merged to main
 - [x] A-038 Evidence identity + durable operational bundles v0 — done, merged to main, worktree/branch removed
 - [ ] A-026 Improvement Ledger v0 — in_progress, worktree opened
+- [ ] A-041 Agent Monitor redesign — queued (filed; not started)
 
 ## Done this session (evidence)
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
@@ -23,6 +25,7 @@
 - Claude: implemented A-037 (ADR-041) — `Blocked-by`/`Gate` structured metadata replace free-text dependency prose; `assignment-status.sh` computes real unmet blockers via `INDEX.md`. Merged, worktree/branch removed.
 - Claude: claimed A-038 by pushing QUEUE/INDEX/SESSION status → in_progress directly to `origin/main` before opening the feature worktree.
 - Claude: implemented A-038 (ADR-042) — `brain/evidence.py` (fingerprint + tiered envelope + content-addressed atomic bundle writer) and `scripts/export-evidence.py`, the bounded callable exporter. `brain/server.py` now records `mode`/`model` per run so the fingerprint is derivable from the journal. `docs/evidence/README.md` (new), `docs/LOGGING.md`/`START.md` updated. A-026/A-028 unblocked (`Blocked-by: none`, `Status: queued`) since A-038 was their only listed blocker. 20 new tests (`tests/test_evidence.py`); verified end-to-end against a synthetic run-log and the real local Ollama daemon (live model digest resolved). 180/180 tests pass.
+- Desk/Firsty: filed **A-041** (Agent Monitor tiles + per-agent auto-queue redesign) from Alex's 2026-09-10 UX notes; rebased onto main after A-038/A-026 claim.
 
 ## Next action (one concrete step)
 - In the `a026-improvement-ledger-v0` worktree: `docs/ledger/` schema + README + TEMPLATE + INDEX, id allocation rules, seed records from A-019…A-025/#15/#16, optional `Improvement:` assignment metadata (brain/training.py), ADR. On acceptance, unblock A-029.

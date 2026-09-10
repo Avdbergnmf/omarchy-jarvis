@@ -734,3 +734,9 @@ validation remains pending because the browser connector exposes no browser on t
   addressed distinct files. `python3 -m unittest discover -s tests` — 180/180 pass (160 + 20
   new); `./scripts/doctor.sh --syntax` and `./scripts/test-full.sh` green. No shared-service
   restart performed from this worktree (out of scope).
+
+## 2026-09-10 — A-041 filed: Agent Monitor tiles + per-agent auto-queue redesign
+- Captured Alex's Training Agent Manager UX: horizontal color-coded agent tiles; claimable-assignments panel; system NEW vs CONTINUE (dev foldout override); per-agent multi-assignment queue under each tile with auto-advance on QUEUE/INDEX change; retire confusing "Save in local queue for later" sticky-note delivery.
+- Brief: `docs/assignments/active/A-041-agent-monitor-tiles-per-agent-auto-queue.md` (queued, area:overlay, depth high, gate training-dispatch). ADR-043 stub reserved for implement-time auto-submit vs paste policy.
+- Rebased onto main after A-038 merge + A-026 claim (PR #18 had conflicts against stale branch base).
+
