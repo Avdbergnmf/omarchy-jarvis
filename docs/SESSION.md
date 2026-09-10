@@ -3,17 +3,16 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- No assignment in_progress.
+- **A-038** in_progress — Claude @ `a038-evidence-identity-durable-bundles-v0` / `~/Work/omarchy-jarvis-a038-evidence-identity-durable-bundles-v0` (claim committed to main first, per ADR-038)
 - **A-037** done — see [done/A-037-assignment-stages.md](assignments/done/A-037-assignment-stages.md) / ADR-041
 - **A-040** done — see [done/A-040-test-suite-token-optimization.md](assignments/done/A-040-test-suite-token-optimization.md) / ADR-040
-- **Next up: A-038** — recommended depth high (evidence identity + durable operational bundles v0)
 
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
 - [x] A-036 Agent monitor usability — done
 - [x] A-040 Test suite token optimization — done, merged to main, worktree/branch removed
-- [x] A-037 Release gates + claimability visibility — done, merging to main
-- [ ] A-038+ — next claimable
+- [x] A-037 Release gates + claimability visibility — done, merged to main
+- [ ] A-038 Evidence identity + durable operational bundles v0 — in_progress, worktree opened
 
 ## Done this session (evidence)
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
@@ -24,7 +23,7 @@
 - Claude: implemented A-037 (ADR-041) — `Blocked-by`/`Gate` structured metadata replace free-text dependency prose; `assignment-status.sh` computes real unmet blockers (via `INDEX.md`, not `QUEUE.md` — a `done` id is delisted from QUEUE's open rows) and the claim hint skips functionally-blocked `queued` rows; `brain/training.py`/`overlay/agents.js`/`assignments.js` show real blocked reasons + gate instead of a generic hint; editor gained matching fields. Migrated all 10 blocked/queued Wave 0/1 briefs. Found and fixed a real bug pre-commit: the first cut used QUEUE.md for status lookup, which falsely reported a done-and-delisted blocker as still unmet.
 
 ## Next action (one concrete step)
-- Merge `a037-assignment-stages` into `main`, push, remove the worktree/branch, then report to Alex. Next claimable: A-038 (area:brain, recommended depth high, `Blocked-by: none`).
+- In the `a038-evidence-identity-durable-bundles-v0` worktree: evidence schema (`docs/evidence/`), `brain/evidence.py` (fingerprint + bounded content-addressed exporter), `scripts/export-evidence.py`, tests, ADR. On acceptance, unblock A-026/A-028.
 
 ## Parallel agent
 - none

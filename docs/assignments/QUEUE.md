@@ -5,7 +5,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | high | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
-| A-038 | Evidence identity + durable operational bundles v0 | queued | area:brain | NO | high | [active/A-038-evidence-identity-durable-bundles-v0.md](active/A-038-evidence-identity-durable-bundles-v0.md) |
+| A-038 | Evidence identity + durable operational bundles v0 | in_progress | area:brain | NO | high | [active/A-038-evidence-identity-durable-bundles-v0.md](active/A-038-evidence-identity-durable-bundles-v0.md) |
 | A-026 | Improvement Ledger v0 (Desk-owned audit wrapping QUEUE) | blocked | area:docs | NO | high | [active/A-026-improvement-ledger-v0.md](active/A-026-improvement-ledger-v0.md) |
 | A-028 | Deterministic candidate-eval foundation | blocked | area:docs | NO | high | [active/A-028-eval-harness-v0.md](active/A-028-eval-harness-v0.md) |
 | A-030 | Protect safety/eval/control-plane paths | blocked | area:docs | NO | medium | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
