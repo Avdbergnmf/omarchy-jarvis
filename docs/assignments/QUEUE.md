@@ -5,7 +5,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | high | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
-| A-026 | Improvement Ledger v0 (Desk-owned audit wrapping QUEUE) | queued | area:docs | NO | high | [active/A-026-improvement-ledger-v0.md](active/A-026-improvement-ledger-v0.md) |
+| A-026 | Improvement Ledger v0 (Desk-owned audit wrapping QUEUE) | in_progress | area:docs | NO | high | [active/A-026-improvement-ledger-v0.md](active/A-026-improvement-ledger-v0.md) |
 | A-028 | Deterministic candidate-eval foundation | queued | area:docs | NO | high | [active/A-028-eval-harness-v0.md](active/A-028-eval-harness-v0.md) |
 | A-030 | Protect safety/eval/control-plane paths | blocked | area:docs | NO | medium | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | high | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |

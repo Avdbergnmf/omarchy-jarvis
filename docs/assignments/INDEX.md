@@ -27,7 +27,7 @@
 | A-023 | Simplify assignment scope (area + worktree, soft paths) | done | area:docs | YES | [done/A-023-simplify-assignment-path-scope.md](done/A-023-simplify-assignment-path-scope.md) |
 | A-024 | Ambiguous open_app_by_name → top match (Bitwarden #16) | done | area:actions | YES | [done/A-024-open-ambiguous-app-top-match.md](done/A-024-open-ambiguous-app-top-match.md) |
 | A-025 | App-open preferences + “the other one” correction (#16) | done | area:brain | NO | [done/A-025-app-open-preferences-and-correction.md](done/A-025-app-open-preferences-and-correction.md) |
-| A-026 | Improvement Ledger v0 (Desk-owned audit wrapping QUEUE) | queued | area:docs | NO | [active/A-026-improvement-ledger-v0.md](active/A-026-improvement-ledger-v0.md) |
+| A-026 | Improvement Ledger v0 (Desk-owned audit wrapping QUEUE) | in_progress | area:docs | NO | [active/A-026-improvement-ledger-v0.md](active/A-026-improvement-ledger-v0.md) |
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
 | A-028 | Deterministic candidate-eval foundation | queued | area:docs | NO | [active/A-028-eval-harness-v0.md](active/A-028-eval-harness-v0.md) |
 | A-029 | Preference memory v0 (provenance, precedence, revoke) | blocked | area:actions | NO | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |

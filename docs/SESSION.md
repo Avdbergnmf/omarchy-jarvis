@@ -3,10 +3,9 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- No assignment in_progress.
+- **A-026** in_progress — Claude @ `a026-improvement-ledger-v0` / `~/Work/omarchy-jarvis-a026-improvement-ledger-v0` (claim committed to main first, per ADR-038)
 - **A-038** done — see [done/A-038-evidence-identity-durable-bundles-v0.md](assignments/done/A-038-evidence-identity-durable-bundles-v0.md) / ADR-042
 - **A-037** done — see [done/A-037-assignment-stages.md](assignments/done/A-037-assignment-stages.md) / ADR-041
-- **Next up: A-026** — recommended depth high (Improvement Ledger v0; `Blocked-by: none`). A-028 (same depth/gate, also unblocked) is an equally valid alternative.
 
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
@@ -14,7 +13,7 @@
 - [x] A-040 Test suite token optimization — done, merged to main, worktree/branch removed
 - [x] A-037 Release gates + claimability visibility — done, merged to main
 - [x] A-038 Evidence identity + durable operational bundles v0 — done, merged to main, worktree/branch removed
-- [ ] A-026 / A-028 — next claimable (both unblocked)
+- [ ] A-026 Improvement Ledger v0 — in_progress, worktree opened
 
 ## Done this session (evidence)
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
@@ -26,7 +25,7 @@
 - Claude: implemented A-038 (ADR-042) — `brain/evidence.py` (fingerprint + tiered envelope + content-addressed atomic bundle writer) and `scripts/export-evidence.py`, the bounded callable exporter. `brain/server.py` now records `mode`/`model` per run so the fingerprint is derivable from the journal. `docs/evidence/README.md` (new), `docs/LOGGING.md`/`START.md` updated. A-026/A-028 unblocked (`Blocked-by: none`, `Status: queued`) since A-038 was their only listed blocker. 20 new tests (`tests/test_evidence.py`); verified end-to-end against a synthetic run-log and the real local Ollama daemon (live model digest resolved). 180/180 tests pass.
 
 ## Next action (one concrete step)
-- Report to Alex (done). Next claimable: A-026 or A-028 (both area:docs, recommended depth high, `Blocked-by: none`).
+- In the `a026-improvement-ledger-v0` worktree: `docs/ledger/` schema + README + TEMPLATE + INDEX, id allocation rules, seed records from A-019…A-025/#15/#16, optional `Improvement:` assignment metadata (brain/training.py), ADR. On acceptance, unblock A-029.
 
 ## Parallel agent
 - none
