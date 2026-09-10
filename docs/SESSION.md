@@ -16,7 +16,7 @@
 - [x] A-037 Release gates + claimability visibility — done, merged to main
 - [x] A-038 Evidence identity + durable operational bundles v0 — done, merged to main, worktree/branch removed
 - [x] A-026 Improvement Ledger v0 — done, merged to main, worktree/branch removed
-- [x] A-028 Deterministic candidate-eval foundation — done, merging to main
+- [x] A-028 Deterministic candidate-eval foundation — done, merged to main, worktree/branch removed
 - [ ] A-041 Agent Monitor redesign — queued (filed; not started)
 - [ ] A-029 / A-033 / A-041 — next claimable (all unblocked, disjoint areas)
 
