@@ -5,7 +5,7 @@ Agents must update definitions when shipping user-visible behavior. Automated te
 
 | id | title | area | status | last tested version |
 |---|---|---|---|---|
-| feat-overlay-chat | Overlay chat and approval | overlay | unvalidated | — |
+| feat-overlay-chat | Overlay chat and approval | overlay | validated | 0.5.2 |
 | feat-open-planning | Open planning workspace | skills | unvalidated | — |
 | feat-scratch-mail | Scratchpad and Outlook | skills | unvalidated | — |
 | feat-report-feature | Bug and feature intake | brain | unvalidated | — |
@@ -15,5 +15,3 @@ Agents must update definitions when shipping user-visible behavior. Automated te
 | feat-train | Training and confirmed handoffs | overlay | unvalidated | — |
 | feat-validate | Guided human validation | overlay | unvalidated | — |
 | feat-open-by-name | Open any installed app by name | actions | unvalidated | — |
-
-Notes: YouTube `open_webapp` + planner honesty guards shipped with A-012/A-014; add/update validation guides when convenient. Regenerating this table: see `docs/validation/catalog.schema.md`.
