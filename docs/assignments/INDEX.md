@@ -37,6 +37,7 @@
 | A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | NO | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
-| A-036 | Agent monitor usability (depth, delivery, live work) | queued | area:overlay | YES | [active/A-036-agent-monitor-usability.md](active/A-036-agent-monitor-usability.md) |
+| A-036 | Agent monitor usability (depth, delivery, live work) | in_progress | area:overlay | YES | [active/A-036-agent-monitor-usability.md](active/A-036-agent-monitor-usability.md) |
 | A-037 | Release gates + claimability visibility | queued | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
 | A-038 | Evidence identity + durable operational bundles v0 | queued | area:brain | NO | [active/A-038-evidence-identity-durable-bundles-v0.md](active/A-038-evidence-identity-durable-bundles-v0.md) |
+| A-039 | Cross-worktree claim visibility (stop double-claiming) | queued | area:docs | YES | [active/A-039-cross-worktree-claim-visibility.md](active/A-039-cross-worktree-claim-visibility.md) |

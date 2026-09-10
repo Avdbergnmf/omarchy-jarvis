@@ -595,3 +595,7 @@ validation remains pending because the browser connector exposes no browser on t
 - Evidence: 153 Python tests, five JavaScript suites, shellcheck and `doctor.sh --syntax` pass;
   assignment status and `git diff --check` pass. Docs/planning only; VERSION unchanged and no
   shared service restart required.
+
+## 2026-09-10 — desk: A-039 cross-worktree claim visibility (P0)
+- Bug: claim+worktree updates QUEUE only on agent branch; main/next CONTINUE re-claims. Evidence: A-036 in_progress on worktree, queued on main.
+- Filed A-039 highest priority, parallel-ok with A-036; desk marked A-036 in_progress on main.

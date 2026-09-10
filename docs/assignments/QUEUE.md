@@ -4,7 +4,8 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| A-036 | Agent monitor usability (depth, delivery, live work) | queued | area:overlay | YES | [active/A-036-agent-monitor-usability.md](active/A-036-agent-monitor-usability.md) |
+| A-039 | Cross-worktree claim visibility (stop double-claiming) | queued | area:docs | YES | [active/A-039-cross-worktree-claim-visibility.md](active/A-039-cross-worktree-claim-visibility.md) |
+| A-036 | Agent monitor usability (depth, delivery, live work) | in_progress | area:overlay | YES | [active/A-036-agent-monitor-usability.md](active/A-036-agent-monitor-usability.md) |
 | A-037 | Release gates + claimability visibility | queued | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
 | A-038 | Evidence identity + durable operational bundles v0 | queued | area:brain | NO | [active/A-038-evidence-identity-durable-bundles-v0.md](active/A-038-evidence-identity-durable-bundles-v0.md) |
@@ -22,6 +23,10 @@ Recently completed: A-001 … A-025, A-032 (see [done/](done/)).
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
 status and dependency changes below.
+
+**HIGHEST (Alex):** **A-039** — claims must be visible on shared main/all worktrees so CONTINUE cannot double-claim (parallel-ok with A-036).
+
+**A-036** is **in_progress** on worktree `~/Work/omarchy-jarvis-a036-agent-monitor-usability` (desk synced status onto main).
 
 **After A-032 — Training dispatch usability (do before grinding Wave 0 from the window):** A-036 then A-037 (gates + blocked-by, not stage integers).
 
