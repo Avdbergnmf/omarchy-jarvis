@@ -99,9 +99,37 @@
 </section>
 <section id="train-panel-latency" hidden>
 <h2>Latency</h2>
-<p class="muted">How a turn felt: submit → first meaningful paint. Bars are <strong>meaningful_response_latency</strong>, not TTFT. Timings only — no prompts.</p>
+<p class="muted">How a turn felt: submit → first meaningful paint. Bars are <strong>meaningful_response_latency</strong>, not TTFT. Percentiles are diagnostic. Budget keys are placeholders and never block merges. Timings only — no prompts.</p>
+<div id="latency-stats" class="latency-stats"></div>
+<div class="latency-filters">
+<label for="latency-window">Window</label>
+<select id="latency-window"><option value="20">20</option><option value="50">50</option><option value="100">100</option></select>
+<label for="latency-planner">Planner</label>
+<select id="latency-planner"><option value="">all</option></select>
+<label for="latency-status">Status</label>
+<select id="latency-status"><option value="">all</option></select>
+<label for="latency-version">Version</label>
+<select id="latency-version"><option value="">all</option></select>
+<label for="latency-revision">Revision</label>
+<select id="latency-revision"><option value="">all</option></select>
+</div>
+<div class="latency-compare">
+<label for="latency-left">Compare</label>
+<select id="latency-left"><option value="">—</option></select>
+<span class="muted">vs</span>
+<select id="latency-right"><option value="">—</option></select>
+<p id="latency-compare-out" class="muted"></p>
+</div>
+<div class="latency-perf">
+<button id="latency-copy-note" type="button">Copy PERF note</button>
+<textarea id="latency-note" readonly aria-label="Paste-ready PERF note for the Improvement Ledger"></textarea>
+<p class="muted">Desk pastes this into an IMP Events line. Training never writes <code>docs/ledger/</code> or allocates an IMP id.</p>
+</div>
 <div class="latency-layout">
 <aside>
+<div class="training-header"><h3>Slow tail (≥ p90)</h3></div>
+<p id="latency-tail-count" class="muted"></p>
+<div id="latency-tail" class="training-list"></div>
 <div class="training-header"><h3>Recent interactions</h3><button id="latency-refresh" type="button">Reload traces</button></div>
 <p id="latency-count" class="muted"></p>
 <div id="latency-list" class="training-list"></div>

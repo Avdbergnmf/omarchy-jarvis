@@ -1,8 +1,9 @@
-# Latency profiler (A-033)
+# Latency profiler (A-033–A-035)
 
 Text-first diagnostic timings for one submitted overlay message. Training **Latency**
-(A-034) is a history + waterfall on this store. Not percentiles (A-035), not an SLO.
-Core emits traces; nothing here auto-stores prompts or payloads.
+shows history, a waterfall (A-034), and p50/p90/p95/p99 plus version compare (A-035).
+Not an SLO and not a merge gate. Core emits traces; nothing here auto-stores prompts
+or payloads.
 
 Primary metric: **`meaningful_response_latency`** = submit → first *visible meaningful*
 content. "Thinking…" / "Planning your request…" are **ack**, not meaningful. TTFT
@@ -44,26 +45,39 @@ The overlay may POST `ack`/`meaningful` *after* the run has already persisted
 marks rewrite the store instead of 404ing.
 
 GET `/v1/runs/<id>` polls do not write traces (ADR-018). Marks are POST
-`/v1/runs/<id>/latency`. Training **Latency** (A-034) reads `GET /v1/latency/traces`
-and `GET /v1/latency/traces/<trace_id>` (token-gated).
+`/v1/runs/<id>/latency`. Training **Latency** reads:
 
-## On / off
+- `GET /v1/latency/traces` and `GET /v1/latency/traces/<trace_id>` (token-gated)
+- `GET /v1/latency/summary` (token-gated) — percentiles, slow tail, version
+  compare, paste-ready PERF note
+
+Query strings are parsed (`limit`, `planner_mode`, `status`, `jarvis_version`,
+`git_revision`, `left`/`right` + `left_key`/`right_key`). `limit` is capped at
+100. A `?limit=` on `/v1/latency/traces` must not 404.
+
+## On / off and budget placeholders
 
 `~/.config/jarvis/config.toml`:
 
 ```toml
 latency_profiler = true   # default; false/off/0 disables all recording
+latency_budget_p50_ms = 0 # 0/absent = unset; never fails CI or blocks merges
+latency_budget_p90_ms = 0
 ```
 
-Restart the brain after changing it. When off, `Tracer` is a no-op and the store is
-not opened.
+Restart the brain after changing it. When the profiler is off, `Tracer` is a
+no-op and the store is not opened. Budget keys are **placeholders** for a later
+regression flag: the summary may set informational `flags.over_p50` /
+`flags.over_p90` when a budget is set and the percentile is higher. They are
+never enforced. `budgets.enforced` is always `false`.
 
 ## Overhead
 
 Spans live in memory for the in-flight run. SQLite is written **once** on terminal
 status (`done`/`error`/`denied`) inside `release_busy`, not per poll and not per
 span. Expected cost is a cheap monotonic read per span start/end plus one short
-transaction at the end of the turn.
+transaction at the end of the turn. Summaries are computed on the last ≤100
+rows in the store; they do not extra-write.
 
 ## Client vs server clock
 
@@ -73,23 +87,38 @@ exist, `meaningful_response_latency_ns` uses that wall-clock delta (Enter → fi
 non-placeholder paint). Otherwise it falls back to server monotonic time from
 trace start to `mark_meaningful` (first non-placeholder `announce` / plan reply).
 
-## Training UI (A-034)
+## Training UI
 
-Training → **Latency**: recent-interaction bars (bar length = MRL) and a click-through
-waterfall. Incomplete and error traces stay listed. No prompt/payload display.
-Distributions / version compare are A-035.
+Training → **Latency**:
 
-## Blind spots for A-035
+- Recent-interaction bars (bar length = MRL). Incomplete and error traces stay listed.
+- Click a bar → waterfall inspector (A-034).
+- Stats strip: n, with-MRL, p50/p90/p95/p99 (nearest-rank / `ceil`).
+- Bounded filters: window 20/50/100, planner_mode, status, version, revision.
+- Version/SHA compare with sample counts (p50/p90 per side).
+- Slow tail (≥ p90) — click jumps to the same inspector.
+- **Copy PERF note** — clipboard + textarea; Desk pastes into an IMP Events line.
 
-- No p50/p90, version compare, or ledger PERF hook (A-035).
+No prompt/payload display. No FEATURES/validation catalog entry.
+
+Percentiles use nearest-rank: `rank = ceil(p/100 * n)` on the sorted MRL values
+that exist (traces without MRL are counted in `n` but omitted from `with_mrl`
+and the percentile set).
+
+## Ledger PERF hook (A-035)
+
+Training never writes `docs/ledger/` and never allocates an `IMP-*` id. The
+summary's `ledger_note` is a paste-ready Events line (date, n, with_mrl,
+percentiles, optional compare, budget placeholder reminder). Desk pastes it
+into an existing improvement when the numbers matter. Next ledger id remains
+whatever `python3 scripts/ledger-status.py` prints (IMP-007 if Desk files one).
+
+## Remaining blind spots
+
 - Approval wait is not a first-class `await_approval` span yet (would dwarf plan
   time and is optional to the product metric).
 - `tools_run` follow-up `model.chat` after the tool batch still parents to the
   root interaction, not `execute`.
 - Client and server clocks are not NTP-aligned; prefer the client delta when present.
 - Overlay restore-on-load does not emit marks (no submit in that session).
-
-## Ledger (proposal only — Desk writes `docs/ledger/`)
-
-If traces show approval-wait or model.chat dominating, Desk may file an IMP later.
-This assignment does not allocate an `IMP-*` id.
+- No auto-reject / auto-block merges; no Perfetto export; no analytics warehouse.

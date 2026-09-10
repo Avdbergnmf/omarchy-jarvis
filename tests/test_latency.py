@@ -234,6 +234,117 @@ class ConfigTest(unittest.TestCase):
             path.write_text('latency_profiler = true\n')
             with patch.dict(os.environ, {'JARVIS_CONFIG': str(path)}):
                 self.assertTrue(server.load_config()['latency_profiler'])
+            path.write_text('latency_budget_p50_ms = 0\nlatency_budget_p90_ms = 250\n')
+            with patch.dict(os.environ, {'JARVIS_CONFIG': str(path)}):
+                cfg = server.load_config()
+            self.assertIsNone(cfg['latency_budget_p50_ms'])
+            self.assertEqual(cfg['latency_budget_p90_ms'], 250)
+
+
+class PercentileTest(unittest.TestCase):
+    def test_nearest_rank_ceil(self):
+        values = [i * 1_000_000 for i in range(1, 11)]
+        self.assertEqual(latency.percentile_ns(values, 50), 5_000_000)
+        self.assertEqual(latency.percentile_ns(values, 90), 9_000_000)
+        self.assertEqual(latency.percentile_ns(values, 95), 10_000_000)
+        self.assertEqual(latency.percentile_ns(values, 99), 10_000_000)
+        self.assertEqual(latency.percentile_ns([42], 90), 42)
+        self.assertIsNone(latency.percentile_ns([], 50))
+
+    def test_filter_and_summarize_compare_and_ledger_note_has_no_prompt(self):
+        traces = [
+            {'trace_id': 'a', 'run_id': 'run-a', 'status': 'done', 'planner_mode': 'json_plan',
+             'jarvis_version': '0.5.10', 'git_revision': 'abc',
+             'meaningful_response_latency_ns': 80_000_000, 'prompt': 'open bitwarden'},
+            {'trace_id': 'b', 'run_id': 'run-b', 'status': 'done', 'planner_mode': 'tools',
+             'jarvis_version': '0.5.11', 'git_revision': 'def',
+             'meaningful_response_latency_ns': 40_000_000},
+            {'trace_id': 'c', 'run_id': 'run-c', 'status': 'error', 'planner_mode': 'json_plan',
+             'jarvis_version': '0.5.10', 'git_revision': 'abc',
+             'meaningful_response_latency_ns': None},
+        ]
+        only_tools = latency.filter_traces(traces, planner_mode='tools')
+        self.assertEqual([t['trace_id'] for t in only_tools], ['b'])
+        summary = latency.summarize(
+            traces, budgets={'p50_ms': 10, 'p90_ms': 100},
+            left='0.5.10', right='0.5.11', left_key='jarvis_version', right_key='jarvis_version')
+        self.assertEqual(summary['count'], 3)
+        self.assertEqual(summary['with_mrl'], 2)
+        self.assertEqual(summary['p50_ns'], 40_000_000)
+        self.assertEqual(summary['p90_ns'], 80_000_000)
+        self.assertEqual(summary['slow_tail'][0]['trace_id'], 'a')
+        self.assertEqual(summary['compare']['left']['count'], 2)
+        self.assertEqual(summary['compare']['right']['with_mrl'], 1)
+        self.assertTrue(summary['flags']['over_p50'])
+        self.assertFalse(summary['flags']['over_p90'])
+        self.assertFalse(summary['budgets']['enforced'])
+        dumped = json.dumps(summary)
+        self.assertNotIn('open bitwarden', dumped)
+        self.assertNotIn('prompt', dumped)
+        self.assertIn('PERF', summary['ledger_note'])
+        self.assertIn('compare 0.5.10', summary['ledger_note'])
+        self.assertNotIn('open bitwarden', summary['ledger_note'])
+
+    def test_summarize_window_keeps_unfiltered_options(self):
+        traces = [
+            {'trace_id': 'a', 'planner_mode': 'json_plan', 'status': 'done',
+             'jarvis_version': '0.5.10', 'git_revision': 'abc',
+             'meaningful_response_latency_ns': 10_000_000},
+            {'trace_id': 'b', 'planner_mode': 'tools', 'status': 'done',
+             'jarvis_version': '0.5.11', 'git_revision': 'def',
+             'meaningful_response_latency_ns': 20_000_000},
+        ]
+        summary, filtered = latency.summarize_window(
+            traces, {'planner_mode': 'tools', 'limit': 20, 'left': '0.5.10', 'right': '0.5.11',
+                     'left_key': 'jarvis_version', 'right_key': 'jarvis_version'})
+        self.assertEqual([t['trace_id'] for t in filtered], ['b'])
+        self.assertEqual(summary['options']['planner_mode'], ['json_plan', 'tools'])
+        self.assertEqual(summary['count'], 1)
+
+    def test_parse_query_bounds_limit_and_keys(self):
+        q = latency.parse_query({
+            'limit': ['500'], 'left_key': ['prompt'], 'right_key': ['git_revision'],
+            'planner_mode': [' json_plan '], 'status': [''],
+        })
+        self.assertEqual(q['limit'], 100)
+        self.assertEqual(q['left_key'], 'jarvis_version')
+        self.assertEqual(q['right_key'], 'git_revision')
+        self.assertEqual(q['planner_mode'], 'json_plan')
+        self.assertIsNone(q['status'])
+
+
+class SummaryApiTest(unittest.TestCase):
+    def test_get_traces_accepts_query_string(self):
+        import server
+        clock = Clock()
+        handler = object.__new__(server.Handler)
+        handler.path = '/v1/latency/traces?limit=50&planner_mode=tools'
+        handler.headers = {'Host': '127.0.0.1:7421', 'X-Jarvis-Token': server.TOKEN}
+        captured = []
+        handler.reply = lambda status, body, mime=None: captured.append((status, body)) or (status, body)
+        with tempfile.TemporaryDirectory() as tmp:
+            store = latency.Store(Path(tmp) / 't.sqlite')
+            tracer = latency.Tracer(store=store, clock=clock, enabled=True,
+                                    jarvis_version='0.5.11', git_revision='def')
+            for run_id, mode in (('run-j', 'json_plan'), ('run-t', 'tools')):
+                trace = tracer.start_interaction(run_id, planner_mode=mode)
+                trace.mark_meaningful()
+                tracer.finish(run_id, status='done')
+            original = server.TRACER
+            server.TRACER = tracer
+            try:
+                handler.do_GET()
+                handler.path = '/v1/latency/summary?limit=50&left=0.5.11&right=0.5.11&left_key=jarvis_version&right_key=jarvis_version'
+                handler.do_GET()
+            finally:
+                server.TRACER = original
+        self.assertEqual(captured[0][0], 200)
+        ids = {row['run_id'] for row in captured[0][1]['traces']}
+        self.assertEqual(ids, {'run-t'})
+        self.assertEqual(captured[1][0], 200)
+        self.assertIn('p50_ns', captured[1][1])
+        self.assertIn('PERF', captured[1][1]['ledger_note'])
+        self.assertNotIn('prompt', json.dumps(captured[1][1]))
 
 
 if __name__ == '__main__':

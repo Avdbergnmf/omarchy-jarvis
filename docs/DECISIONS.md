@@ -318,7 +318,7 @@ explicit, avoiding attribution to an unrelated recent run. Verification auto-clo
 
 ## ADR-054 — Latency distributions, compare, ledger PERF hook (2026-09-10)
 - **Context:** A-033 records InteractionTraces; A-034 shows one spike. A-035 needs p50/p90/p95/p99, bounded filters, version/SHA compare with sample counts, and a way to attach PERF evidence to the Improvement Ledger without Training writing `docs/ledger/` or allocating `IMP-*`. Budgets exist only as config placeholders — they must not fail CI or block merges.
-- **Decision:** TBD at implement time. Reserved so A-035 does not collide with another ADR number.
-- **Consequences:** TBD.
+- **Decision:** `brain/latency.py` adds nearest-rank (`ceil`) percentiles, `filter_traces`, and `summarize` / `summarize_window`. Token-gated `GET /v1/latency/summary` (and `GET /v1/latency/traces?…`) parse the query string so `?limit=` cannot 404 the list. Limit is 1–100. Training → Latency gains a stats strip, window/planner/status/version/revision filters, version-or-SHA compare with sample counts, a slow-tail list (≥ p90) that reuses the waterfall inspector, and **Copy PERF note** (textarea + clipboard). `latency_budget_p50_ms` / `latency_budget_p90_ms` in `config.toml` are 0/absent = unset; `budgets.enforced` is always false; optional `flags.over_p50` / `over_p90` shape later regression work and never fail CI. No FEATURES/validation catalog entry. `overlay/agents.js` is not touched.
+- **Consequences:** Desk can paste a PERF Events line into an IMP without this assignment writing the ledger. Auto-block merges, Perfetto, and an analytics warehouse stay out of scope. Covered by `tests/test_latency.py` (percentiles, filters, compare, ledger_note privacy, query bounds, GET with `?limit=`) and `tests/latency-panel.test.cjs` (stats, filters, compare, copy, slow-tail jump) plus the A-034 inspector cases.
 
 
