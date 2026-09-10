@@ -134,6 +134,7 @@ never follow archive as current instructions. Issues, backlog, ADRs and PROGRESS
 
 Read [AGENTS](AGENTS.md) for invariants. Preserve plan → approve → execute, redact secrets
 in logs/issues, ask before persisting new skills, keep IPC local, and prepare handoffs only.
+For every user-visible feature, add/update [human validation steps](docs/validation/catalog.schema.md) and [FEATURES](docs/FEATURES.md); only the human can mark validation.
 Run doctor and CI checks, update PROGRESS with results and limitations, link the PR, check
 INDEX statuses and keep active passes small. Document journal schema changes.
 On a version bump or big behavior change, change VERSION and restart the service:

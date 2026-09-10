@@ -1,3 +1,5 @@
+Historical A-011 guide. The current machine-readable definition and human results live in `docs/validation/catalog.json` under `feat-open-by-name`.
+
 ```yaml
 id: feat-open-by-name
 title: Open any installed app by name

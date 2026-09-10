@@ -2,12 +2,14 @@ const fs=require('node:fs');const vm=require('node:vm');const assert=require('no
 const handlers={};const requests=[];
 function makeElement(){
  return {hidden:true,disabled:false,className:'',textContent:'',innerHTML:'',children:[],focused:false,
+  setAttribute(k,v){this[k]=v;},removeAttribute(k){delete this[k];},
   focus(){this.focused=true;},
   appendChild(child){this.children.push(child);},
   addEventListener(n,fn){this.handlers=this.handlers||{};this.handlers[n]=fn;}};
 }
 const elements={
- '#prompt':{value:'open my planning in a new workspace',disabled:false,focused:false,focus(){this.focused=true;}},
+ '#prompt':{...makeElement(),value:'open my planning in a new workspace',disabled:false,focused:false,focus(){this.focused=true;}},
+ '#command-list':makeElement(),
  '#status':makeElement(),
  '#plan':makeElement(),
  '#plan-actions':makeElement(),
@@ -74,9 +76,27 @@ const context={
   return {ok:true,json:async()=>({ok:true})};
  },
 };
+vm.runInNewContext(fs.readFileSync('overlay/commands.js','utf8'),context);
 vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
 (async()=>{
  const typedPrompt=elements['#prompt'].value;
+ elements['#prompt'].value='/';elements['#prompt'].handlers.input();
+ assert.equal(elements['#command-list'].hidden,false);
+ elements['#prompt'].handlers.keydown({key:'ArrowDown',preventDefault(){}});
+ elements['#prompt'].handlers.keydown({key:'Tab',preventDefault(){}});
+ assert.equal(elements['#prompt'].value,'/feature ');
+ elements['#prompt'].value='/rep';elements['#prompt'].handlers.input();
+ elements['#prompt'].handlers.keydown({key:'Enter',preventDefault(){}});
+ assert.equal(elements['#prompt'].value,'/report ');
+ assert(!requests.some(r=>r.path==='/v1/run'),'completion must never submit a command');
+ elements['#prompt'].value='/';elements['#prompt'].handlers.input();
+ await handlers.keydown({key:'Escape',preventDefault(){}});
+ assert.equal(elements['#command-list'].hidden,true);
+ assert(!requests.some(r=>r.path==='/v1/close'),'first Escape dismisses commands without closing');
+ elements['#prompt'].value='/report detail';elements['#prompt'].handlers.input();
+ assert.equal(elements['#command-list'].hidden,true,'arguments are not autocomplete prefixes');
+ elements['#prompt'].value=typedPrompt;
+
  await handlers.submit({preventDefault(){}});
  assert.equal(JSON.parse(requests.find(r=>r.path==='/v1/run').options.body).prompt,typedPrompt);
  assert.equal(elements['#prompt'].value,'','the input must be cleared once the prompt is sent (A-010)');
@@ -153,8 +173,9 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
 function testRestoreOnLoad(){
  const restoreHandlers={};const restoreRequests=[];
  const restoreElements={
-  '#prompt':{value:'',disabled:false,focused:false,focus(){this.focused=true;}},
-  '#status':makeElement(),'#plan':makeElement(),'#plan-actions':makeElement(),
+  '#prompt':{...makeElement(),value:'',disabled:false,focused:false,focus(){this.focused=true;}},
+  '#command-list':makeElement(),
+ '#status':makeElement(),'#plan':makeElement(),'#plan-actions':makeElement(),
   '#draft-preview':makeElement(),'#draft-title':makeElement(),'#draft-body':makeElement(),
   '#run-btn':makeElement(),'#cancel-btn':makeElement(),'#steps':makeElement(),'#step-list':makeElement(),
   '#qa':makeElement(),'#qa-question':makeElement(),
@@ -186,6 +207,7 @@ function testRestoreOnLoad(){
    return {ok:true,json:async()=>({ok:true})};
   },
  };
+ vm.runInNewContext(fs.readFileSync('overlay/commands.js','utf8'),restoreContext);
  vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),restoreContext);
  // app.js's own startup IIFE is unawaited from here (nothing to grab a promise from) —
  // give its awaited chain (session -> get -> render) real wall-clock time to settle.
@@ -198,3 +220,7 @@ function testRestoreOnLoad(){
   console.log('PASS: reopening the overlay restores the last run\'s state instead of starting blank');
  });
 }
+
+// Keep Training's browser-free UI smoke in the existing CI entrypoint.
+require('./training.test.cjs');
+require('./validation.test.cjs');

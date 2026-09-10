@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "features": [
+    {
+      "id": "feat-overlay-chat",
+      "title": "Overlay chat and approval",
+      "area": "overlay",
+      "steps": [
+        "Press Super+Shift+J to open Jarvis.",
+        "Type: hello. Confirm a reply appears without a Run button.",
+        "Type: switch to workspace 1. Inspect the proposed plan before approving.",
+        "Choose Cancel and confirm the desktop was not changed."
+      ],
+      "expected": "Chat replies immediately. Actions wait for approval and Cancel performs no action.",
+      "status": "unvalidated",
+      "last_run": null,
+      "jarvis_version": null,
+      "jarvis_version_shipped": "0.4.1"
+    },
+    {
+      "id": "feat-open-planning",
+      "title": "Open planning workspace",
+      "area": "skills",
+      "steps": [
+        "Press Super+Shift+J; type: open my planning in a new workspace.",
+        "Check that the proposed skill is open-planning; choose Run.",
+        "Confirm Todoist, Google Calendar, Outlook and WhatsApp are together on a fresh workspace."
+      ],
+      "expected": "The four planning apps appear together; existing matching app windows may be moved.",
+      "status": "unvalidated",
+      "last_run": null,
+      "jarvis_version": null,
+      "jarvis_version_shipped": "0.4.1"
+    },
+    {
+      "id": "feat-scratch-mail",
+      "title": "Scratchpad and Outlook",
+      "area": "skills",
+      "steps": [
+        "Focus a disposable terminal or other window you are comfortable moving.",
+        "Open Jarvis; type: move this window to scratchpad and open email.",
+        "Inspect the scratch-and-mail plan and choose Run.",
+        "Press Super+S to reveal the original window; check that Outlook opened."
+      ],
+      "expected": "The original window moves to scratchpad and Outlook opens.",
+      "status": "unvalidated",
+      "last_run": null,
+      "jarvis_version": null,
+      "jarvis_version_shipped": "0.4.1"
+    },
+    {
+      "id": "feat-report-feature",
+      "title": "Bug and feature intake",
+      "area": "brain",
+      "steps": [
+        "Open Jarvis; type: /report validation test only.",
+        "Answer one clarifying question, then choose Skip.",
+        "Inspect the full bug draft and select Cancel to avoid filing a test issue.",
+        "Repeat with /feature validation idea, then Cancel."
+      ],
+      "expected": "Both routes ask deterministic questions and show the draft before filing. Cancel creates no issue.",
+      "status": "unvalidated",
+      "last_run": null,
+      "jarvis_version": null,
+      "jarvis_version_shipped": "0.4.1"
+    },
+    {
+      "id": "feat-rlhf",
+      "title": "Post-run feedback",
+      "area": "overlay",
+      "steps": [
+        "Ask Jarvis to say hello.",
+        "Choose neutral feedback and reopen Training. Confirm the run appears under review-later problems.",
+        "On another completed hello run choose Report.",
+        "Confirm bug intake starts for that rated prompt, then Cancel."
+      ],
+      "expected": "Neutral feedback remains local; Report refers to the rated run and requires a reviewed filing step.",
+      "status": "unvalidated",
+      "last_run": null,
+      "jarvis_version": null,
+      "jarvis_version_shipped": "0.4.1"
+    },
+    {
+      "id": "feat-follow-along",
+      "title": "Follow execution and reopen state",
+      "area": "overlay",
+      "steps": [
+        "Ask Jarvis to open Outlook and approve its reviewed plan.",
+        "Watch the step list finish.",
+        "Close Jarvis and reopen with Super+Shift+J."
+      ],
+      "expected": "The result and feedback are visible again on reopen; the console targets that run.",
+      "status": "unvalidated",
+      "last_run": null,
+      "jarvis_version": null,
+      "jarvis_version_shipped": "0.4.1"
+    },
+    {
+      "id": "feat-slash",
+      "title": "Slash-command autocomplete",
+      "area": "overlay",
+      "steps": [
+        "Type / in the empty chat input.",
+        "Use Down and Up to select a command; press Tab.",
+        "Confirm completion inserts the command without sending it.",
+        "Clear the input, type /rep, press Enter, and confirm /report is inserted.",
+        "Type / again and press Esc; confirm only the suggestions close."
+      ],
+      "expected": "Prefix suggestions are keyboard navigable; completion does not execute, and first Esc dismisses the list.",
+      "status": "unvalidated",
+      "last_run": null,
+      "jarvis_version": null,
+      "jarvis_version_shipped": "0.5.0"
+    },
+    {
+      "id": "feat-train",
+      "title": "Training and confirmed handoffs",
+      "area": "overlay",
+      "steps": [
+        "Open Training using the button or /train.",
+        "Inspect problems, version, metrics and assignment/agent lists.",
+        "Select a problem, add comments, choose a new slot and preview an assignment.",
+        "Inspect exact file contents, then Cancel.",
+        "Preview a work handoff for a real assignment only when wanted; confirm to save it and inspect paste-ready text."
+      ],
+      "expected": "Preview and Cancel create no files. Confirmation saves a local handoff and never claims an agent was contacted.",
+      "status": "unvalidated",
+      "last_run": null,
+      "jarvis_version": null,
+      "jarvis_version_shipped": "0.5.0"
+    },
+    {
+      "id": "feat-validate",
+      "title": "Guided human validation",
+      "area": "overlay",
+      "steps": [
+        "Open Training and choose Validate features.",
+        "Start a feature test, follow its steps, and record an actual outcome note.",
+        "Use Verify only after completing the steps; inspect the confirmation and Cancel first.",
+        "If you really completed the test, repeat and confirm. For a real failure, choose Fail, confirm, then Draft bug report."
+      ],
+      "expected": "Unconfirmed results do not persist. Confirmed results carry date/version/notes; failure can enter reviewed bug intake.",
+      "status": "unvalidated",
+      "last_run": null,
+      "jarvis_version": null,
+      "jarvis_version_shipped": "0.5.1"
+    },
+    {
+      "id": "feat-open-by-name",
+      "title": "Open any installed app by name",
+      "area": "actions",
+      "status": "unvalidated",
+      "jarvis_version_shipped": "0.5.1",
+      "jarvis_version": null,
+      "last_run": null,
+      "steps": [
+        "Press Super+Shift+J.",
+        "Type: open spotify. Inspect the plan and approve with Run.",
+        "Confirm Spotify opens or focuses if already running.",
+        "Repeat the request and confirm the same Spotify window is focused, without a duplicate.",
+        "Optionally repeat with another installed app, such as Discord."
+      ],
+      "expected": "An installed app is resolved by name, opened or focused. A repeated request focuses the existing window."
+    }
+  ]
+}

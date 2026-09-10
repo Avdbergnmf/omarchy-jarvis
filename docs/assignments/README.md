@@ -84,3 +84,27 @@ Never tell Alex to paste agent session logs into the next agent. Point at QUEUE 
 
 ## One assignment then report (default)
 Coding agents complete **a single** assignment per invocation unless Alex explicitly enables a batch (`keep going`, `batch N`, `until queue empty`). After each assignment they update QUEUE/SESSION/PROGRESS; after the batch (or the single default) they **stop and summarize** for Alex instead of silently draining the queue.
+
+## Training-authored assignments and local slots
+Training previews generate a monotonic A-NNN brief, queued QUEUE/INDEX rows and an active
+handoff using NEW_AGENT/CONTINUE. The user sees exact bytes and confirms before writing.
+Rows are serial by default with area scope, forbidden paths, a verification checklist and
+source evidence. Human comments should state the expected outcome; an agent must clarify
+insufficient acceptance before broadening work. Preparation does not claim the assignment.
+
+Local slots are stored in ignored `logs/training/agents.json` (version 1, `agents` list),
+following `agents.example.json`: id, label, kind, status idle/busy, current_assignment,
+queued_assignment_ids, plus last_handoff. QUEUE in_progress makes a matching slot busy even
+if its manual status says idle. This is coordination metadata, not live agent telemetry.
+Queued handoffs never auto-send. Confirm previews expire after 15 minutes, are single-use,
+and reject intervening changes to SESSION, QUEUE, INDEX, slots or target files. Writes are
+serialized in-process, replaced per-file and rolled back on ordinary I/O failure; a process
+crash during a multi-file write can require git/status review. External editors must follow
+ownership rules; they do not share the process lock.
+
+## Feature completion requires a human test entry
+For each user-visible feature, add/update `docs/validation/catalog.json` and regenerate
+`docs/FEATURES.md` per [the schema](../validation/catalog.schema.md). Include concrete steps,
+expected behavior and shipped version; leave it unvalidated for Alex. Unit/CI checks remain
+mandatory and do not substitute for human validation. Training's Verify/Fail confirmations
+record the human's date/version/notes. Failing can draft a reviewed bug; verifying closes no issue.

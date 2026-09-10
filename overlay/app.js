@@ -25,6 +25,43 @@ let currentRunId=null;
 let pollHandle=null;
 let lastRenderKey=null;
 
+const commandList=document.querySelector('#command-list');
+let commandMatches=[],commandIndex=0;
+function hideCommands(){
+ commandList.hidden=true;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');
+}
+function suggestCommands(){
+ const value=input.value;
+ commandMatches=value.startsWith('/')&&!/\s/.test(value)?JarvisCommands.filter(c=>c.name.startsWith(value.toLowerCase())):[];
+ commandIndex=0;renderCommands();
+}
+function renderCommands(){
+ commandList.innerHTML='';
+ if(!commandMatches.length){hideCommands();return;}
+ commandMatches.forEach((command,index)=>{
+  const li=document.createElement('li');li.id='command-'+index;li.setAttribute('role','option');
+  li.setAttribute('aria-selected',String(index===commandIndex));
+  li.textContent=command.name+' — '+command.description;
+  li.addEventListener('mousedown',event=>{event.preventDefault();completeCommand(index);});
+  commandList.appendChild(li);
+ });
+ commandList.hidden=false;input.setAttribute('aria-expanded','true');
+ input.setAttribute('aria-activedescendant','command-'+commandIndex);
+}
+function completeCommand(index=commandIndex){
+ if(commandList.hidden||!commandMatches[index])return false;
+ input.value=commandMatches[index].usage;hideCommands();input.focus();return true;
+}
+input.addEventListener('input',suggestCommands);
+input.addEventListener('keydown',event=>{
+ if(commandList.hidden)return;
+ if(event.key==='ArrowDown'||event.key==='ArrowUp'){
+  event.preventDefault();commandIndex=(commandIndex+(event.key==='ArrowDown'?1:-1)+commandMatches.length)%commandMatches.length;renderCommands();
+ }else if(event.key==='Tab'||event.key==='Enter'){
+  event.preventDefault();completeCommand();
+ }
+});
+
 function loadLastRun(){try{return localStorage.getItem('jarvis:lastRun');}catch(e){return null;}}
 function saveLastRun(id){try{localStorage.setItem('jarvis:lastRun',id);}catch(e){}}
 function setConsoleTarget(id){
@@ -143,8 +180,9 @@ async function poll(runId){
 }
 
 document.querySelector('#prompt-form').addEventListener('submit',async event=>{
- event.preventDefault();if(!input.value.trim()||input.disabled)return;
+ event.preventDefault();if(completeCommand())return;if(!input.value.trim()||input.disabled)return;
  const prompt=input.value.trim();
+ if(prompt.toLowerCase()==='/train'){input.value='';enterTraining();return;}
  input.disabled=true;input.value='';status.className='';status.textContent='Thinking…';
  planSection.hidden=true;stepsSection.hidden=true;qaSection.hidden=true;feedbackSection.hidden=true;
  try{
@@ -210,6 +248,8 @@ qaSkip.addEventListener('click',()=>answer('skip'));
 document.addEventListener('keydown',async event=>{
  if(event.key!=='Escape')return;
  event.preventDefault();
+ if(!commandList.hidden){hideCommands();return;}
+ if(typeof leaveTraining==='function'&&leaveTraining())return;
  const pending=!planSection.hidden||!qaSection.hidden;
  try{if(pending&&currentRunId)await post('/v1/runs/'+currentRunId+'/deny').catch(()=>{});}
  finally{await post('/v1/close');}

@@ -1,6 +1,6 @@
 # A-008 — Training mode (improvement control plane)
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:overlay (+ `area:brain` for APIs; `area:docs` for feature/metrics surfaces)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/`, `brain/`, `docs/assignments/`, `docs/backlog/`, `docs/FEATURES.md` (create), `docs/LOGGING.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `README.md`, `START.md` (pointer only), `scripts/`, `tests/`, `VERSION`
@@ -29,13 +29,13 @@ A **Training mode** Alex can open via overlay button and/or slash command (e.g. 
 - Never imply an agent was messaged if only a file was written.
 
 ## Checklist
-- [ ] `/train` (and button) enters Training mode UI; Esc/back exits to normal chat
-- [ ] Register command in A-007 registry
-- [ ] Panels: issues/backlog, version, basic metrics viz
-- [ ] Problem → comments → generate assignment (agent picker) with confirm
-- [ ] Work-on-assignment (agent picker) + monitor list + queue-on-busy / send-if-idle / new agent
-- [ ] Docs: README human section + ADR; extend assignments README for “training-authored” rows
-- [ ] Tests for API/UI smoke; PROGRESS; QUEUE → done
+- [x] `/train` (and button) enters Training mode UI; Esc/back exits to normal chat
+- [x] Register command in A-007 registry
+- [x] Panels: issues/backlog, version, basic metrics viz
+- [x] Problem → comments → generate assignment (agent picker) with confirm
+- [x] Work-on-assignment (agent picker) + monitor list + queue-on-busy / send-if-idle / new agent
+- [x] Docs: README human section + ADR; extend assignments README for “training-authored” rows
+- [x] Tests for API/UI smoke; PROGRESS; QUEUE → done
 
 ## Out of scope
 Full autonomous multi-agent orchestration; billing APIs; A-009 human test runner (link placeholders OK).

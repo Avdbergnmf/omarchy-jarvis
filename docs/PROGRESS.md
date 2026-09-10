@@ -202,6 +202,43 @@ While verifying the input-clear fix, `node tests/overlay.test.cjs` started hangi
 - `python3 -m unittest discover -s tests` — **71 tests** pass (1 new). `node tests/overlay.test.cjs` — both scenarios pass. `shellcheck`/`doctor.sh --syntax` clean.
 - Live on this host (service restarted to load the change): `toggle-overlay.py` verified branch-by-branch via `hyprctl` — open when none exists, focus (not close) when it exists but isn't the active window, and — after manually granting it real focus via `dispatch('focuswindow', …)`, since spawning it through this sandboxed session doesn't grant real window focus the way a user's keypress would (the same documented limitation noted in `scripts/verify-host.py`) — correctly closes when it *is* focused. A real `toggle scratchpad` run was submitted, approved, and completed through the live service; `GET /v1/runs/<id>` confirmed `prompt`/`status`/`feedback` are all present and correct for the restore-on-reopen path to consume. A genuine multi-window self-heal scenario could not be reliably reproduced live in this environment for the reason above; that branch is covered by code review and the straightforward nature of the list-filter logic rather than a live repro.
 
+## 2026-09-09 — A-007 slash autocomplete (Codex)
+Implemented a single UI registry for report/feature/backlog/dispatch, prefix suggestions,
+arrow navigation, Tab/Enter completion and first-Escape dismissal. Completion sends no run;
+arguments remain untouched. Existing routes and approvals are unchanged.
+Validation: 71 Python tests and overlay tests pass, including completion/no-send/Escape cases.
+A-010 restore/input-preservation scenarios remain green. Next authorized assignment: A-008.
+
+## 2026-09-09 — A-008 Training mode (Codex)
+Added /train and Training/Back controls, issues/backlog/neutral/eval panels, version and
+bounded current-journal metrics, SESSION/QUEUE context, confirmed assignment generation,
+NEW_AGENT/CONTINUE handoffs and local slots with busy rejection / queue-until-free intent.
+Preview does not write; confirmation is single-use and refuses stale ownership/file state.
+No real agent dispatch exists, and copy/status text explicitly says prepared locally.
+Evidence: 77 Python tests pass; Training UI mock covers enter/back, preview/cancel/confirm
+and duplicate-click prevention. Existing overlay scenarios pass. Live authenticated API
+returned 4 assignments and 24 problem records; unauthenticated GET rejected; work preview
+listed 3 files and wrote none. Live Doctor passed. Browser connector reported no browser,
+so rendered visual QA remains a human validation task. Version 0.5.0 resets the current
+journal on the next service restart/write. Next authorized assignment: A-009.
+
+## 2026-09-09 — A-009 human validation (Codex)
+Added the JSON feature catalog and generated FEATURES index, guided steps and expected
+outcomes, explicit human Verify/Fail previews, version/revision/date/notes/run evidence,
+and definition hashes that require retesting changed guides. All seeded features remain
+unvalidated; automated checks do not create human evidence. Failed results can open the
+existing deterministic intake with the tested feature's context, and still await reviewed
+Run before filing. Verify closes no issues. START and assignment authoring rules require
+future feature work to update human validation entries.
+Validation: 82 Python tests and all four UI smoke scenarios pass; tests cover confirmation,
+changed guides, correct failed-run attribution and no automatic filing. Isolated real HTTP
+smoke on localhost:17421 returned 9 guides and a two-file result preview with zero writes;
+all three new JavaScript routes returned 200. No visual browser surface was available.
+Version 0.5.1 archives CURRENT on restart/first write. The shared checkout was switched by
+another session during A-009; its named stash 5b29ade was preserved and restored without
+loss into ~/Work/omarchy-jarvis-training. The other session's cherry-pick was left alone.
+The authorized A-007 → A-008 → A-009 batch is implemented; next is PR integration/checks.
+
 ## 2026-09-09 — A-011: open apps by name (Spotify + general .desktop matching)
 
 **Before:** saying "spotify" produced an empty plan and a "not a supported action" reply — `open_webapp` only covers four fixed webapps.
@@ -271,3 +308,19 @@ Claimed by Codex on `a014-hygiene` in the assigned absolute worktree; desk and t
 - Worked: experimental tools executor stops before unreviewed follow-up actions; both planners enforce intake-only issue filing. Removed the now-unreachable six-turn loop. All 93 Python tests, doctor syntax, ShellCheck, JS syntax and overlay behavior checks pass.
 - Failed/limited: sandboxed host doctor could not access sockets; rerunning with host access passed all checks except report-last-failure --dry-run. In a fresh checkout without logs/runs, that skill’s find pipeline exits under set -e/pipefail before its intended no-log dry-run fallback. skills/ is outside A-014’s allowed paths; follow-up owner should fix and test it with no log directory. No issues filed, desktop mutations, service restarts or changes to other worktrees.
 - Handoff: chunks 1–7 complete on a014-hygiene, VERSION 0.4.2; merge owner must reconcile shared bookkeeping with the overlay track, deploy/restart the shared service, and verify the first-write CURRENT rotation. No live deployment claimed.
+### Training batch integration and final checks
+Merged latest main into the isolated training branch, preserving A-011 and queued A-012/A-013.
+Resolved documentation conflicts and kept ADR-023 for A-011; Training-track decisions are
+ADR-024/025/026. Added A-011's app-by-name guide to the machine-readable catalog (10 entries).
+Validated slot identifiers and registry shape before they can contribute to handoff paths.
+Final evidence: 92 Python tests, all four UI smoke scenarios, all JS syntax checks, ShellCheck,
+Doctor syntax and live Doctor pass. The isolated Doctor initially failed because logs/runs/
+had not been initialized by service startup; creating that empty runtime directory made its
+existing no-history dry-run path pass. Final isolated HTTP smoke returns 10 guides, all JS
+routes, and an unconfirmed two-file validation preview with zero writes. Human visual
+validation remains pending because the browser connector exposes no browser on this host.
+
+### 2026-09-10 — desk: merge a014-hygiene + codex/training-track into main
+- Resolved ADR numbering (YouTube/honesty 024, worktrees 025, slash 026, training 027, validation 028).
+- VERSION → 0.5.2; QUEUE empty; A-001…A-014 done.
+- Restart jarvis.service still required for live overlay/training.
