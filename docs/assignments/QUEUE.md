@@ -4,7 +4,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
-| A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | YES | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
+| A-033 | Latency profiler foundation (traces/spans/store) | in_progress | area:brain | YES | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | YES | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
