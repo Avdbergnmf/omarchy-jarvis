@@ -977,5 +977,26 @@ validation remains pending because the browser connector exposes no browser on t
   installed v0.10.0 from the upstream release only to run the local full suite. CI `test`
   on ubuntu-latest is the merge gate.
 
-
+## 2026-09-10 — A-044 Agent manager: Copy handoff actually works
+- Root cause was not only the raw `navigator.clipboard.writeText` call: `overlay/agents.js`
+  `pollAgentAdvance` filled `#train-handoff` on auto-advance but never re-synced `#train-copy`'s
+  `hidden` state, so a Copy button previously hidden (e.g. after a handoff-less confirm) stayed
+  hidden even once the result panel showed prepared text — the literal "feels dead" complaint.
+- `overlay/training.js`: added `setHandoffText(text)` as the single place that sets the
+  textarea value plus the Copy button's `hidden`/`disabled` state; both the confirm handler and
+  `agents.js` auto-advance now route through it. Added `copyText(text)` — tries
+  `navigator.clipboard.writeText` guarded (no throw on a missing/insecure-context API), falls
+  back to focus+select+`document.execCommand('copy')`, and only reports success on a path that
+  actually copied; the empty-handoff case now shows "No handoff text to copy yet." instead of a
+  silent no-op.
+- Did not add a Copy control to the agent-detail panel (checklist's optional item): `last_handoff`
+  on a slot is a `docs/backlog/handoffs/active/*.md` path, not the prepared text, and no endpoint
+  returns that file's content to the client — adding one was out of scope for a low-depth fix.
+  Left for a future assignment if Alex wants it.
+- Tests: `tests/training.test.cjs` — Copy visible/enabled after a confirmed handoff, clipboard
+  success, clipboard failure falling back to `execCommand` (still reports success), total failure
+  (both paths fail) reporting failure instead of a false "copied", and the empty-state message.
+  `tests/agents.test.cjs` — `pollAgentAdvance` now routes handoff text through the shared
+  `setHandoffText` and un-hides a previously-hidden Copy button. Rebased onto the `--effort`
+  changes above; `./scripts/test-full.sh` green.
 

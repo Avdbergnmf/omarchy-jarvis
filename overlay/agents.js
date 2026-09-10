@@ -127,7 +127,10 @@ async function pollAgentAdvance(){
   const result=await post('/v1/training/agent-advance',{});
   if(result.advanced&&result.advanced.length){
    const first=result.advanced.find(item=>item.handoff_text);
-   if(first){trainEl('handoff').value=first.handoff_text;trainEl('result').hidden=false;}
+   if(first){
+    if(typeof setHandoffText==='function')setHandoffText(first.handoff_text);else trainEl('handoff').value=first.handoff_text;
+    trainEl('result').hidden=false;
+   }
    trainMessage(result.advanced.map(item=>item.launch_error?item.assignment_id+' window error: '+item.launch_error:item.assignment_id+' prepared for visible '+item.slot_id).join(' · ')+' — prompt not submitted.');
    if(typeof refreshTraining==='function')await refreshTraining();
   }

@@ -65,9 +65,9 @@ trainEl('confirm').addEventListener('click',async()=>{
  const id=trainingPreview;trainingPreview=null;
  try{
   const result=await post('/v1/training/confirm',{preview_id:id});trainEl('preview').hidden=true;
-  trainEl('result-message').textContent=result.message;trainEl('handoff').value=result.handoff;
+  trainEl('result-message').textContent=result.message;
   trainEl('paths').textContent=result.paths.join('\n');trainEl('result').hidden=false;
-  trainEl('copy').hidden=!result.handoff;trainEl('handoff').hidden=!result.handoff;
+  setHandoffText(result.handoff);
   await refreshTraining();
   if(result.assignment&&typeof assignmentSaved==='function')await assignmentSaved(result.assignment);
   if(result.validation&&typeof validationSaved==='function')validationSaved(result.validation);
@@ -82,9 +82,29 @@ trainEl('confirm').addEventListener('click',async()=>{
  }catch(error){trainMessage(error.message,true);}
  finally{trainEl('confirm').disabled=false;}
 });
+// A-044: the handoff textarea's hidden/disabled state must stay in sync everywhere
+// text is delivered into it (confirm below, and agent auto-advance in agents.js) —
+// a stale hidden Copy button was the actual "doesn't work" complaint, not just the
+// clipboard write itself.
+function setHandoffText(text){
+ trainEl('handoff').value=text||'';
+ trainEl('handoff').hidden=!text;
+ trainEl('copy').hidden=!text;
+ trainEl('copy').disabled=!text;
+}
+async function copyText(text){
+ try{
+  if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(text);return true;}
+ }catch(error){/* fall through to the manual-selection path below */}
+ trainEl('handoff').focus();trainEl('handoff').select();
+ try{return typeof document.execCommand==='function'&&document.execCommand('copy');}
+ catch(error){return false;}
+}
 trainEl('copy').addEventListener('click',async()=>{
- try{await navigator.clipboard.writeText(trainEl('handoff').value);trainMessage('Handoff copied. Paste it into your agent chat.');}
- catch(error){trainEl('handoff').focus();trainEl('handoff').select();trainMessage('Select and copy the handoff text manually.');}
+ const text=trainEl('handoff').value;
+ if(!text){trainMessage('No handoff text to copy yet.',true);return;}
+ if(await copyText(text))trainMessage('Handoff copied. Paste it into your agent chat.');
+ else trainMessage('Could not copy automatically — the text is selected, press Ctrl/Cmd+C then paste it.',true);
 });
 
 function sourceClass(problem){

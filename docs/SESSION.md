@@ -7,9 +7,9 @@
 - **A-047** queued — Agent monitor dynamic status + simpler send (Alex JARVIS)
 - **Claude Code `--effort`** done — depth picker for claude-code slots (ADR-039 follow-up); landing PR
 - **A-046** queued — Validate features overhaul (simple cards; Alex JARVIS)
-- **A-044** in_progress — Agent manager: Copy handoff fix (Claude, worktree omarchy-jarvis-a044-agent-copy-handoff-fix)
-- **A-045** queued — Agent manager: opt-in auto-send prompt (blocked-by gate:training-ux via A-044)
+- **A-045** queued — Agent manager: opt-in auto-send prompt (unblocked, A-044 done)
 - **A-043** queued — Training Problems whole-row bubble click (Alex JARVIS)
+- **A-044** done — Agent manager: Copy handoff fix
 - **A-042** done — Parallel claimability tooling migration (ADR-048 tooling)
 - **A-035** done — Latency distributions, version compare, ledger hooks (ADR-054)
 - **A-034** done — Training Latency Profiler UI (ADR-053); merged PR #30
@@ -35,6 +35,7 @@
 - [x] A-041 Agent Monitor redesign — done (ADR-043); human validation remains unvalidated
 - [x] A-035 Latency distributions / compare / ledger PERF hook — done (ADR-054); budgets are placeholders, no IMP allocated
 - [x] A-042 Parallel claimability tooling — done (ADR-048 tooling; `area:control-plane` split left to Alex)
+- [x] A-044 Agent manager: Copy handoff fix — done; A-045 unblocked
 
 ## Done this session (evidence)
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
@@ -54,11 +55,12 @@
 - Codex: implemented A-041 (ADR-043) — Agent Manager status-colored top tiles, per-agent FIFO queues, canonical available-work/auto-advance checks, automatic cold-start-vs-continue, and visible-window prompt preparation without automatic paste/submit. Updated `feat-agent-monitor`; 256 Python tests + five JS suites pass.
 - Cursor/Grok: implemented A-034 (ADR-053) — Training Latency panel: MRL history bars + waterfall inspector on the A-033 store. Incomplete/error traces stay listed. Did not edit `overlay/agents.js`.
 - Cursor/Grok: claimed A-035 via PR #33 (merged). Implemented A-035 (ADR-054) on `cursor/a035-latency-distributions-a468` from `origin/main`: nearest-rank p50/p90/p95/p99, bounded filters, version/SHA compare, slow-tail jump, Copy PERF note. Budget keys unset by default and never enforced. Did not write `docs/ledger/` or allocate IMP-007.
-- Cursor/Grok: focused Claude Code `--effort` fix on `cursor/claude-code-effort-a825` (ADR-039 follow-up, VERSION 0.5.12). `./scripts/test-full.sh` green. Did not claim A-043–A-046.
+- Cursor/Grok: implemented A-042 (ADR-048 tooling) on `cursor/a042-parallel-claimability-tooling-967e` from `origin/main`. Training new-brief default YES (workflow-owned, not META_FIELDS); assignment-status reasons/warnings/HEADS-UP; paste prompts match the script; agent-status dropped the path-fence rule. `area:docs` vs `area:control-plane` written, not executed. Queue empty after this row.
+- Cursor/Grok: focused Claude Code `--effort` fix on `cursor/claude-code-effort-a825` (ADR-039 follow-up, VERSION 0.5.12). `./scripts/test-full.sh` green. Did not claim A-043–A-046. Merged (PR #42/#43).
+- Claude: claimed A-044 via PR #40 (merged) on `a044-agent-copy-handoff-fix` from `origin/main` (direct push to `main` is branch-protected; needed a PR even for the claim commit). Implemented A-044: `overlay/training.js` `setHandoffText()`/`copyText()` — guarded Clipboard API with a real `execCommand('copy')` fallback that never claims success it didn't achieve, plus consistent hidden/disabled Copy-button state; the actual "feels dead" bug was `overlay/agents.js` `pollAgentAdvance` filling the handoff textarea without re-showing a previously-hidden Copy button, now fixed via the shared helper. Did not add the optional agent-detail Copy control (`last_handoff` is a file path, not text; no endpoint serves its content). `tests/training.test.cjs` + `tests/agents.test.cjs` extended (rebased onto the `--effort` test additions); `./scripts/test-full.sh` green. A-045 unblocked.
 
 ## Next action (one concrete step)
-- Reproduce the Copy handoff clipboard failure in `overlay/training.js` `#train-copy`, then fix the write path + fallback per A-044 brief.
-- Alex: review/merge PR #41 (Claude Code `--effort`). Then stop. A-043–A-046 stay queued.
+- Nothing in progress. Next claimable: A-043 (low), A-045 (medium, now unblocked), A-046 (high), or A-047 (high).
 
 ## Parallel agent
 - none
