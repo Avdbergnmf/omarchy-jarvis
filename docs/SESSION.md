@@ -3,19 +3,19 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Assignment: **A-032** ChatGPT deep plan-vs-codebase review (Sol 5.6 ultra-high depth) — **first**
-- Then Wave 0 A-027…A-031 / A-029 as revised by A-032
+- Assignment: **A-032** only (Sol 5.6 ultra-high depth plan-vs-codebase review)
+- Batch: **1** — stop when A-032 done
 - Branch: main
 
 ## Checklist
-- [ ] A-032 plan perfection review — queued (PRIORITY)
-- [ ] A-027…A-031 / A-029 — wait for A-032 output
+- [ ] A-032 — in progress / claim now
+- [ ] Wave 0 A-027… — **blocked** until A-032 finishes + Alex accepts roadmap deltas
 
 ## Done this session (evidence)
-- Desk (Firsty): filed A-032 as queue head for Sol 5.6 ultra-high-depth plan review
+- Desk: added discussion brief for agents without ChatGPT chat history; clarified A-032 batch=1
 
 ## Next action (one concrete step)
-- Alex: paste NEW_AGENT (or Sol entry) claiming **A-032** only
+- Sol: claim **A-032** only (see prompt tip in QUEUE). Read `docs/audits/chatgpt-self-improve-discussion-brief-2026-09-10.md` first.
 
 ## Blockers
-- Wave 0 implementation blocked on A-032 completion / Alex accept of revised roadmap
+- Wave 0 implementation waits on A-032

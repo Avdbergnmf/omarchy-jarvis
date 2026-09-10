@@ -16,6 +16,11 @@ Recently completed: A-001 … A-025 (see [done/](done/)).
 
 **A-032 first (Alex):** Sol 5.6 ultra-high-depth review of roadmap vs tree — **before** implementing Wave 0.
 
+**How Alex should prompt Sol**
+- Same ongoing Sol chat → paste [`CONTINUE.txt`](prompts/CONTINUE.txt) and add: `Do A-032 only. Batch 1. Stop when A-032 is done.` (Saying only “next” is OK **if** SESSION already points at A-032; safer to name **A-032**.)
+- Cold/new Sol chat → paste [`NEW_AGENT.txt`](prompts/NEW_AGENT.txt); it should claim the first queued row (**A-032**).
+- Briefing without chat history: `docs/audits/chatgpt-self-improve-discussion-brief-2026-09-10.md`
+
 **Wave 0 (after A-032):** A-027 → A-026 → A-028 → A-030 → A-031 → A-029. Roadmap: [docs/SELF_IMPROVE_ROADMAP.md](../SELF_IMPROVE_ROADMAP.md).
 
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).

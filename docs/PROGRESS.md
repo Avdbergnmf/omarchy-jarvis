@@ -566,3 +566,7 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: queue A-032 ChatGPT plan-vs-codebase review
 - Alex: Sol 5.6 ultra-high depth to perfect the self-improve plan against the real tree before Wave 0 implementation.
 - Filed [A-032](assignments/active/A-032-chatgpt-plan-codebase-review.md) at head of QUEUE; Wave 0 waits.
+
+## 2026-09-10 — desk: A-032 briefing for Sol without ChatGPT chat
+- Added docs/audits/chatgpt-self-improve-discussion-brief-2026-09-10.md (8 answers + sequence + north star).
+- A-032: batch 1 only; CONTINUE should name A-032 explicitly.

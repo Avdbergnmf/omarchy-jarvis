@@ -8,6 +8,20 @@
 - **Links:** ChatGPT 70-point plan + 8 answers; Firsty audit; current Wave 0 queue
 
 ## Goal
+
+## Important: no prior chat history
+
+You were **not** in the Alex↔ChatGPT↔Firsty discussion. Do **not** expect paste of that thread.
+
+Read first:
+1. [`docs/audits/chatgpt-self-improve-discussion-brief-2026-09-10.md`](../../audits/chatgpt-self-improve-discussion-brief-2026-09-10.md) — distilled discussion + 8 answers + sequence
+2. [`docs/SELF_IMPROVE_ROADMAP.md`](../../SELF_IMPROVE_ROADMAP.md) — current adopted decisions / Wave 0
+3. Then the rest of the “Must read” list below against the **codebase**
+
+Your job is to **stress-test and improve** that plan using repo evidence, not to rediscover product goals from scratch.
+
+**Batch size = 1:** complete **only A-032**, then stop and report. Do not start A-026…A-031 implementation.
+
 Read the **self-improve roadmap and related docs next to the real omarchy-jarvis tree**, then produce an **improved, codebase-grounded plan** Alex can adopt before implementing Wave 0.
 
 You are **not** implementing Runtime/Forge features in this assignment. Output is planning artifacts + recommended queue edits.
@@ -48,6 +62,7 @@ You are **not** implementing Runtime/Forge features in this assignment. Output i
 - [ ] Revise roadmap (in place or `.proposed.md`) with clear delta from prior version
 - [ ] Adjust QUEUE / A-026…A-031 briefs only as justified by the review
 - [ ] PROGRESS + SESSION; mark this assignment done; **do not** implement Wave 0 product code here
+- [ ] **Stop after A-032** — report to Alex; do not claim A-027/A-026/…
 
 ## Out of scope
 Implementing ledger/CI/CODEOWNERS/memory/stochastic runners beyond docs/plan; rewriting Runtime features; spending other agents; silent push to bypass future main protection discussions.
