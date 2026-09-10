@@ -599,3 +599,7 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: A-039 cross-worktree claim visibility (P0)
 - Bug: claim+worktree updates QUEUE only on agent branch; main/next CONTINUE re-claims. Evidence: A-036 in_progress on worktree, queued on main.
 - Filed A-039 highest priority, parallel-ok with A-036; desk marked A-036 in_progress on main.
+
+## 2026-09-10 — desk: require merge to main at batch end
+- Alex: agents forget to merge; causes conflicts and wasted tokens.
+- CONTINUE / NEW_AGENT / PARALLEL / START / prompts README: land on main before stop; report BLOCKED ON MERGE if needed.

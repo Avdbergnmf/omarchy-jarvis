@@ -28,3 +28,6 @@ If nothing is claimable, agents must stop and say **“No assignment in queue is
 - **Default:** agent finishes **one** assignment, then reports back to you.
 - **Keep going:** tell it explicitly, e.g. `keep going for 3` / `batch 2` / `until queue empty` (it still stops if nothing is claimable or tokens are tight).
 - Recorded in `docs/SESSION.md` as `Batch: N` or `Batch: until-empty` while running.
+
+## After a batch: merge to main
+Agents must **merge their finished work into `origin/main` before stopping** (PR+merge or direct merge when allowed). Do not leave the only copy on a feature branch — that causes forgotten merges and wasted follow-up tokens. If merge is blocked, they must say **BLOCKED ON MERGE** explicitly.

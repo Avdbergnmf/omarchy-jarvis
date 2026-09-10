@@ -107,13 +107,18 @@ preserving other assignments' statuses and evidence; never overwrite another
 agent's SESSION. Live services/ports and the desktop are shared too: coordinate
 live testing; do not restart another track's service.
 
-Commit only your assignment's files, push your branch, and report its name or PR:
+Commit only your assignment's files, push your branch, then **land on `main` before you stop**:
 
 ```bash
 git push -u origin HEAD
+# Then merge into main (gh pr create + gh pr merge, or merge locally) and:
+git fetch origin && git checkout main && git pull origin main
 ```
 
-After merge and handoff, from a remaining checkout, verify the task tree is clean
+Do not report "done" while the only copy of the work lives on a feature branch.
+If merge is blocked, say **BLOCKED ON MERGE** with the PR URL.
+
+After merge, from a remaining checkout, verify the task tree is clean
 and its work is merged before removing it (substitute the actual path/branch):
 
 ```bash

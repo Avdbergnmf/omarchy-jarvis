@@ -27,6 +27,8 @@ Keep plan→approve→execute untouched. Do not require merging the whole featur
 - [ ] Tests or scripted smoke; ADR; PROGRESS; SESSION; QUEUE/INDEX → done
 - [ ] Verify a second CONTINUE cannot claim an id already in_progress elsewhere
 
+Also ensure prompts require **merge to main at batch end** (CONTINUE/NEW_AGENT/START).
+
 ## Out of scope
 Rewriting A-036 product UI (coordinate only); full lock server; changing parallel-ok area rules.
 

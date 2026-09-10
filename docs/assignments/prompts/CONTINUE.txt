@@ -2,7 +2,7 @@ Working directory: use Alex’s assigned Jarvis worktree; stay there if already 
 You are continuing Omarchy Jarvis work. Do NOT ask for chat/session logs.
 
 ## Default batch size = 1
-Complete **one** claimable/in_progress assignment, update QUEUE/SESSION/PROGRESS, then **stop and report** to Alex (what shipped, evidence, what’s next in QUEUE). Do **not** auto-start another unless Alex enabled a batch (below).
+Complete **one** claimable/in_progress assignment, update QUEUE/SESSION/PROGRESS, then **merge to main** (see below), **stop and report** to Alex (what shipped, evidence, merge/PR, what’s next in QUEUE). Do **not** auto-start another unless Alex enabled a batch (below).
 
 ## Optional: keep going
 Only if Alex explicitly said one of:
@@ -38,8 +38,23 @@ desk: each is a branch snapshot, not a global lock. Record owner, branch,
 absolute worktree path and Batch in your own SESSION; reconcile shared status
 files on merge without reverting others' claims. Isolation does not waive
 parallel-ok/area rules (path hints stay optional, never a gate) or permit shared-service restarts.
-Commit the scoped assignment, then `git push -u origin HEAD` and report.
-After confirmed merge/handoff, from a remaining checkout (actual path/branch):
+Commit the scoped assignment, then `git push -u origin HEAD`.
+
+## Land on main before you stop (required)
+Leaving finished work only on a feature branch causes forgotten merges, conflicts, and wasted tokens.
+
+After your batch is accepted (default: one assignment):
+1. Ensure QUEUE/INDEX/SESSION/PROGRESS for this work are correct on **this branch**, then push the branch with `git push -u origin HEAD`.
+2. **Merge into `main` and push `main`** before reporting done:
+   - Preferred: create a PR with `gh pr create --title "..." --body "..."` if needed, then `gh pr merge --merge` (or squash if that is the repo norm), then `git fetch origin && git checkout main && git pull`.
+   - If PRs are not required / you have push access: merge your branch into local `main`, resolve bookkeeping conflicts without wiping other claims, then `git push origin main`.
+3. Reconcile shared bookkeeping on **main** so the next CONTINUE sees `done` / released claims (same spirit as cross-worktree claim visibility).
+4. Only then remove your worktree/branch per START cleanup rules.
+5. Your final report to Alex must include: merged yes/no, PR URL if any, and confirmation that `origin/main` has the update.
+
+If merge is blocked (permissions, failed checks, conflicts you cannot safely resolve): open/update the PR, say **BLOCKED ON MERGE**, and do not claim you finished landing.
+
+After merge to main is done, from a remaining checkout (actual path/branch):
 
     git -C "$HOME/Work/omarchy-jarvis-a014-example" status --short
     git worktree remove "$HOME/Work/omarchy-jarvis-a014-example"
