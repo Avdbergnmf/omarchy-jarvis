@@ -734,3 +734,28 @@ validation remains pending because the browser connector exposes no browser on t
   addressed distinct files. `python3 -m unittest discover -s tests` — 180/180 pass (160 + 20
   new); `./scripts/doctor.sh --syntax` and `./scripts/test-full.sh` green. No shared-service
   restart performed from this worktree (out of scope).
+
+## 2026-09-10 — A-026 Improvement Ledger v0 (ADR-043)
+- `docs/ledger/{README,TEMPLATE,INDEX}.md` + `records/IMP-001`…`IMP-006`: Desk-owned, manual,
+  schema-first ledger. Current-summary + append-only-events record shape; informal
+  `hypothesis → in_progress → shipped | rejected | abandoned` vocabulary (not an enforced
+  state machine, matching how assignment `Status:` already works).
+- `scripts/ledger-status.py`: validates `INDEX.md` against `records/*.md` (duplicate ids,
+  missing files, header/filename mismatch, unknown assignment references, orphan records) and
+  prints the next allocatable `IMP-NNN` id. Id allocation documented as the same
+  fetch-origin/main-first discipline A-039 established for assignment claims (ADR-038).
+- `brain/training.py`: optional `- **Improvement:** IMP-NNN` assignment metadata (same
+  shape-checked, not existence-checked pattern as A-037's `Blocked-by`/`Gate`); form field in
+  `overlay/training.html`.
+- Seeded IMP-001…IMP-006 from A-019–A-025 / issues #15, #16 (A-026's own acceptance criterion);
+  each uses the bounded-inline-summary evidence path since they predate A-038's evidence
+  bundles. `Assignment ids:` links validated against `docs/assignments/INDEX.md`.
+- On acceptance: A-029 (`Blocked-by: A-026` only) flips to `Blocked-by: none`, `Status: queued`.
+- Cross-references added: `START.md`, `docs/assignments/README.md` ↔ `docs/ledger/README.md`.
+- Evidence: `tests/test_ledger.py` (9 new cases) + `tests/test_assignments.py`'s new
+  `test_improvement_link_is_a_structured_optional_hint` (validation + survives an unrelated
+  edit). `python3 -m unittest discover -s tests` — 190/190 pass (180 + 10 new);
+  `./scripts/doctor.sh --syntax`, `node tests/overlay.test.cjs` and `./scripts/test-full.sh`
+  green. Manually reproduced and reverted each of `ledger-status.py`'s problem-detection paths
+  (duplicate id, missing/orphan record, bad assignment reference) against the real seeded
+  ledger before committing. No shared-service restart required (docs + light Training only).

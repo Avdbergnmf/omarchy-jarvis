@@ -46,6 +46,15 @@ Training can group/filter related blocked work without inventing global `stage: 
 Changing `Blocked-by`/`Gate` never auto-flips `Status`: a human (or the desk) still sets
 `Status: blocked → queued` once the real-world dependency is actually resolved.
 
+## The Improvement Ledger: durable "why," not disposable "what"
+`docs/assignments/` (this directory) is disposable execution work — an assignment is claimed,
+done, and archived to `done/`. [`docs/ledger/`](../ledger/README.md) (A-026) is the durable
+record of *why* behavior changed: one `IMP-NNN` may span several assignments. Only **Desk**
+writes ledger records — Runtime/Training/Forge never allocate an `IMP-*` id. An assignment may
+optionally set `- **Improvement:** IMP-NNN` to link back to its ledger record; this is unrelated
+to `Gate` (queue sequencing) — see the ledger README for the full model, id-allocation
+discipline (same claim-on-`origin/main`-first pattern as A-039), and evidence requirements.
+
 ## How a desk agent creates an assignment (standard)
 When Alex asks for a change/add (in any chat):
 

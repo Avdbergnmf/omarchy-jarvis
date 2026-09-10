@@ -69,8 +69,8 @@ def assignments(root):
 
 # Assignment edits preserve ownership, status, parallel policy and unknown brief sections.
 SECTION_FIELDS = {'goal': 'Goal', 'checklist': 'Checklist', 'notes': 'Human comments / evidence', 'out_of_scope': 'Out of scope'}
-META_FIELDS = {'area': 'Area', 'priority': 'Priority', 'allowed_paths': 'Allowed paths', 'forbidden_paths': 'Forbidden paths', 'blocked_by': 'Blocked-by', 'gate': 'Gate'}
-FIELD_LIMITS = dict(title=140, goal=1400, checklist=1400, notes=1200, out_of_scope=1200, allowed_paths=600, forbidden_paths=600, blocked_by=200, gate=60)
+META_FIELDS = {'area': 'Area', 'priority': 'Priority', 'allowed_paths': 'Allowed paths', 'forbidden_paths': 'Forbidden paths', 'blocked_by': 'Blocked-by', 'gate': 'Gate', 'improvement': 'Improvement'}
+FIELD_LIMITS = dict(title=140, goal=1400, checklist=1400, notes=1200, out_of_scope=1200, allowed_paths=600, forbidden_paths=600, blocked_by=200, gate=60, improvement=20)
 GENERATING = threading.Lock()
 
 
@@ -119,8 +119,8 @@ def assignment_fields(data):
     # A-023: allowed_paths/forbidden_paths are optional soft hints, not a hard gate —
     # isolation for parallel work is worktree + disjoint area (see ADR-034).
     for key, limit in FIELD_LIMITS.items():
-        value = short(data.get(key, ''), key.replace('_', ' ').title(), limit, empty=key in ('notes', 'allowed_paths', 'forbidden_paths', 'blocked_by', 'gate'))
-        if key in ('title', 'allowed_paths', 'forbidden_paths', 'blocked_by', 'gate') and ('\n' in value or '|' in value):
+        value = short(data.get(key, ''), key.replace('_', ' ').title(), limit, empty=key in ('notes', 'allowed_paths', 'forbidden_paths', 'blocked_by', 'gate', 'improvement'))
+        if key in ('title', 'allowed_paths', 'forbidden_paths', 'blocked_by', 'gate', 'improvement') and ('\n' in value or '|' in value):
             raise ValueError(key+' must be a single line without table separators')
         if re.search(r'^#{1,2} ', value, re.M): raise ValueError('Use prose within '+key+', not assignment headings')
         result[key] = value
@@ -132,6 +132,11 @@ def assignment_fields(data):
         raise ValueError('Blocked-by must be "none" or a comma-separated list of A-### ids')
     if result['gate'] and result['gate'].lower() != 'none' and not re.fullmatch(r'[a-z][a-z0-9-]{1,40}', result['gate']):
         raise ValueError('Gate must be "none" or a lowercase-hyphen label')
+    # A-026: Improvement is an optional back-link to docs/ledger/ — same "hint, not existence
+    # check" reasoning as Blocked-by (the ledger record may reference this assignment before
+    # this field is filled in, or vice versa).
+    if result['improvement'] and result['improvement'].lower() != 'none' and not re.fullmatch(r'IMP-\d{3,}', result['improvement']):
+        raise ValueError('Improvement must be "none" or a single IMP-### id')
     lines = result['checklist'].splitlines()
     if not lines or any(not re.fullmatch(r'- \[[ xX]\] .+', line) for line in lines):
         raise ValueError('Checklist needs one - [ ] verification step per line')

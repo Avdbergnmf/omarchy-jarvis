@@ -19,7 +19,7 @@ class AssignmentTest(unittest.TestCase):
         for name in [training.QUEUE,training.INDEX,'docs/SESSION.md']:
             p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True)
             p.write_text('# Queue\n\n| id | title | status | area | parallel-ok | path |\n|----|-------|--------|------|-------------|------|\n' if name!='docs/SESSION.md' else '# Session\n## Active goal\n- Assignment: A-017\n- Owner: Another worker\n\n## Next action\n- Continue A-017.\n')
-        self.fields=dict(title='Fix focus',area='overlay',priority='P1',goal='The window gets focus',notes='Expected stable focus',checklist='- [ ] Reproduce the bug\n- [ ] Verify stable focus',allowed_paths='overlay/, tests/',forbidden_paths='brain/, actions/',blocked_by='',gate='',out_of_scope='Unrelated work')
+        self.fields=dict(title='Fix focus',area='overlay',priority='P1',goal='The window gets focus',notes='Expected stable focus',checklist='- [ ] Reproduce the bug\n- [ ] Verify stable focus',allowed_paths='overlay/, tests/',forbidden_paths='brain/, actions/',blocked_by='',gate='',improvement='',out_of_scope='Unrelated work')
         training.PREVIEWS.clear()
 
     def tearDown(self):
@@ -77,6 +77,20 @@ class AssignmentTest(unittest.TestCase):
         p.write_text(p.read_text()+'| A-038 | Prereq | done | area:brain | NO | [done/A-038-x.md](done/A-038-x.md) |\n')
         item=next(a for a in training.assignments(self.root) if a['id']==aid)
         self.assertEqual(item['unmet_blocked_by'],['A-030'],'a done blocker drops out of unmet_blocked_by')
+
+    def test_improvement_link_is_a_structured_optional_hint(self):
+        # A-026: Improvement is a back-link into docs/ledger/ — same optional-hint validation
+        # pattern as Blocked-by/Gate (A-037): shape-checked, not existence-checked.
+        with self.assertRaises(ValueError):
+            training.preview(self.root,dict(operation='assignment_save',fields=dict(self.fields,improvement='not an id')))
+        fields=dict(self.fields,improvement='IMP-001')
+        aid=training.confirm(self.root,training.preview(self.root,dict(operation='assignment_save',fields=fields))['preview_id'])['assignment']
+        detail=training.assignment_detail(self.root,aid)
+        self.assertEqual(detail['fields']['improvement'],'IMP-001')
+        # Editing unrelated fields must preserve the Improvement link untouched.
+        changed=dict(fields,title='Edited title')
+        training.confirm(self.root,training.preview(self.root,dict(operation='assignment_save',assignment_id=aid,revision=detail['revision'],fields=changed))['preview_id'])
+        self.assertEqual(training.assignment_detail(self.root,aid)['fields']['improvement'],'IMP-001')
 
     def test_blocked_by_parser_strips_prose_and_dedupes(self):
         # A-037 hardening: parentheticals, em-dashes, and duplicates must not pollute the parsed id list.

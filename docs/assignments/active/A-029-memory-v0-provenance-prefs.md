@@ -1,13 +1,13 @@
 # A-029 — Preference memory v0 (provenance, precedence and revoke)
 
-- **Status:** blocked
+- **Status:** queued
 - **Area:** area:actions
 - **parallel-ok:** NO
 - **Recommended depth:** high
 - **Soft path hints:** `actions/core.py`, `brain/server.py` only if run provenance is required, `~/.config/jarvis/` schema, `tests/`, `docs/`
-- **Blocked-by:** A-026
+- **Blocked-by:** none
 - **Gate:** control-plane
-- **Links:** docs/SELF_IMPROVE_ROADMAP.md · extends A-025 · A-032 review · last assignment in this gate
+- **Links:** docs/SELF_IMPROVE_ROADMAP.md · extends A-025 · A-032 review · unblocked by A-026 (done) · last assignment in this gate
 
 ## Goal
 Harden only the proven app-choice preference seam from A-025. Preserve query/stem ranking,
