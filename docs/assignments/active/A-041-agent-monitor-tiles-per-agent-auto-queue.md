@@ -1,6 +1,6 @@
 # A-041 — Agent Monitor tiles + per-agent auto-queue redesign
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:overlay
 - **parallel-ok:** YES
 - **Recommended depth:** high

@@ -3,6 +3,7 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
+- **A-041** in_progress — Codex @ `a041-agent-monitor-auto-queue` / `~/Work/omarchy-jarvis-a041-agent-monitor-auto-queue` (parallel area:overlay; ADR-043 reserved)
 - **A-033** in_progress — latency profiler foundation (claim via PR; ruleset)
 - **A-031** done — merged PR #25 / ADR-051
 
@@ -18,7 +19,7 @@
 - [x] A-027 Protected promotion — cancelled (ADR-046)
 - [x] A-030 Protect control-plane paths — done (PR + `test` enforced; CODEOWNERS review remains policy)
 - [x] A-031 Stochastic planner evals v0 — done (ADR-051); baseline remains human-unapproved
-- [ ] A-041 Agent Monitor redesign — queued (filed; not started)
+- [ ] A-041 Agent Monitor redesign — in_progress (isolated worktree; area:overlay)
 
 ## Done this session (evidence)
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
@@ -36,7 +37,7 @@
 - Cursor/Grok: implemented A-031 (ADR-051) — planner-only stochastic eval runner. 20 `SEVAL-*` cases (14 `json_plan`, 6 `route_prompt`). Fresh child process per trial with execution tripwires; A-038 `kind: eval` bundles; pass@k not reported; baseline unapproved. Router 6/6 and stub-planner 14/14 in `docs/evals/stochastic/summaries/`. Live Ollama N-runs not spent.
 
 ## Next action (one concrete step)
-- Implement A-033 (InteractionTrace + spans + local store + critical-path instrumentation).
+- A-041: redesign Agent Manager tiles/available-work/per-agent queues in the isolated worktree; preserve visible-window and no-silent-spend policy.
 
 ## Parallel agent
 - none
