@@ -1,6 +1,6 @@
 # A-017 — Training Assignments panel (list/edit/generate/handoff)
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:overlay (+ light `area:brain` for assignment CRUD / generate endpoints)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/` (Training Assignments panel), `brain/training.py`, `brain/server.py` (assignment/training endpoints), shared problem↔assignment links, `tests/`, `docs/assignments/` (runtime writes of real assignment files via confirmed save), `docs/SESSION.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `docs/FEATURES.md`, `docs/validation/`, `README.md`, `START.md`, `VERSION`, `scripts/` if needed for agent handoff helpers
@@ -18,14 +18,21 @@ In the Training window, an **Assignments** feature page where Alex can:
 Done means Assignments is a real triage/create surface, not a dump of titles — same list/detail/save clarity as Problems.
 
 ## Checklist
-- [ ] Assignments nav panel in Training window (post–A-016 chrome)
-- [ ] Queue list (status/area/priority if present); click → detail editor; **Save** persists (preview/confirm for multi-file writes)
-- [ ] New assignment form; link optional problem id; inherit context/priority from problem when present
-- [ ] **Generate** draft: mode toggle **local Ollama** vs **on-machine coding agent** (Claude/Codex/etc.); never silent cloud spend; show draft in form for edit before Save
-- [ ] **Save/Add** creates `active/A-NNN-…`, updates QUEUE + INDEX (+ SESSION touch as today)
-- [ ] **Hand off to agent** → navigate to Agent monitor with assignment (+ slot picker) prefilled
-- [ ] Deep-link from Problems “Generate assignment” (A-016) into this panel with problem selected
-- [ ] ADR; tests; PROGRESS; FEATURES/validation if needed; SESSION; QUEUE/INDEX → done
+- [x] Assignments nav panel in Training window (post–A-016 chrome)
+- [x] Queue list (status/area/priority if present); click → detail editor; **Save** persists (preview/confirm for multi-file writes)
+- [x] New assignment form; link optional problem id; inherit context/priority from problem when present
+- [x] **Generate** draft: mode toggle **local Ollama** vs **on-machine coding agent** (Claude/Codex/etc.); never silent cloud spend; show draft in form for edit before Save
+- [x] **Save/Add** creates `active/A-NNN-…`, updates QUEUE + INDEX (+ SESSION touch as today)
+- [x] **Hand off to agent** → navigate to Agent monitor with assignment (+ slot picker) prefilled
+- [x] Deep-link from Problems “Generate assignment” (A-016) into this panel with problem selected
+- [x] ADR; tests; PROGRESS; FEATURES/validation if needed; SESSION; QUEUE/INDEX → done
+
+## Resolution (2026-09-10)
+Picked up mid-flight from Codex, who ran out of tokens after the feature work but before the
+closing bookkeeping (uncommitted, checklist unticked). Verified the full diff against every
+checklist item above before finishing: ADR-031, `docs/PROGRESS.md`, README, `feat-training-assignments`
+validation guide, and this file/QUEUE/INDEX/SESSION. 127 Python tests + all 4 JS suites pass.
+Merged into `main` and pushed.
 
 ## Out of scope
 - Redesigning Problems list (A-016)

@@ -10,7 +10,7 @@
         "Type: hello. Confirm a reply appears without a Run button.",
         "Type: switch to workspace 1. Inspect the proposed plan before approving.",
         "Choose Cancel and confirm the desktop was not changed.",
-        "Type: open my planning in a new workspace. Inspect the plan preview before approving — the reply should describe what the skill actually does (which apps, on a new workspace), not just name the skill."
+        "Type: open my planning in a new workspace. Inspect the plan preview before approving \u2014 the reply should describe what the skill actually does (which apps, on a new workspace), not just name the skill."
       ],
       "expected": "Chat replies immediately. Actions wait for approval and Cancel performs no action.",
       "status": "validated",
@@ -129,17 +129,17 @@
       "steps": [
         "Open Jarvis with Super+Shift+J, then choose Open Training or submit /train. Confirm Training has its own floating window and chat stays available.",
         "Open Training again from chat. Confirm it focuses the same window. Resize it and inspect version, metrics and the sample/period note.",
-        "Switch between Problems, Validate features and Assignments / Agents. Confirm only the selected panel is shown.",
+        "Switch between Problems, Validate features, Assignments and Agent monitor. Confirm only the selected panel is shown.",
         "Select a problem. Inspect original run/version/path context, edit title and expected outcome, set priority P1 and Save. Refresh and confirm those edits persist.",
         "Mark the problem Done; filter Done and Reopen it. Repeat with Dismiss. Preview Delete and Cancel; confirm it remains.",
-        "Choose Save & generate agent assignment. Choose a slot, preview the handoff, and inspect saved title, priority, notes and original evidence. Cancel to avoid creating an assignment.",
-        "Only for an improvement you want, preview again and confirm. Check the paste-ready handoff and verify no agent was contacted automatically."
+        "Choose Save & generate agent assignment. Inspect the linked draft in Assignments. Preview Save / Add and inspect title, priority, notes and original evidence. Cancel to avoid creating an assignment.",
+        "Only for an improvement you want, preview again and confirm. Choose Hand off to agent, preview/confirm the handoff, then check the paste-ready text and verify no agent was contacted automatically."
       ],
       "expected": "Training is a separate focusable window with clear panels. Problem triage survives refresh; original evidence is retained. Assignment generation and local deletion require confirmation; priority and edits appear in the brief.",
       "status": "unvalidated",
       "last_run": null,
       "jarvis_version": null,
-      "jarvis_version_shipped": "0.5.4"
+      "jarvis_version_shipped": "0.5.5"
     },
     {
       "id": "feat-validate",
@@ -173,6 +173,26 @@
         "Optionally repeat with another installed app, such as Discord."
       ],
       "expected": "An installed app is resolved by name, opened or focused. A repeated request focuses the existing window."
+    },
+    {
+      "id": "feat-training-assignments",
+      "title": "Training assignment editing, generation and handoff",
+      "area": "overlay",
+      "jarvis_version_shipped": "0.5.5",
+      "status": "unvalidated",
+      "jarvis_version": null,
+      "last_run": null,
+      "steps": [
+        "Open Training and choose Assignments. Inspect the queue status, area, priority and parallel badges.",
+        "Select an unclaimed queued assignment. Edit its title or goal, then Refresh; confirm your unsaved edits remain. Preview Save / Add and Cancel; verify the brief and queue have not changed.",
+        "Only for an edit you want, preview again and Confirm. Reload the assignment and confirm the brief, queue and index agree. Verify original context and ownership notes remain.",
+        "If an assignment is in progress, select it and confirm its editor is read-only.",
+        "Choose New assignment (discard prior edits if needed). Link an optional problem and confirm its title, area, notes and priority are inherited.",
+        "Enter an expected outcome and choose Local Ollama \u2192 Generate draft. Confirm a draft fills the form without writing files. Review and edit it; if the model is unavailable, confirm the error leaves the form usable.",
+        "Choose On-machine coding agent \u2192 Prepare agent prompt. Confirm Jarvis only shows a prompt to copy, and does not launch an agent. If desired, paste it into your chosen agent and import its JSON draft.",
+        "For a real wanted draft, preview Save / Add and Confirm. Choose Hand off to agent; confirm Agent monitor opens with that assignment selected. Preview the handoff and Cancel unless you intend to save it."
+      ],
+      "expected": "Only confirmed saves update real assignment files and metadata. Owned work cannot be edited; drafts preserve linked evidence and selected scope. Local generation and manual prompt preparation write nothing. Handoff preselects the saved assignment and never auto-dispatches an agent."
     }
   ]
 }

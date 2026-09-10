@@ -41,3 +41,17 @@ main{max-width:1500px;margin:auto;padding:24px 30px}
 #validation-list{max-height:340px}
 a{color:#9dd9d2}
 @media(max-width:760px){main{padding:16px}.metric-grid{grid-template-columns:repeat(4,1fr)}.problem-layout,.work-layout{grid-template-columns:1fr}#train-detail{position:static}#train-problems{max-height:350px}.training-fields{display:flex}}
+.assignment-layout{display:grid;grid-template-columns:minmax(250px,.8fr) minmax(350px,1.4fr);gap:18px;align-items:start}
+.assignment-layout aside{position:sticky;top:14px}
+.assignment-layout #train-assignments{max-height:620px;padding:3px}
+.assignment-row{white-space:pre-line;line-height:1.7;padding:12px;overflow-wrap:anywhere}
+.assignment-row[aria-pressed=true]{border-color:#9dd9d2;background:#223e3a}
+#assign-fields{border:0;padding:0;margin:0;display:flex;flex-direction:column;gap:9px;min-width:0}
+#assign-fields:disabled{opacity:.7}
+#assign-checklist{min-height:150px}
+#assign-generation{border:1px solid #3b4b60;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px}
+#assign-agent-import{display:flex;flex-direction:column;gap:8px}
+#assign-agent-prompt{min-height:140px}
+#assign-save{background:#22523f}
+#assign-body{max-height:320px!important;line-height:1.5}
+@media(max-width:850px){.assignment-layout{grid-template-columns:1fr}.assignment-layout aside{position:static}.assignment-layout #train-assignments{max-height:260px}}

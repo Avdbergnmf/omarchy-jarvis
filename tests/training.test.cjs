@@ -1,11 +1,11 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 function element(){return {value:'',hidden:true,children:[],handlers:{},textContent:'',disabled:false,
  set innerHTML(value){this.children=[];},addEventListener(event,fn){this.handlers[event]=fn;},appendChild(child){this.children.push(child);},setAttribute(){},focus(){this.focused=true;},select(){}};}
-const els={},requests=[];let previewCount=0,confirmCount=0;
+const els={},requests=[];let previewCount=0,confirmCount=0,linked=null;
 const $=selector=>els[selector]||(els[selector]=element());
 let problem={id:'run:test',source:'Journal eval',title:'Review focus',priority:'P2',area:'brain',status:'open',notes:'',revision:'r1',evidence:{run_id:'test',version:'0.5.4'}};
 const data={version:'test',revision:'abc',metrics:{runs:4,good:2,neutral:1,bad:0,flags:1,executed:2,denied:1},period:'Today UTC',sampled:false,context:['START.md'],session:'A-016 active',warnings:[],problems:[problem],assignments:[{id:'A-016',title:'Training',status:'in_progress'}],agents:[]};
-const ctx={document:{querySelector:$,createElement:element},get:async path=>{requests.push({path});return data;},
+const ctx={newAssignment(p){linked=p;ctx.trainingPanel('work');},document:{querySelector:$,createElement:element},get:async path=>{requests.push({path});return data;},
  post:async(path,body)=>{requests.push({path,body});
  if(path.endsWith('/preview')){previewCount++;return {preview_id:'p',message:'Review',files:[{path:'docs/assignment.md',content:'Scope'}]};}
  if(path.endsWith('/confirm')){confirmCount++;return {message:'Prepared; no agent contacted',handoff:'Paste START',paths:['docs/assignment.md']};}
@@ -23,10 +23,8 @@ vm.runInNewContext(fs.readFileSync('overlay/training.js','utf8'),ctx);
  assert.equal($('#train-problem-title').value,'Edited focus','refresh preserves unsaved edits');
  await $('#train-generate').handlers.click();
  assert.equal(problem.title,'Edited focus');assert.equal(problem.priority,'P0');assert.equal($('#train-panel-work').hidden,false);
- assert.equal($('#train-title').disabled,true,'assignment is tied to saved problem details');
- $('#assignment-form').handlers.submit({preventDefault(){}});await new Promise(resolve=>setImmediate(resolve));
- const req=requests.find(r=>r.path.endsWith('/preview'));
- assert.equal(req.body.problem_id,'run:test');assert.equal(req.body.problem_revision,'r2');assert.equal(req.body.priority,'P0');
+ assert.equal(linked.id,'run:test');assert.equal(linked.revision,'r2');assert.equal(linked.priority,'P0');
+ await ctx.previewTraining({operation:'assignment_save'});
  assert.equal(previewCount,1);assert.equal(confirmCount,0,'preview must not write');
  $('#train-cancel').handlers.click();assert.equal(confirmCount,0);
  await ctx.previewTraining({operation:'assignment'});await $('#train-confirm').handlers.click();
