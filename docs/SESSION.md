@@ -3,6 +3,7 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
+- **A-047** queued — Agent monitor dynamic status + simpler send (Alex JARVIS)
 - **A-046** queued — Validate features overhaul (simple cards; Alex JARVIS)
 - **A-044** in_progress — Agent manager: Copy handoff fix (Claude, worktree omarchy-jarvis-a044-agent-copy-handoff-fix)
 - **A-045** queued — Agent manager: opt-in auto-send prompt (blocked-by gate:training-ux via A-044)
