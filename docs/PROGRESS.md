@@ -251,3 +251,6 @@ Verification: all **80 Python tests** pass; shellcheck across scripts/skills, `d
 
 ### 2026-09-09 — A-014 chunk 1: bookkeeping
 Claimed by Codex on `a014-hygiene` in the assigned absolute worktree; desk and training SESSION checked read-only, overlay claims untouched. QUEUE/INDEX matched disk; assignment body reconciled. GitHub confirms smoke #8 closed; corrected stale local backlog row and retained fixture with triage note. Assignment-status and syntax Doctor pass; baseline 85 Python tests pass. No live service restart. Next: test gaps.
+
+## 2026-09-10 — A-014 Chunk 2
+- Worked: baseline 85 tests green; added app-plan approval and YouTube missing-window regressions (87 tests). Python, doctor syntax, ShellCheck and overlay checks pass. No live desktop actions or service changes.

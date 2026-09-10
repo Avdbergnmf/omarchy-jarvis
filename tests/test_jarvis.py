@@ -34,6 +34,12 @@ class ActionsTest(unittest.TestCase):
   # assignment asked for regardless of whether a local .desktop shortcut exists.
   self.assertIn('YouTube',core.APPS)
   self.assertEqual(core.APPS['YouTube'],'https://www.youtube.com/')
+ def test_youtube_launch_requires_observed_window(self):
+  with tempfile.TemporaryDirectory() as tmp,patch.object(core,'LOGS',Path(tmp)),patch.object(core,'hypr',return_value=[]),patch.object(core.subprocess,'Popen') as launch,patch.object(core.time,'monotonic',side_effect=[0,31]),patch.object(core,'dispatch') as dispatch:
+   with self.assertRaisesRegex(RuntimeError,'window was not found'):
+    core.open_app('YouTube')
+  self.assertEqual(launch.call_args.args[0],['omarchy-launch-webapp','https://www.youtube.com/','--class=jarvis-youtube'])
+  dispatch.assert_not_called()
  def test_is_overlay_matches_known_and_unseen_chromium_variants(self):
   # A-010: Chromium has derived classes ADR-013 didn't anticipate before; the match
   # must survive a variant we haven't hardcoded, without matching unrelated windows.
@@ -180,6 +186,18 @@ class ApprovalFlowTest(unittest.TestCase):
   self.assertIn(rid,server.PENDING)
   self.assertTrue(server.BUSY.locked())
   server.handle_deny(rid)  # release the busy lock this test acquired
+ def test_app_open_plans_are_reviewed_before_any_launch(self):
+  for tool,name in [('open_app_by_name','Spotify'),('open_webapp','YouTube')]:
+   with self.subTest(tool=tool):
+    rid='review-'+tool; server.RUNS[rid]={'steps':[]}; server.BUSY.acquire()
+    plan={'actions':[{'tool':tool,'arguments':{'name':name}}],'reply':'Opening '+name+'.'}
+    with patch.object(server,'ollama_chat',return_value={'content':json.dumps(plan)}),patch.object(server.subprocess,'run') as launch,patch.object(server,'restore_target') as restore,patch.object(server,'announce'),patch.object(server,'log'):
+     server.plan_and_maybe_run(rid,'open '+name,None)
+     self.assertEqual(server.RUNS[rid]['status'],'awaiting_approval')
+     self.assertEqual(server.RUNS[rid]['plan'],plan)
+     launch.assert_not_called(); restore.assert_not_called()
+     server.handle_deny(rid)
+    self.assertFalse(server.BUSY.locked())
  def test_deny_runs_nothing_and_releases_busy(self):
   rid='deny-unit'; server.RUNS[rid]={'status':'awaiting_approval','steps':[]}
   server.PENDING[rid]={'target':None,'planner':'json'}; server.BUSY.acquire()
