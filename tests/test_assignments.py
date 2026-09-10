@@ -48,6 +48,15 @@ class AssignmentTest(unittest.TestCase):
         for name in [training.QUEUE,training.INDEX]: self.assertIn(f'| {aid} | Edited title | queued |',(self.root/name).read_text())
         self.assertEqual(training.assignment_detail(self.root,aid)['fields'],changed)
 
+    def test_allowed_and_forbidden_paths_are_optional(self):
+        # A-023/ADR-034: paths are a soft hint, not a hard gate — isolation is area + worktree.
+        fields=dict(self.fields,allowed_paths='',forbidden_paths='')
+        proposal=training.preview(self.root,dict(operation='assignment_save',fields=fields))
+        aid=training.confirm(self.root,proposal['preview_id'])['assignment']
+        detail=training.assignment_detail(self.root,aid)
+        self.assertEqual(detail['fields']['allowed_paths'],'')
+        self.assertEqual(detail['fields']['forbidden_paths'],'')
+
     def test_stale_preview_and_claimed_assignment_rejected(self):
         aid=self.create();detail=training.assignment_detail(self.root,aid)
         payload=dict(operation='assignment_save',assignment_id=aid,revision=detail['revision'],fields=self.fields)

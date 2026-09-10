@@ -37,7 +37,7 @@ check the listed trees' QUEUE/SESSION + scopes read-only and coordinate with the
 desk: each is a branch snapshot, not a global lock. Record owner, branch,
 absolute worktree path and Batch in your own SESSION; reconcile shared status
 files on merge without reverting others' claims. Isolation does not waive
-parallel-ok/area/path rules or permit shared-service restarts.
+parallel-ok/area rules (path hints stay optional, never a gate) or permit shared-service restarts.
 Commit the scoped assignment, then `git push -u origin HEAD` and report.
 After confirmed merge/handoff, from a remaining checkout (actual path/branch):
 

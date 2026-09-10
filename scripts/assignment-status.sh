@@ -93,13 +93,27 @@ if ((${#IN_PROG[@]} == 0)); then
   exit 0
 fi
 
-echo "Something is already in_progress. You may only claim queued + parallel-ok: YES with disjoint area/paths."
+echo "Something is already in_progress. You may only claim queued + parallel-ok: YES with an area:"
+echo "different from every in_progress row below (A-023/ADR-034: area + worktree is the isolation;"
+echo "any Allowed/Forbidden paths in active/*.md are optional context, never a gate — same area never"
+echo "counts as parallel-safe just because paths look disjoint)."
+IN_PROG_AREAS=()
+for row in "${IN_PROG[@]}"; do
+  IN_PROG_AREAS+=("$(echo "$row" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$5); print $5}')")
+done
 FOUND=0
 for row in "${ROWS[@]}"; do
   if echo "$row" | grep -qi '| queued |' && echo "$row" | grep -qi '| YES |'; then
-    echo "Candidate (verify paths in its active/*.md before claiming):"
-    echo "$row"
-    FOUND=1
+    ROW_AREA=$(echo "$row" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$5); print $5}')
+    CONFLICT=0
+    for A in "${IN_PROG_AREAS[@]}"; do
+      [[ "$ROW_AREA" == "$A" ]] && CONFLICT=1 && break
+    done
+    if ((CONFLICT == 0)); then
+      echo "Candidate ($ROW_AREA differs from every in_progress area):"
+      echo "$row"
+      FOUND=1
+    fi
   fi
 done
 if ((FOUND == 0)); then

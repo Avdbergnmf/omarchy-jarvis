@@ -2,10 +2,10 @@ Working directory: use Alex’s assigned Jarvis worktree; stay there if already 
 Another agent may already own an in_progress assignment. You take a PARALLEL track only.
 
 1) Run `./scripts/assignment-status.sh`. Read START.md parallel rules, QUEUE.md, SESSION.md.
-2) Note every `in_progress` row (area, allowed/forbidden paths in its active/*.md).
-3) Claim the first `queued` assignment with **parallel-ok: YES** that does not conflict on area or paths.
+2) Note every `in_progress` row's `area:` (and any optional path hints in its active/*.md — context only).
+3) Claim the first `queued` assignment with **parallel-ok: YES** whose `area:` differs from every in_progress row's area. Path hints never override this — same area, no claim, even if paths look disjoint.
 4) If none: stop with the same **“No assignment in queue is possible right now.”** + queue list as in NEW_AGENT.txt. Do not touch in_progress work.
-5) If claimed: mark in_progress, update SESSION “Parallel agent”, work only Allowed paths, finish → done/.
+5) If claimed: mark in_progress, update SESSION “Parallel agent”, work within the assignment's area/goal/out-of-scope (any path hints are non-binding), finish → done/.
 
 ## Required worktree setup (before claim edits or coding)
 Concurrent agents must each use a separate worktree + branch, even if clean.
@@ -27,7 +27,7 @@ check the listed trees' QUEUE/SESSION + scopes read-only and coordinate with the
 desk: each is a branch snapshot, not a global lock. Record owner, branch,
 absolute worktree path and Batch in your own SESSION; reconcile shared status
 files on merge without reverting others' claims. Isolation does not waive
-parallel-ok/area/path rules or permit shared-service restarts.
+parallel-ok/area rules (path hints stay optional, never a gate) or permit shared-service restarts.
 Commit the scoped assignment, then `git push -u origin HEAD` and report.
 After confirmed merge/handoff, from a remaining checkout (actual path/branch):
 

@@ -1,6 +1,6 @@
 # A-023 — Simplify assignment scope: area + worktree, not hard path fences
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:docs
 - **parallel-ok:** YES
 - **Links:** Alex 2026-09-10 JARVIS — allowed/forbidden paths force constant scope-expansion asks; worktrees already isolate checkouts
@@ -15,11 +15,11 @@ Stop treating **Allowed paths / Forbidden paths** as hard gates. Isolation for p
 Update START.md, `docs/assignments/TEMPLATE.md`, `docs/assignments/README.md`, paste prompts (`NEW_AGENT` / `CONTINUE` / `PARALLEL`), and any Training generate-assignment copy that still emits hard path fences. Add a short ADR. Agents should prefer noting “expanded into X because …” in PROGRESS over stopping for permission when the change is still in-repo and doesn’t violate out-of-scope / plan→approve→execute.
 
 ## Checklist
-- [ ] Audit START, assignment README/TEMPLATE, prompts, Training handoff text for hard Allowed/Forbidden requirements
-- [ ] Rewrite policy: worktree isolation + area; paths optional soft hints; remove “required if parallel-ok YES”
-- [ ] parallel-ok = disjoint areas + own worktree (not path lists)
-- [ ] ADR + PROGRESS; tweak assignment-status hint text if it mentions path fences
-- [ ] SESSION; QUEUE/INDEX → done
+- [x] Audit START, assignment README/TEMPLATE, prompts, Training handoff text for hard Allowed/Forbidden requirements
+- [x] Rewrite policy: worktree isolation + area; paths optional soft hints; remove “required if parallel-ok YES”
+- [x] parallel-ok = disjoint areas + own worktree (not path lists) — `assignment-status.sh`'s claim hint now actually checks area disjointness (previously only filtered on `parallel-ok: YES`, which is exactly what mis-offered A-021 as parallel-safe alongside A-020, both `area:overlay`)
+- [x] ADR-034 + PROGRESS; tweaked `assignment-status.sh`'s claim-hint text and logic
+- [x] SESSION; QUEUE/INDEX → done
 
 ## Out of scope
 - Changing how worktrees are created

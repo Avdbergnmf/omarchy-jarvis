@@ -39,7 +39,7 @@ When Alex asks for a change/add (in any chat):
 
 1. **Name it** — short title; id `A-NNN` monotonic (see INDEX).
 2. **Copy** `TEMPLATE.md` → `active/A-NNN-slug.md`.
-3. Fill: goal, area, parallel-ok, allowed/forbidden paths, checklist (acceptance as boxes), out of scope, links (issue/pass).
+3. Fill: goal, area, parallel-ok, checklist (acceptance as boxes), out of scope, links (issue/pass); allowed/forbidden paths are optional soft hints, not required.
 4. Append row to `QUEUE.md` as `queued` (or `in_progress` if Alex will run it immediately).
 5. Add INDEX line.
 6. Tell Alex which paste prompt to use:
@@ -58,8 +58,9 @@ isolated tree must be reused. Never send parallel agents a blanket `cd` to the
 canonical tree. Record owner + branch + worktree in the desk claim and the
 worker's SESSION before implementation. Reconcile claims read-only across
 `git worktree list` and the desk queue: branch-local QUEUE/SESSION can be stale.
-Worktrees do not relax area/path restrictions or isolate live services. Merge
-shared bookkeeping carefully, preserving other workers' claims and evidence.
+Worktrees do not relax area disjointness (the actual parallel-safety rule — see
+[ADR-034](../DECISIONS.md#adr-034--assignment-scope-is-area--worktree-not-hard-path-fences-2026-09-10))
+or isolate live services. Merge shared bookkeeping carefully, preserving other workers' claims and evidence.
 
 ### Constraints for good assignments
 - **One area** when possible; if multi-area, split into two assignments.
@@ -88,8 +89,8 @@ Coding agents complete **a single** assignment per invocation unless Alex explic
 ## Training-authored assignments and local slots
 Training previews generate a monotonic A-NNN brief, queued QUEUE/INDEX rows and an active
 handoff using NEW_AGENT/CONTINUE. The user sees exact bytes and confirms before writing.
-Rows are serial by default with area scope, forbidden paths, a verification checklist and
-source evidence. Human comments should state the expected outcome; an agent must clarify
+Rows are serial by default with area scope, an optional soft path hint, a verification
+checklist and source evidence. Human comments should state the expected outcome; an agent must clarify
 insufficient acceptance before broadening work. Preparation does not claim the assignment.
 
 Local slots are stored in ignored `logs/training/agents.json` (version 1, `agents` list),

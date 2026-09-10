@@ -99,8 +99,10 @@ def assignment_detail(root, aid):
 def assignment_fields(data):
     if not isinstance(data, dict): raise ValueError('Expected assignment fields')
     result = {}
+    # A-023: allowed_paths/forbidden_paths are optional soft hints, not a hard gate —
+    # isolation for parallel work is worktree + disjoint area (see ADR-034).
     for key, limit in FIELD_LIMITS.items():
-        value = short(data.get(key, ''), key.replace('_', ' ').title(), limit, empty=key=='notes')
+        value = short(data.get(key, ''), key.replace('_', ' ').title(), limit, empty=key in ('notes', 'allowed_paths', 'forbidden_paths'))
         if key in ('title', 'allowed_paths', 'forbidden_paths') and ('\n' in value or '|' in value):
             raise ValueError(key+' must be a single line without table separators')
         if re.search(r'^#{1,2} ', value, re.M): raise ValueError('Use prose within '+key+', not assignment headings')

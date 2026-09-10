@@ -3,8 +3,8 @@
 - **Status:** queued | in_progress | blocked | done | cancelled
 - **Area:** area:overlay | area:brain | area:actions | area:skills | area:docs
 - **parallel-ok:** NO | YES
-- **Allowed paths:** (required if parallel-ok YES)
-- **Forbidden paths:** (required if parallel-ok YES; always list brain/ if not your area)
+- **Allowed paths (optional soft hint):** likely-touched paths, if useful context — never a hard gate; isolation is worktree + a disjoint `area:`, not a path allowlist
+- **Forbidden paths (optional soft hint):** anything worth flagging explicitly — never a hard gate
 - **Blocks / blocked-by:** none | A-NNN
 - **Links:** issue #N · pass path · ADR
 

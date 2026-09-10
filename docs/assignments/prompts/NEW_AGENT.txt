@@ -19,7 +19,7 @@ You are a NEW agent on Omarchy Jarvis (cold start). No prior chat context.
 A) If Alex named an assignment id → only if free or they said take over; else report conflict.
 B) Else compute **claimable** queued rows:
    - `status=queued`
-   - If any `in_progress`: only `parallel-ok: YES` with disjoint area/paths vs every in_progress active/*.md; never claim `parallel-ok: NO` while something else is in_progress; never same area as an in_progress.
+   - If any `in_progress`: only `parallel-ok: YES` with an `area:` different from every in_progress row's area; never claim `parallel-ok: NO` while something else is in_progress; never same area as an in_progress, even if that row's active/*.md lists path hints — paths are optional context, never a gate that excuses a same-area claim.
    - If nothing in_progress → first queued row.
 C) Claimed → mark in_progress in QUEUE+INDEX, fill SESSION, execute.
 D) If nothing claimable, do not code. Reply:
@@ -63,7 +63,7 @@ check the listed trees' QUEUE/SESSION + scopes read-only and coordinate with the
 desk: each is a branch snapshot, not a global lock. Record owner, branch,
 absolute worktree path and Batch in your own SESSION; reconcile shared status
 files on merge without reverting others' claims. Isolation does not waive
-parallel-ok/area/path rules or permit shared-service restarts.
+parallel-ok/area rules (path hints stay optional, never a gate) or permit shared-service restarts.
 Commit the scoped assignment, then `git push -u origin HEAD` and report.
 After confirmed merge/handoff, from a remaining checkout (actual path/branch):
 

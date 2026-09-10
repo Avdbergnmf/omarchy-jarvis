@@ -59,11 +59,13 @@ path and jarvis_version. Do not silently expand a pass into unrelated open issue
 
 Areas are `area:overlay`, `area:brain`, `area:actions`, `area:skills`, `area:docs`.
 Use one agent ↔ one issue ↔ one area where possible. Parallel work requires `parallel-ok`
-and explicit `Allowed paths:` and `Forbidden paths:` entries in the issue. Different areas,
-no path overlap. `single-writer` is the default for brain/control-plane work.
-Never parallelize approve/execute or brain/server.py redesign. Merge before handing off
-contested files. agent-status groups issues by area and warns about shared areas, path
-collisions and missing scope; warnings require human review, not automatic scheduling.
+and a **different `area:`** from every in-progress issue/assignment, plus the mandatory
+separate worktree/branch below — that's the isolation, not a path allowlist. `Allowed
+paths:`/`Forbidden paths:` entries are optional soft hints for context, never a gate; same
+area, no path list makes it parallel-safe (see ADR-034). `single-writer` is the default for
+brain/control-plane work. Never parallelize approve/execute or brain/server.py redesign.
+Merge before handing off contested files. agent-status groups issues by area and warns about
+shared areas and missing scope; warnings require human review, not automatic scheduling.
 Labels permit coordination; they do not authorize agent spending or spawning.
 
 ### Required isolation for concurrent agents

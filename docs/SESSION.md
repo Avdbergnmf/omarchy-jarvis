@@ -3,47 +3,34 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Assignment: _(none — A-020 done and merged this session; queue has A-019/A-021/A-022/A-023)_
-- Branch: `main` (a020-validate-features-ux merged at 791577d and removed)
-- Batch: 1 (default; stop and report after each assignment)
+- Assignment: **A-023 — Simplify assignment scope (area + worktree, soft paths)** (in_progress)
+- Owner: claude-code (this session)
+- Branch: `a023-simplify-assignment-path-scope`
+- Worktree: `~/Work/omarchy-jarvis-a023-simplify-assignment-path-scope`
+- Area: area:docs (parallel-ok: YES; docs-only, disjoint from every other open row's product-code area)
+- Batch: 1 by default, but Alex asked to keep going after A-021 — may continue to the next claimable row after this one, stopping if tokens are tight or nothing claimable
 
 ## Checklist
-- [x] Read START, SESSION, QUEUE; claimed A-020 (priority row)
-- [x] Reproduce Verify/Fail; confirm catalog/FEATURES persistence; fix list refresh/removal
-- [x] Include-validated: readable report history; re-test without losing history
-- [x] Surface/pre-fill/optional run id end-to-end (overlay + API)
-- [x] Auto-drive mechanical guided steps; keep judgment + Run approval human
-- [x] Tests + ADR; PROGRESS; SESSION; QUEUE/INDEX → done
+- [x] Read QUEUE/SESSION (canonical main); claimed A-023 in an isolated worktree off origin/main
+- [ ] Audit START, assignment README/TEMPLATE, prompts, Training handoff text for hard Allowed/Forbidden requirements
+- [ ] Rewrite policy: worktree isolation + area; paths optional soft hints; remove "required if parallel-ok YES"
+- [ ] parallel-ok = disjoint areas + own worktree (not path lists)
+- [ ] ADR + PROGRESS; tweak assignment-status hint text if it mentions path fences
+- [ ] SESSION; QUEUE/INDEX → done
 
 ## Done this session (evidence)
-- Desk (Firsty): filed A-020 from Alex Validate-features feedback (persist results, run ids, automate mechanical steps)
-- Committed a live bug report (bug-open-cliamp) that was sitting uncommitted in the canonical checkout
-- A-020 done: persistence was already correct (existing tests proved it); real bug was the
-  guide staying open after a confirmed result. Fixed: guide closes + inline list report on
-  confirm; run id now visible in chat footer (copy) + auto-captured by new `kind:"auto"`
-  guided steps, which submit their literal prompt via the same `/v1/run` a chat send uses
-  (never approves/denies). `feat-overlay-chat` migrated as the reference guide.
-- 141 Python tests + all 5 JS suites pass, doctor.sh --syntax passes. VERSION 0.5.6 → 0.5.7;
-  ADR-033. Merged latest main (A-021 queued by desk) into this branch during the work.
-- Desk also queued A-022 (fix "open cliamp", area:brain) and A-023 (simplify path-scope
-  policy, area:docs, `parallel-ok: YES`) while A-020 was in progress; both are open, unclaimed.
+- Claimed A-023; created worktree/branch off origin/main (5767339)
 
 ## Also queued
-- A-019 Proposed-action bubble UX (same overlay area as A-020 → serial)
-- A-021 Empty Enter → Skip on report Q&A (`parallel-ok: YES`)
-- A-022 Fix open cliamp plan/tooling, issue #15 (area:brain)
-- A-023 Simplify path-scope policy (`parallel-ok: YES`, area:docs)
+- A-019 Proposed-action bubble UX — queued, area:overlay (unclaimed)
+- A-021 Empty Enter skips report Q&A — queued in canonical main's QUEUE.md, but this is stale: it's actually already done and pushed on branch `a021-empty-enter-skips-report-qa`. A **separate concurrent session** already attempted `git merge a021-empty-enter-skips-report-qa` into the canonical `~/Work/omarchy-jarvis` main checkout and left it mid-merge with unresolved conflicts on docs/PROGRESS.md, docs/SESSION.md, docs/assignments/INDEX.md, docs/assignments/QUEUE.md (MERGE_HEAD 442deae, MERGE_MSG references a different Claude-Session id). **Do not touch that canonical checkout's merge state** — it belongs to that other session to finish or abandon.
+- A-022 Fix open cliamp plan/tooling (issue #15) — queued, area:brain
 
 ## Next action (one concrete step)
-- Queue has four open rows (A-019/A-021/A-022/A-023); no primary in_progress. Claim the next
-  claimable one per NEW_AGENT rules and report to Alex and stop per default batch size of 1.
+- Read START.md, docs/assignments/{README,TEMPLATE}.md, docs/assignments/prompts/*.txt, and Training's assignment-generation code/strings for hard Allowed-paths/Forbidden-paths language to rewrite per the A-023 brief.
 
 ## Parallel agent
-- none (overlay serial)
+- None currently in_progress elsewhere (per origin/main's committed QUEUE); the canonical checkout has an unrelated unfinished merge from another session (see note above), not a product claim.
 
 ## Blockers
 - none
-
-## Training preparation
-- Last confirmed assignment save: A-022. Preparation only; no ownership claimed or agent contacted.
-
