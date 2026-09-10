@@ -4,8 +4,7 @@ Oldest queued at the top among `queued`. At most one `in_progress` unless extras
 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
-
-(no open rows)
+| A-043 | Training Problems: whole row bubble clickable | queued | area:overlay | YES | low | [active/A-043-problem-row-full-bubble-click.md](active/A-043-problem-row-full-bubble-click.md) |
 
 Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-030, A-031, A-032, A-033, A-034, A-035, A-036, A-037, A-038, A-039, A-040, A-041, A-042 (see [done/](done/)).
 
