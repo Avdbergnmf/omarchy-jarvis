@@ -444,3 +444,7 @@ validation remains pending because the browser connector exposes no browser on t
   step** for real on `feat-overlay-chat` once merged, and confirm the run id shows up both in
   chat's footer and the guide's evidence field.
 - A-019 (Proposed-action bubble UX) is next in the same overlay area (serial).
+
+## 2026-09-10 — desk: queue A-021 empty Enter skips report Q&A
+- Alex: Enter on empty “how did that go” report should Skip for fast dismiss.
+- Filed [A-021](assignments/active/A-021-empty-enter-skips-report-qa.md) (`parallel-ok: YES`).
