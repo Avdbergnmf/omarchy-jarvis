@@ -32,7 +32,7 @@ _Converted:_ bug-open-bitwarden → assignments A-024 + A-025 (`bugs/converted/`
 | feat-self-improve-arch-boundary-tests | feature | Architectural boundary tests | M | open | — |
 | feat-self-improve-memory-consolidation | feature | Episodic→durable memory consolidation | L | open | — |
 | feat-self-improve-maintainability-gate | feature | Maintainability multi-signal gate on candidates | M | open | — |
-| feat-self-improve-prompt-config-semver | feature | Trace prompt/config versions like code | M | open | — |
+| feat-self-improve-prompt-config-semver | feature | Trace prompt/config versions like code | M | converted | A-038 |
 | feat-self-improve-rejection-memory | feature | Store rejection reasons for improvements | S | open | — |
 | feat-self-improve-resource-budgets | feature | Autonomy resource budgets | M | open | — |
 

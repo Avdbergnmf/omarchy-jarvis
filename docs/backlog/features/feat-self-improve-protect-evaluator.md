@@ -4,13 +4,13 @@
 - **difficulty:** M
 - **status:** converted
 - **source:** ChatGPT self-improve plan / desk roadmap 2026-09-10
-- **wave:** 1+ (after A-026…A-029)
+- **wave:** revised Wave 0 after A-027 + A-028
 
 ## Summary
 Separate approval for eval changes. ChatGPT #13.
 
 ## Why later
-Wave 0 foundations first.
+A-030 is blocked until repository protection is enforceable and candidate eval paths exist.
 
 ## Acceptance (sketch)
 Concrete evidence; no silent production self-mod.

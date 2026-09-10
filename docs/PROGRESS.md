@@ -580,3 +580,18 @@ validation remains pending because the browser connector exposes no browser on t
 
 ## 2026-09-10 — desk: reshape A-037 away from stage integers
 - Prefer gates + blocked-by + QUEUE order over stage 0/1/2 + global shift-up; align with A-026 ledger.
+
+## 2026-09-10 — A-032 codebase-grounded self-improve plan review
+- Reviewed the roadmap against approval/execution, Training writes, journals, human validation,
+  app preferences, trusted skills, CI, deployment scripts and assignment policy. Kept the
+  Runtime/Desk/Forge/Control Plane model and documented where those boundaries are conceptual.
+- Live GitHub reads found the private repository cannot enable rulesets or classic branch
+  protection on its current plan (HTTP 403). A-027 is blocked until Alex chooses a supported
+  plan, deliberate public visibility, or another enforceable host; unattended Forge stays off.
+- Separated deterministic CI, runtime anomaly journals, human validation and candidate evals.
+  Added A-038 for exact model/prompt/tool/revision identity and durable private evidence before
+  A-026/A-028; narrowed and dependency-blocked A-026…A-031. Reconciled and preserved the
+  concurrently landed A-033…A-037 assignments; A-036 remains next in QUEUE.
+- Evidence: 153 Python tests, five JavaScript suites, shellcheck and `doctor.sh --syntax` pass;
+  assignment status and `git diff --check` pass. Docs/planning only; VERSION unchanged and no
+  shared service restart required.

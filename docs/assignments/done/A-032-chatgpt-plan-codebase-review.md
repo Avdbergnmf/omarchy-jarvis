@@ -1,6 +1,6 @@
 # A-032 — ChatGPT deep review: self-improve plan vs codebase (plan perfection)
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:docs
 - **parallel-ok:** NO (serial — **do this before** Wave 0 implementation A-026…A-031)
 - **Soft path hints:** `docs/SELF_IMPROVE_ROADMAP.md`, `docs/audits/`, `START.md`, `docs/DECISIONS.md`, `docs/assignments/`, `docs/validation/`, `docs/LOGGING.md`, `docs/backlog/features/feat-self-improve-*`, skim `brain/`, `overlay/`, `actions/`, `tests/`, `scripts/` for evidence only
@@ -57,12 +57,24 @@ You are **not** implementing Runtime/Forge features in this assignment. Output i
 - Prefer evidence, provenance, boundaries, promotion discipline over more “self-reflection” machinery
 
 ## Checklist
-- [ ] Read roadmap + assignments + key code/docs listed above (cite paths in the audit)
-- [ ] Write `docs/audits/chatgpt-plan-vs-codebase-review-2026-09-10.md`
-- [ ] Revise roadmap (in place or `.proposed.md`) with clear delta from prior version
-- [ ] Adjust QUEUE / A-026…A-031 briefs only as justified by the review
-- [ ] PROGRESS + SESSION; mark this assignment done; **do not** implement Wave 0 product code here
-- [ ] **Stop after A-032** — report to Alex; do not claim A-027/A-026/…
+- [x] Read roadmap + assignments + key code/docs listed above (cite paths in the audit)
+- [x] Write `docs/audits/chatgpt-plan-vs-codebase-review-2026-09-10.md`
+- [x] Revise roadmap (in place or `.proposed.md`) with clear delta from prior version
+- [x] Adjust QUEUE / A-026…A-031 briefs only as justified by the review
+- [x] PROGRESS + SESSION; mark this assignment done; **do not** implement Wave 0 product code here
+- [x] **Stop after A-032** — report to Alex; do not claim A-027/A-026/…
+
+## Resolution
+
+- Kept the four-subsystem north star, but grounded its boundaries and autonomy gates in the
+  current approval, Training, journal, validation, action, skill, CI and deployment code.
+- Reshaped A-026…A-031, blocked dependencies explicitly, and added A-038 for exact evidence
+  identity and durable private bundles. Concurrent mainline A-033…A-037 assignments were
+  preserved during rebase.
+- Verified the external A-027 blocker through GitHub's live ruleset and branch-protection
+  APIs. No repository visibility, hosting, Runtime behavior or shared service was changed.
+- Evidence: 153 Python tests, all five JavaScript test suites, shellcheck,
+  `./scripts/doctor.sh --syntax`, assignment status and `git diff --check` pass.
 
 ## Out of scope
 Implementing ledger/CI/CODEOWNERS/memory/stochastic runners beyond docs/plan; rewriting Runtime features; spending other agents; silent push to bypass future main protection discussions.
