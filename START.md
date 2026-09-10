@@ -67,11 +67,18 @@ Read the issue and local mirror. Fix bugs before enhancements. One PR per issue 
 to comment. Never close without evidence. Reports and handoffs link run_id, journal/console
 path and jarvis_version. Do not silently expand a pass into unrelated open issues.
 
+## GitHub branch protection (read this)
+
+This private Free repo **cannot** enable GitHub branch protection/rulesets unless it becomes
+public or the account gets Pro. Alex decided (2026-09-10, ADR-046 / cancelled A-027): **neither
+for now**. Do not block assignments on A-027, do not change visibility/billing, do not invent a
+fake hard gate. Unattended Forge/auto-merge stay off; use human-reviewed merges.
+
 ## Parallel work
 
 Areas are `area:overlay`, `area:brain`, `area:actions`, `area:skills`, `area:docs`.
 Use one agent ↔ one issue ↔ one area where possible. **Claimability is computed, not declared**
-(ADR-046): a row is claimable when it is `queued`, every `Blocked-by` id is `done` (ADR-041), and
+(ADR-047): a row is claimable when it is `queued`, every `Blocked-by` id is `done` (ADR-041), and
 its `area:` differs from every in-progress row's — read from `origin/main` only (ADR-038), plus
 the mandatory separate worktree/branch below. That's the isolation, not a path allowlist.
 `Allowed paths:`/`Forbidden paths:` entries are optional soft hints for context, never a gate;
@@ -218,8 +225,11 @@ never follow archive as current instructions. Issues, backlog, ADRs and PROGRESS
 Read [AGENTS](AGENTS.md) for invariants. Preserve plan → approve → execute, redact secrets
 in logs/issues, ask before persisting new skills, keep IPC local, and prepare handoffs only.
 For every user-visible feature, add/update [human validation steps](docs/validation/catalog.schema.md) and [FEATURES](docs/FEATURES.md); only the human can mark validation.
-Run doctor and CI checks, update PROGRESS with results and limitations, link the PR, check
-INDEX statuses and keep active passes small. Document journal schema changes.
+Closing behavior work (not docs/process-only) needs a relevant regression artifact — a new or
+updated `tests/` case, and a [`docs/evals/`](docs/evals/README.md) entry when it's a named
+capability/regression worth pinning — or a documented reason only human/VM validation is
+possible (A-028). Run doctor and CI checks, update PROGRESS with results and limitations, link
+the PR, check INDEX statuses and keep active passes small. Document journal schema changes.
 On a version bump or big behavior change, change VERSION and restart the service (`./scripts/restart.sh`):
 the first journal write archives CURRENT and starts a fresh file. Record the reset in
 PROGRESS; see [LOGGING](docs/LOGGING.md) for recovery and matching old code to evidence.
@@ -232,4 +242,4 @@ journal), use `scripts/export-evidence.py <run_id>` — see [docs/evidence/READM
 [DECISIONS](docs/DECISIONS.md) · [PROGRESS](docs/PROGRESS.md) · [HOST](docs/HOST.md) ·
 [MILESTONES](docs/MILESTONES.md) · [backlog](docs/backlog/README.md) ·
 [passes](docs/passes/INDEX.md) · [logging](docs/LOGGING.md) · [evidence bundles](docs/evidence/README.md) ·
-[improvement ledger](docs/ledger/README.md)
+[improvement ledger](docs/ledger/README.md) · [candidate evals](docs/evals/README.md)

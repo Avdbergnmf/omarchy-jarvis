@@ -1,0 +1,75 @@
+{
+  "schema": "docs/evals/schema.json",
+  "cases": [
+    {
+      "id": "EVAL-001",
+      "version": 1,
+      "kind": "regression",
+      "title": "A false action claim with no actions is rewritten honestly",
+      "oracle_type": "unit-test-reference",
+      "execution_level": "planner-only",
+      "mutation_policy": "side-effect-free",
+      "owner": "control-plane",
+      "protection_class": "protected-regression",
+      "reference": "tests/test_jarvis.py::JsonPlanTest::test_false_action_claim_with_no_actions_is_rewritten_honestly",
+      "expected_result": "pass",
+      "notes": "The honesty-rewrite guard: a plan claiming an action happened with an empty actions list must be rewritten, never taken at face value."
+    },
+    {
+      "id": "EVAL-002",
+      "version": 1,
+      "kind": "regression",
+      "title": "An action plan awaits approval by default",
+      "oracle_type": "unit-test-reference",
+      "execution_level": "planner-only",
+      "mutation_policy": "side-effect-free",
+      "owner": "control-plane",
+      "protection_class": "protected-regression",
+      "reference": "tests/test_jarvis.py::ApprovalFlowTest::test_action_plan_awaits_approval_by_default",
+      "expected_result": "pass",
+      "notes": "The core plan -> approve -> execute invariant. This is the single most important regression in the suite; its protection_class must never be weakened without an explicit Control Plane review."
+    },
+    {
+      "id": "EVAL-003",
+      "version": 1,
+      "kind": "regression",
+      "title": "skills_trusted mode still gates non-skill actions",
+      "oracle_type": "unit-test-reference",
+      "execution_level": "planner-only",
+      "mutation_policy": "side-effect-free",
+      "owner": "control-plane",
+      "protection_class": "protected-regression",
+      "reference": "tests/test_jarvis.py::ApprovalFlowTest::test_skills_trusted_still_gates_non_skill_actions",
+      "expected_result": "pass",
+      "notes": "approval_mode=skills_trusted auto-runs only reviewed run_skill recipes; every other tool must still await approval. A safety-boundary regression, not a UX one."
+    },
+    {
+      "id": "EVAL-004",
+      "version": 1,
+      "kind": "capability",
+      "title": "Ambiguous app-open resolves to the top-ranked candidate",
+      "oracle_type": "unit-test-reference",
+      "execution_level": "unit",
+      "mutation_policy": "side-effect-free",
+      "owner": "control-plane",
+      "protection_class": "candidate-capability",
+      "reference": "tests/test_jarvis.py::OpenByNameTest::test_resolve_app_picks_top_match_for_duplicate_desktop_entries",
+      "expected_result": "pass",
+      "notes": "A-024's shipped capability (issue #16 part 1, IMP-001): duplicate .desktop entries resolve to a top match instead of hard-failing. candidate-capability, not protected-regression, since ranking-tier tuning may still legitimately change this."
+    },
+    {
+      "id": "EVAL-005",
+      "version": 1,
+      "kind": "capability",
+      "title": "\"The other one\" correction picks the next candidate and rejects stale/solo requests",
+      "oracle_type": "unit-test-reference",
+      "execution_level": "unit",
+      "mutation_policy": "side-effect-free",
+      "owner": "control-plane",
+      "protection_class": "candidate-capability",
+      "reference": "tests/test_jarvis.py::OpenByNameTest::test_preview_correction_picks_the_next_stem_and_rejects_stale_or_solo",
+      "expected_result": "pass",
+      "notes": "A-025's shipped capability (issue #16 part 2, IMP-001): natural-language app-open correction. candidate-capability since correction heuristics are expected to keep evolving."
+    }
+  ]
+}

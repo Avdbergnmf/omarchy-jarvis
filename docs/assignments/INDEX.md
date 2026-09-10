@@ -28,10 +28,10 @@
 | A-024 | Ambiguous open_app_by_name → top match (Bitwarden #16) | done | area:actions | YES | [done/A-024-open-ambiguous-app-top-match.md](done/A-024-open-ambiguous-app-top-match.md) |
 | A-025 | App-open preferences + “the other one” correction (#16) | done | area:brain | NO | [done/A-025-app-open-preferences-and-correction.md](done/A-025-app-open-preferences-and-correction.md) |
 | A-026 | Improvement Ledger v0 (Desk-owned audit wrapping QUEUE) | done | area:docs | NO | [done/A-026-improvement-ledger-v0.md](done/A-026-improvement-ledger-v0.md) |
-| A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
-| A-028 | Deterministic candidate-eval foundation | in_progress | area:docs | NO | [active/A-028-eval-harness-v0.md](active/A-028-eval-harness-v0.md) |
-| A-029 | Preference memory v0 (provenance, precedence, revoke) | queued | area:actions | YES | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
-| A-030 | Protect safety/eval/control-plane paths | blocked | area:docs | NO | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
+| A-027 | Enforced promotion path (protected main + separate Forge actor) — CANCELLED | cancelled | area:docs | NO | [done/A-027-protected-promotion-path.md](done/A-027-protected-promotion-path.md) |
+| A-028 | Deterministic candidate-eval foundation | done | area:docs | NO | [done/A-028-eval-harness-v0.md](done/A-028-eval-harness-v0.md) |
+| A-029 | Preference memory v0 (provenance, precedence, revoke) | in_progress | area:actions | YES | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
+| A-030 | Protect safety/eval/control-plane paths | queued | area:docs | NO | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
 | A-032 | ChatGPT deep review: plan vs codebase (plan perfection) | done | area:docs | NO | [done/A-032-chatgpt-plan-codebase-review.md](done/A-032-chatgpt-plan-codebase-review.md) |
 | A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | YES | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
@@ -43,4 +43,4 @@
 | A-039 | Cross-worktree claim visibility (stop double-claiming) | done | area:docs | YES | [done/A-039-cross-worktree-claim-visibility.md](done/A-039-cross-worktree-claim-visibility.md) |
 | A-040 | Test suite optimization (token cost + redundancy) | done | area:docs | NO | [done/A-040-test-suite-token-optimization.md](done/A-040-test-suite-token-optimization.md) |
 | A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | YES | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
-| A-042 | Parallel claimability: migrate tooling and prompts to ADR-046 | queued | area:docs | NO | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |
+| A-042 | Parallel claimability: migrate tooling and prompts to ADR-047 | queued | area:docs | NO | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |

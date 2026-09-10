@@ -2,7 +2,7 @@
 
 - **Status:** queued
 - **Area:** area:overlay
-- **parallel-ok:** YES (ADR-046 default — sequencing is `Blocked-by: A-033`, not the flag)
+- **parallel-ok:** YES (ADR-047 default — sequencing is `Blocked-by: A-033`, not the flag)
 - **Recommended depth:** medium
 - **Blocked-by:** A-033
 - **Gate:** latency

@@ -1,18 +1,18 @@
-# A-042 — Parallel claimability: migrate tooling and prompts to ADR-046
+# A-042 — Parallel claimability: migrate tooling and prompts to ADR-047
 
 - **Status:** queued
 - **Area:** area:docs (+ `scripts/`, two lines of `brain/training.py`, `tests/`)
-- **parallel-ok:** NO (control-plane: this assignment edits the claim rules themselves — ADR-046)
+- **parallel-ok:** NO (control-plane: this assignment edits the claim rules themselves — ADR-047)
 - **Recommended depth:** medium
 - **Allowed paths (optional soft hint):** `scripts/assignment-status.sh`, `scripts/agent-status.py`, `brain/training.py` (new-brief default only), `docs/assignments/prompts/*`, `docs/assignments/{README,TEMPLATE}.md`, `START.md`, `.github/ISSUE_TEMPLATE/workstream.md`, `tests/test_assignments.py`, `tests/test_journal.py`
 - **Forbidden paths (optional soft hint):** `overlay/` (A-041 owns the Agent Monitor UI); `brain/training.py` beyond the default flag and any `parallel-ok` plumbing
 - **Blocked-by:** none
 - **Gate:** control-plane
 - **Improvement:** none
-- **Links:** [ADR-046](../../DECISIONS.md#adr-046--claimability-is-computed-parallel-ok-yes-is-the-default-2026-09-10) · [audit](../../audits/parallel-claimability-2026-09-10.md) · supersedes the authoring half of ADR-034 · does not implement A-041
+- **Links:** [ADR-047](../../DECISIONS.md#adr-047--claimability-is-computed-parallel-ok-yes-is-the-default-2026-09-10) · [audit](../../audits/parallel-claimability-2026-09-10.md) · supersedes the authoring half of ADR-034 · does not implement A-041
 
 ## Goal
-ADR-046 flipped the policy and the flags by hand. Until the tooling agrees, the policy is enforced
+ADR-047 flipped the policy and the flags by hand. Until the tooling agrees, the policy is enforced
 only by review: `brain/training.py` still stamps `parallel-ok: NO` on every Training-authored
 brief, `assignment-status.sh` still silently honors a bare `NO` with no reason, and
 `scripts/agent-status.py` still rejects `parallel-ok` issues on rules ADR-034 retired a week ago.
@@ -33,11 +33,11 @@ explicit go-ahead — the area proposal below is a written recommendation, not a
 ### Make a bare `NO` visible
 - [ ] `scripts/assignment-status.sh`: print each `NO` row's reason next to it, parsed from the brief's `parallel-ok:` line
 - [ ] Same script: print `WARNING: A-NNN is parallel-ok: NO with no reason — treat as YES pending desk review` for any `NO` lacking one of `control-plane` / `single-writer` / `human-serial`
-- [ ] Same script: print a non-blocking `HEADS-UP` when a candidate's soft path hints intersect an `in_progress` row's (see ADR-046's named residual risk — a human noticing, never a machine deciding; must not remove any candidate from the hint)
-- [ ] Verify the hint against a synthetic QUEUE reproducing today's state (A-028 `in_progress` `area:docs`; A-029/A-033/A-041 queued and disjoint) and confirm all three are offered
+- [ ] Same script: print a non-blocking `HEADS-UP` when a candidate's soft path hints intersect an `in_progress` row's (see ADR-047's named residual risk — a human noticing, never a machine deciding; must not remove any candidate from the hint)
+- [ ] Verify the hint against a synthetic QUEUE reproducing the original bug (A-028 `in_progress` `area:docs`; A-029/A-033/A-041 queued and disjoint — all three must be offered) and against the current shape (A-029 `in_progress` `area:actions` → A-033 and A-041 offered, A-030/A-042 withheld as reasoned `NO`)
 
 ### Prompts and policy prose agree with the script
-- [ ] `prompts/NEW_AGENT.txt`, `prompts/PARALLEL.txt`, `prompts/CONTINUE.txt`, `prompts/README.md`: replace "only `parallel-ok: YES`" with ADR-046's computed rule; keep claim-on-`origin/main`-first (A-039) and the minimal-token stop unchanged
+- [ ] `prompts/NEW_AGENT.txt`, `prompts/PARALLEL.txt`, `prompts/CONTINUE.txt`, `prompts/README.md`: replace "only `parallel-ok: YES`" with ADR-047's computed rule; keep claim-on-`origin/main`-first (A-039) and the minimal-token stop unchanged
 - [ ] `START.md` Parallel work section and `docs/assignments/{README,TEMPLATE}.md` re-read end to end for leftover "NO by default" phrasing
 - [ ] Document the Alex escape hatch explicitly: an override phrase may authorize claiming an area-disjoint `NO` row, recorded in SESSION when used
 
@@ -67,11 +67,13 @@ explicit go-ahead — the area proposal below is a written recommendation, not a
 ## Notes for the coding agent
 `brain/training.py` is also in A-041's soft path hints. If A-041 is `in_progress` when you claim
 this, your change there is two literals — land it first and tell that agent, or rebase onto it.
-That overlap is a heads-up, not a gate (ADR-034/ADR-046).
+That overlap is a heads-up, not a gate (ADR-034/ADR-047).
 
 This row is `parallel-ok: NO (control-plane)` on purpose: it rewrites the claim rules, so it must
-not run beside another agent reading them. It is also `area:docs`, so it cannot be claimed while
-A-028 holds that area — that is the policy working, not a bug.
+not run beside another agent reading them. It is also `area:docs`, so it additionally cannot be
+claimed while another docs row (A-030) holds that area — that is the policy working, not a bug.
+`control-plane` here means single-writer-by-review: A-027 is cancelled and `main` will never be
+API-enforced (ADR-046), so nothing mechanical backstops a bad merge of this file set.
 
 Token discipline: read `docs/audits/parallel-claimability-2026-09-10.md` once; it already contains
 the evidence, the option tradeoffs and the exact algorithm. Do not re-derive them.

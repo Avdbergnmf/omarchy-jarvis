@@ -2,7 +2,7 @@
 
 - **Status:** blocked
 - **Area:** area:docs (+ light tests/scripts)
-- **parallel-ok:** NO (control-plane: protected evaluator, oracles and promotion baselines — ADR-046)
+- **parallel-ok:** NO (control-plane: protected evaluator, oracles and promotion baselines — ADR-047)
 - **Recommended depth:** high
 - **Soft path hints:** `tests/`, `scripts/`, `docs/evals/`
 - **Blocked-by:** A-028, A-030

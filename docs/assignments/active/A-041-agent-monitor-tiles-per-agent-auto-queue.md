@@ -2,7 +2,7 @@
 
 - **Status:** queued
 - **Area:** area:overlay
-- **parallel-ok:** YES (ADR-046 default — Training/Agent Monitor UI; not an authority, promotion or claim-rule change)
+- **parallel-ok:** YES (ADR-047 default — Training/Agent Monitor UI; not an authority, promotion or claim-rule change)
 - **Recommended depth:** high
 - **Allowed paths (optional soft hint):** `overlay/agents.js`, `overlay/training.html`, `overlay/training.css`, `brain/training.py`, `brain/server.py` (slot registry / queue advancement), `logs/training/agents.json`, `tests/` — heads-up: `brain/training.py` is also touched by A-042 (two-line default change); coordinate on merge order, this is a hint, not a gate
 - **Forbidden paths (optional soft hint):** none

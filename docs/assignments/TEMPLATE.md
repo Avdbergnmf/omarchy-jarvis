@@ -2,7 +2,7 @@
 
 - **Status:** queued | in_progress | blocked | done | cancelled
 - **Area:** area:overlay | area:brain | area:actions | area:skills | area:docs
-- **parallel-ok:** YES  (default; write `NO (<control-plane|single-writer|human-serial>: <surface>)` only when one genuinely applies — see ADR-046. Ordering goes in `Blocked-by:`, never here)
+- **parallel-ok:** YES  (default; write `NO (<control-plane|single-writer|human-serial>: <surface>)` only when one genuinely applies — see ADR-047. Ordering goes in `Blocked-by:`, never here)
 - **Recommended depth:** low | medium | high | xhigh  (Codex `model_reasoning_effort`; show in QUEUE; tell Alex on closeout)
 - **Allowed paths (optional soft hint):** likely-touched paths, if useful context — never a hard gate; isolation is worktree + a disjoint `area:`, not a path allowlist
 - **Forbidden paths (optional soft hint):** anything worth flagging explicitly — never a hard gate

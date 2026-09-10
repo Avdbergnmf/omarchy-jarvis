@@ -765,7 +765,42 @@ validation remains pending because the browser connector exposes no browser on t
   (duplicate id, missing/orphan record, bad assignment reference) against the real seeded
   ledger before committing. No shared-service restart required (docs + light Training only).
 
-## 2026-09-10 — desk: parallel claimability unstuck (ADR-046)
+## 2026-09-10 — A-028 deterministic candidate-eval foundation (ADR-045)
+- `docs/evals/README.md`: documents four evidence planes (CI/unit, runtime journal, human
+  validation, candidate evals) and states none auto-graduates into another.
+- `docs/evals/schema.json` + `cases.json`: one case shape, `oracle_type: unit-test-reference`
+  only (v0) — the oracle is an existing `tests/` function, deterministic and side-effect-free
+  by construction. Seeded EVAL-001…EVAL-005 from known planner/approval history (honesty
+  rewrite, approve-by-default, skills_trusted boundary as `protected-regression`; A-024/A-025's
+  shipped app-open capabilities as `candidate-capability`, linked from ledger IMP-001).
+- `scripts/eval-status.py`: validates cases.json's schema and confirms every `reference`
+  resolves to a real test class/method via `ast.parse` (never imports/executes the test).
+- `scripts/check-test-coverage.py` (new CI step): fails if any `tests/*.test.cjs` isn't
+  reachable from a CI entrypoint (directly or via `require()`) or a `tests/*.py` file doesn't
+  match `unittest discover`'s `test_*.py` pattern — the "no quiet suite omission" contract.
+- Result envelope reuses A-038's `fingerprint()` verbatim (`case_id`/`case_version` already
+  existed, now wired) plus `counts`/`artifact_hash`, documented for A-031's future runner —
+  no runner built here.
+- `START.md`/`docs/assignments/README.md`: closing behavior work now needs a regression
+  artifact or a documented human/VM-only reason.
+- A-030 intentionally NOT unblocked — still needs A-027 (externally blocked) per A-028's brief.
+- Evidence: `tests/test_check_test_coverage.py` (5 cases) + `tests/test_eval_status.py` (9
+  cases). Found and fixed a real bug in `check-test-coverage.py`'s first draft: its
+  `reachable_cjs()` read the module-level `TESTS` constant instead of the `tests` parameter
+  passed to `check()`, so its own tests were silently exercising the real repo's `tests/`
+  directory instead of an isolated fixture — caught when a fixture-only transitively-required
+  file made the mismatch fail loudly. `python3 -m unittest discover -s tests` — 204/204 pass
+  (190 + 14 new); `./scripts/doctor.sh --syntax`, `node tests/overlay.test.cjs`,
+  `check-test-coverage.py` and `eval-status.py` all green via `./scripts/test-full.sh`.
+
+## 2026-09-10 — A-027 cancelled: no GitHub Pro / no public (ADR-046)
+- Alex: will not make the repo public and will not buy GitHub Pro for now.
+- Private Free cannot enable branch protection/rulesets (prior API 403). Nothing to “fix.”
+- A-027 moved to `done/` as **cancelled**; removed from live QUEUE.
+- A-030 unblocked (`Blocked-by: none`, status queued); checklist no longer requires fake A-027 API proof.
+- Unattended Forge / auto-merge / auto-deploy stay off. Agents must not block on A-027.
+
+## 2026-09-10 — desk: parallel claimability unstuck (ADR-047)
 - Trigger: a second agent following `prompts/PARALLEL.txt` exactly reported "nothing safely
   claimable" while A-028 (`area:docs`) was the only `in_progress` row — even though A-029
   (`area:actions`), A-033 (`area:brain`) and A-041 (`area:overlay`) were all `queued` with
@@ -784,21 +819,33 @@ validation remains pending because the browser connector exposes no browser on t
   bookkeeping-protocol gap, not a parallelism gap. Confirmed twice since: A-026 renumbered its
   ADR 043 → 044 because A-041's stub took 043 (`ffde097`), and PR #18 conflicted on the same
   shared docs with no parallel agent at all, purely from a stale branch base.
-- Decision (ADR-046): claimability is **computed, not declared** — `queued` + all `Blocked-by`
+- Decision (ADR-047): claimability is **computed, not declared** — `queued` + all `Blocked-by`
   done + area disjoint from every `in_progress` row, read from `origin/main`. `parallel-ok`
   defaults to **YES**; `NO` narrows to a reasoned kill-switch (`control-plane`, `single-writer`,
   `human-serial`) and stays self-restricting, so an in-progress `NO` never blocks anyone. The
   algorithm's *shape* is unchanged on purpose, so the existing `assignment-status.sh` and paste
   prompts produce correct answers the moment the flags are corrected — no code on the critical
   path.
-- Applied: A-029, A-033, A-034, A-035, A-041 → `YES` in QUEUE, INDEX and each brief; reasons
-  written into A-027/A-030/A-031's `NO`; A-028 left untouched (in flight in a dirty worktree; its
-  `NO` blocks nobody, and re-classifying a live row from another branch is the exact race this
-  ADR is about). Net: **three claimable rows instead of zero** while A-028 runs.
+- Applied: A-029, A-033, A-034, A-035, A-041 → `YES` in QUEUE, INDEX and each brief; control-plane
+  reasons written into A-030/A-031's `NO`; A-028 left untouched while in flight (its `NO` blocked
+  nobody, and re-classifying a live row from another branch is the exact race this ADR is about).
+  Net at `638c144`: **three claimable rows instead of zero** while A-028 ran.
 - Added the shared-bookkeeping protocol (`docs/assignments/README.md`): reserve your ADR number
   in the claim commit, own-row-only QUEUE/INDEX edits, own-lines-only SESSION, append-only
-  PROGRESS, rebase before merging. This pass follows it — reserved ADR-046, left ADR-045 free for
-  in-flight A-028.
+  PROGRESS, rebase before merging.
+- Reconciled onto `19ca6c7` before merging, per that protocol's own last rule — and the pass
+  proved rule 1 both ways in a day. The ADR-045 it reserved for in-flight A-028 is exactly the
+  number A-028 took; meanwhile the A-027 cancellation went straight onto `main` unreserved, took
+  046, and forced this ADR to renumber to **047** (second renumber in two days, same missing
+  step). Post-merge state: A-029 (`area:actions`) in_progress, so **A-033 and A-041 are
+  claimable**; A-030 and A-042 correctly withheld as reasoned `NO (control-plane)`.
+- Folded in ADR-046 (A-027 cancelled — no Pro, no public, branch protection unavailable): nothing
+  in this policy waited on A-027, protected `main`, CODEOWNERS-as-a-gate or unattended Forge, so
+  the cancellation removed text and changed no decision. Recorded the consequence that matters:
+  `control-plane` as a `NO` reason now means *single-writer-by-review*, never "a ruleset will
+  catch it" — which is exactly why the reason must be written down and printed at claim time.
+  A-030 keeps `NO (control-plane)` although A-027's cancellation unblocked it: producing the
+  authority map is still one writer's job even with nothing to enforce it afterwards.
 - Filed **A-042** (`area:docs`, depth medium, `NO (control-plane)`) for the migration the policy
   still needs: `training.py`'s hardcoded default, a printed reason + stale-`NO` warning + a
   non-blocking soft-path-hint `HEADS-UP` in `assignment-status.sh`, the paste-prompt rewrites,
@@ -817,5 +864,4 @@ validation remains pending because the browser connector exposes no browser on t
   fresh clean checkout of `638c144` (4 of 10 on this branch, same machine) — `journal.prune`
   sorts by `p.stat().st_mtime`, a float with ~microsecond usable precision at current epoch
   values, so two archives written closer together than that tie and the *newest* can be pruned.
-  `st_mtime_ns` looks like the whole fix. Own `area:brain` row, not a drive-by: in-flight A-028
-  is editing `tests/`.
+  `st_mtime_ns` looks like the whole fix. Own `area:brain` row, not a drive-by from a docs pass.

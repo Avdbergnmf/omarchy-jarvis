@@ -2,8 +2,12 @@
 
 Date: 2026-09-10
 Claim state read from: `origin/main` @ `638c144` (`docs: claim A-028 on main before opening worktree`)
+Reconciled through: `origin/main` @ `19ca6c7` (A-028 merged, A-027 cancelled, A-029 claimed) —
+see "The queue moved while this pass was open" below.
 Scope: claim policy, authoring defaults and the tooling that reads them. No product behavior,
 no Agent Monitor UI (A-041), no change to worktree isolation or the claim-on-`origin/main` rule.
+**Nothing in this audit depends on branch protection, a protected `main`, or A-027** (cancelled —
+[ADR-046](../DECISIONS.md#adr-046--no-github-branch-protection-for-now-a-027-cancelled-2026-09-10)).
 
 ## The complaint
 
@@ -15,7 +19,7 @@ A second agent, following `prompts/PARALLEL.txt` exactly, reported:
 That is a correct reading of the rules. It is also a wrong outcome: three of the queued rows are
 in areas nobody is touching.
 
-Live state at the time of filing:
+Live state at the time of filing (`638c144`; it has since moved — see the reconciliation section):
 
 | id | status | area | parallel-ok | unmet Blocked-by | actually contended? |
 |----|--------|------|-------------|------------------|---------------------|
@@ -169,9 +173,12 @@ of the existing area rule as a machine-checked consequence.
 
 - **Cost:** `AREAS` is a closed tuple in `brain/training.py` and `scripts/agent-status.py`; the
   five GitHub area labels exist on the real repository; every open row's area needs review, and
-  A-028 is mid-flight as `area:docs` and must not be re-areaed underneath its agent.
+  a docs row in progress must never be re-areaed underneath its agent (true of A-028 when this
+  was written, of A-030 whenever it is claimed).
 - **Pros:** strictly better precision than any flag, and it retires the "is this control plane?"
-  judgment call by encoding it once in the area.
+  judgment call by encoding it once in the area. Worth more now that A-027 is cancelled: with no
+  ruleset behind `control-plane`, the label's only value is telling a human reviewer where to
+  look, and an `area:` does that at claim time without anyone having to remember to write it.
 - **Cons:** not safe to do while a docs row is in progress, and it re-opens ADR-034's "one simple
   check" simplicity. Right idea, wrong week. Recommended as an evaluated follow-up inside A-042,
   with the decision deferred to Alex rather than taken unilaterally.
@@ -216,7 +223,7 @@ kill-switch for rows that would race the control plane itself, and every `NO` mu
 three reasons applies:
 
 - `control-plane` — the change redefines authorization, promotion, evaluation, trust, or the claim
-  rules themselves (A-027, A-030, A-031, and A-042).
+  rules themselves (A-030, A-031, and A-042).
 - `single-writer` — the change redesigns a shared runtime seam that cannot tolerate a concurrent
   writer even from another area (`brain/server.py`'s approve/execute or planner routing, the
   journal writer).
@@ -225,6 +232,12 @@ three reasons applies:
 A bare `NO` with no reason is a filing bug. Tooling should print it as a warning and the desk
 should treat it as `YES` pending review — not silently honor it for six weeks, which is exactly
 how we got here.
+
+`control-plane` here means **single-writer-by-review**, not "a ruleset will catch it." A-027 is
+cancelled and `main` will not be API-enforced (ADR-046), so human review is the only enforcement
+this repository has. That makes the written reason load-bearing rather than decorative: an
+unexplained `NO` gives a reviewer nothing to review, and there is no second line of defence behind
+them.
 
 ### Exact claim algorithm
 
@@ -279,14 +292,13 @@ Flipped to `parallel-ok: YES` in `QUEUE.md`, `INDEX.md` and each brief:
 
 Left at `NO`, with reasons now written in:
 
-- **A-027** `NO (control-plane: repository protection and promotion actor)`
 - **A-030** `NO (control-plane: CODEOWNERS and authority-surface classification)`
 - **A-031** `NO (control-plane: protected evaluator, oracles and baselines)`
-- **A-028** untouched. It is in progress in a dirty worktree; re-classifying a live row's flag from
-  another branch is exactly the shared-bookkeeping race this audit is about. Its `NO` is
-  self-restricting and blocks nobody, so leaving it costs nothing. Under the new policy its writes
-  (`docs/evals/`, `ci.yml`, `tests/`) look like an ordinary `YES` apart from its `START.md` edit;
-  that reclassification belongs to whoever closes it.
+- **A-028** untouched while it was in flight in a dirty worktree — re-classifying a live row's flag
+  from another branch is exactly the shared-bookkeeping race this audit is about, and its `NO` was
+  self-restricting so leaving it cost nothing. It has since merged.
+- **A-027** was `NO (control-plane)` and is now cancelled outright (ADR-046); its row moved to
+  `done/` on `main`.
 
 Net effect with A-028 in progress: **three claimable rows (A-029, A-033, A-041) instead of zero**,
 using the unmodified `assignment-status.sh` and paste prompts.
@@ -305,6 +317,42 @@ Candidate (area:overlay differs from every in_progress area):   | A-041 | … | 
 A-042 is correctly withheld (`NO`), and the same script against a clone of `638c144` still prints
 `No assignment in queue is possible right now` — the reported bug, reproduced and then fixed by
 flag values alone, with no code on the critical path.
+
+## The queue moved while this pass was open
+
+Between filing and merge, `origin/main` advanced from `638c144` to `19ca6c7`: **A-028 merged**
+(taking ADR-045), **A-027 was cancelled** (ADR-046 — Alex will not buy Pro and will not make the
+repo public, so branch protection is unavailable, not pending), **A-030 became `queued`**, and
+**A-029 was claimed** and is now `in_progress`. Everything above was re-derived against that
+state; the tables dated `638c144` are kept as the evidence for the original complaint.
+
+Current claim set with A-029 (`area:actions`) in progress, re-verified the same way against the
+merged branch:
+
+| id | area | verdict |
+|----|------|---------|
+| A-033 | `area:brain` | **claimable** |
+| A-041 | `area:overlay` | **claimable** |
+| A-034 / A-035 | `area:overlay` | skipped — unmet `Blocked-by` (A-033 / A-034) |
+| A-030 | `area:docs` | withheld — `NO (control-plane)`; also same area as A-042 |
+| A-042 | `area:docs` | withheld — `NO (control-plane)`, by design; it rewrites the claim rules |
+
+Three things this changes, and one it does not:
+
+- **A-029 is now the in-flight row, and it keeps the `YES` this pass gave it.** The flag was
+  corrected before the claim landed, and an `in_progress` row's `parallel-ok` is never read by the
+  algorithm — it filters candidates only. So the value is behaviourally inert here and the edit is
+  a one-line metadata correction on a line its working agent does not touch. Reverting it would be
+  a larger edit to the same live file *and* wrong on the merits.
+- **A-030 is claimable-by-status but still correctly `NO (control-plane)`.** A-027's cancellation
+  removed its dependency, not its nature: producing the authority/ownership map is exactly one
+  writer's job. That it will never be mechanically enforced afterwards is an argument for keeping
+  the single-writer discipline, not for dropping it.
+- **The `control-plane` reason class must not be read as "protected."** Post-ADR-046 there is no
+  ruleset behind it. See the note under the recommendation.
+- **Nothing in the recommendation moved.** No part of this policy waited on A-027, protected
+  `main`, CODEOWNERS-as-a-gate, or unattended Forge, so the cancellation removes text but changes
+  no decision. Human-reviewed merges continue unchanged.
 
 ## Shared bookkeeping: the protocol the flag was standing in for
 
@@ -325,8 +373,12 @@ behind most `NO`s and it needs its own answer:
 5. **Rebase immediately before merging.** PR #18's conflicts came from a stale base, with no
    parallel agent involved at all.
 
-This pass follows its own rule: it reserves **ADR-046** and leaves **ADR-045** free for A-028,
-which is in flight and will need one.
+This pass then proved rule 1 in both directions inside a single day. It reserved **ADR-045** for
+in-flight A-028, and A-028 took exactly that number when it merged — the reservation worked.
+Meanwhile the A-027 cancellation was written straight onto `main` with no reservation and took
+**046**, the number this pass was already using, forcing a renumber to **047** at merge time.
+That is the second ADR renumber in two days (A-026's 043 → 044 was the first), both caused by the
+same missing step, and it is the entire argument for the rule.
 
 ## Out of scope / not done here
 
@@ -343,5 +395,8 @@ which is in flight and will need one.
   precision at current epoch values is about a microsecond; two archives written closer together
   than that compare equal and sort arbitrarily, so `prune` can delete the *newest* archive and
   keep an older one. Switching the sort key to `st_mtime_ns` looks like the whole fix. It is real
-  (bounded retention silently keeping the wrong file), it is `area:brain`, and `tests/` is
-  currently being edited by in-flight A-028 — so it wants its own row, not a drive-by here.
+  (bounded retention silently keeping the wrong file) and it is `area:brain` — so it wants its own
+  row rather than a drive-by from a docs pass.
+- Nothing here waits on, assumes, or restores branch protection. A-027 is cancelled (ADR-046):
+  `main` stays human-reviewed and is not API-enforced, unattended Forge and auto-merge stay off,
+  and no rule in this audit would behave differently if protection existed.

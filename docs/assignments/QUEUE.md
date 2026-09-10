@@ -1,24 +1,22 @@
 # Assignment queue
 
-Oldest queued at the top among `queued`. **Claimability is computed, not declared** (ADR-046):
+Oldest queued at the top among `queued`. **Claimability is computed, not declared** (ADR-047):
 `queued` + every `Blocked-by` id `done` + `area:` disjoint from every `in_progress` row. `parallel-ok`
 defaults to **YES**; a `NO` must name a reason (`control-plane` / `single-writer` / `human-serial`)
 and only restricts *that* row — an in-progress `NO` never blocks anyone else.
 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
-| A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | high | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
-| A-028 | Deterministic candidate-eval foundation | in_progress | area:docs | NO | high | [active/A-028-eval-harness-v0.md](active/A-028-eval-harness-v0.md) |
-| A-030 | Protect safety/eval/control-plane paths | blocked | area:docs | NO | medium | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
+| A-030 | Protect safety/eval/control-plane paths | queued | area:docs | NO | medium | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | high | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
-| A-029 | Preference memory v0 (provenance, precedence, revoke) | queued | area:actions | YES | high | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
+| A-029 | Preference memory v0 (provenance, precedence, revoke) | in_progress | area:actions | YES | high | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
 | A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | YES | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | YES | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
-| A-042 | Parallel claimability: migrate tooling and prompts to ADR-046 | queued | area:docs | NO | medium | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |
+| A-042 | Parallel claimability: migrate tooling and prompts to ADR-047 | queued | area:docs | NO | medium | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |
 
-Recently completed: A-001 … A-025, A-026, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
+Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
 
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
@@ -52,14 +50,22 @@ Ledger; `scripts/ledger-status.py` validates it and allocates the next `IMP-NNN`
 fetch-origin/main-first way A-039 fixed assignment claims. Seeded IMP-001…IMP-006 from
 A-019–A-025/#15/#16. A-029 is unblocked.
 
-**Next up: A-028** — recommended depth high (deterministic candidate-eval foundation;
-`Blocked-by: none`, `Gate: control-plane`). A-029 (also unblocked, area:actions) is an equally
-valid parallel-ok:NO alternative.
+**A-028 complete (ADR-045):** `docs/evals/` — four evidence planes documented, one
+`unit-test-reference` case schema, `scripts/eval-status.py` + `scripts/check-test-coverage.py`
+(new CI step, "no quiet suite omission"). Seeded EVAL-001…EVAL-005. **A-030 is now claimable**
+(A-027 cancelled — ADR-046; A-028 done).
 
-**Revised Wave 0:** A-027 is externally blocked (private-repo protection unavailable until
-Alex chooses a supported plan/visibility/host). A-030 waits for A-027+A-028; A-031 waits for
-A-030. See the [roadmap](../SELF_IMPROVE_ROADMAP.md) and
-[A-032 review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md).
+**Next up: A-029** — recommended depth high (preference memory v0, area:actions;
+`Blocked-by: none`). A-033 (area:brain) and A-041 (area:overlay, `Gate: training-dispatch`) are
+equally valid, disjoint-area alternatives.
+
+**A-027 cancelled (ADR-046):** Alex will not buy GitHub Pro or make the repo public for now.
+Private Free cannot do branch protection — agents must **not** wait on it or invent a fake gate.
+Unattended Forge/auto-merge stay off; human-reviewed merges continue.
+
+**Revised Wave 0:** A-030 is claimable (docs/control-plane ownership map without enforceable
+GitHub protection). A-031 still waits on A-030. See the [roadmap](../SELF_IMPROVE_ROADMAP.md)
+and [A-032 review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md).
 
 **Wave 1 (after Wave 0):** A-033 → A-034 → A-035 text latency profiler. Brief: [chatgpt-latency-profiler-brief](../audits/chatgpt-latency-profiler-brief-2026-09-10.md).
 
@@ -67,13 +73,14 @@ A-030. See the [roadmap](../SELF_IMPROVE_ROADMAP.md) and
 
 **A-041 filed:** Agent Monitor tiles + per-agent auto-queue redesign (queued, `area:overlay`, depth high, `Gate: training-dispatch`) — Alex UX 2026-09-10; does not block Wave 0/1 claimability.
 
-**ADR-046 — parallel claimability unstuck (2026-09-10):** every open row was `parallel-ok: NO`, so a
-second agent had nothing to take even with three dependency-free rows in three untouched areas. The
-default is now **YES**; `NO` is a reasoned kill-switch for control-plane/single-writer/human-serial
-rows only. A-029, A-033, A-034, A-035 and A-041 flipped to YES; A-027/A-030/A-031 keep `NO` with
-their reason written in; A-028 was left untouched while in flight. With A-028 in progress, a second
-agent can now claim **A-029, A-033 or A-041**. Analysis:
+**ADR-047 — parallel claimability unstuck (2026-09-10):** every open row was `parallel-ok: NO`, so a
+second agent had nothing to take even with dependency-free rows in untouched areas. Claimability is
+now **computed, not declared**: `queued` + `Blocked-by` met + area disjoint. `parallel-ok` defaults
+to **YES**; a `NO` must name `control-plane` / `single-writer` / `human-serial` and restricts only
+its own row. A-029, A-033, A-034, A-035 and A-041 flipped to YES; A-030/A-031 keep `NO` with their
+control-plane reason written in. With A-029 (`area:actions`) in progress, a second agent can claim
+**A-033** or **A-041**. Analysis:
 [parallel-claimability-2026-09-10](../audits/parallel-claimability-2026-09-10.md). Tooling and
-prompt migration is **A-042**. **ADR-045 is reserved for in-flight A-028** — new ADRs start at 047.
+prompt migration is **A-042**.
 
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).

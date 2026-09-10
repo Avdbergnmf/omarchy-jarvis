@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Omarchy Jarvis candidate-eval case (A-028 v0)",
+  "description": "One deterministic capability or regression case. v0 only supports oracle_type=unit-test-reference: the exact oracle IS an existing tests/ function, so running it already gives a side-effect-free pass/fail boolean. No live model judging, no desktop execution, no stochastic N-runs (those are A-031's job).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "kind", "title", "oracle_type", "execution_level", "mutation_policy", "owner", "protection_class", "reference", "expected_result"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^EVAL-[0-9]{3,}$"},
+    "version": {"type": "integer", "minimum": 1, "description": "Bump when the case definition (not the code it tests) changes; a human Training Verify never bumps this."},
+    "kind": {"type": "string", "enum": ["capability", "regression"], "description": "capability: does a candidate change improve a specific behavior. regression: does an accepted behavior still hold."},
+    "title": {"type": "string", "maxLength": 140},
+    "oracle_type": {"type": "string", "enum": ["unit-test-reference"], "description": "v0 supports exactly one oracle type; new types are a later assignment, not a silent schema extension."},
+    "execution_level": {"type": "string", "enum": ["planner-only", "unit"], "description": "planner-only: exercises the JSON/tools planner with no execution. unit: exercises a pure function/module. Never 'desktop' or 'live' in v0 (out of scope)."},
+    "mutation_policy": {"type": "string", "enum": ["side-effect-free"], "description": "v0's unit-test-reference oracles are exact and side-effect-free by construction (mocked hyprctl/subprocess/Ollama); no other policy is defined yet."},
+    "owner": {"type": "string", "enum": ["control-plane"], "description": "Case additions and promotions are Control Plane changes (see README Promotion)."},
+    "protection_class": {"type": "string", "enum": ["protected-regression", "candidate-capability"], "description": "protected-regression: an accepted behavior; changing its oracle is itself a Control Plane change. candidate-capability: still exploratory, freer to revise."},
+    "reference": {"type": "string", "pattern": "^tests/test_\\w+\\.py::\\w+(::\\w+)?$", "description": "Exact dotted path to the existing unittest TestCase (and optionally method) that IS this case's oracle."},
+    "expected_result": {"type": "string", "enum": ["pass"], "description": "v0's oracles are existing regression/capability tests that must currently pass; a case defined against a known-failing test would misrepresent CI's own signal."},
+    "notes": {"type": "string", "maxLength": 600}
+  }
+}

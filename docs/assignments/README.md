@@ -30,7 +30,7 @@ Related: `docs/passes/` for large historical briefs; prefer **assignments** for 
 `queued` → `in_progress` → `done` (or `blocked` / `cancelled`)
 
 Rules:
-- **Claimability is computed, not declared** (ADR-046): `queued` + every `Blocked-by` id `done` +
+- **Claimability is computed, not declared** (ADR-047): `queued` + every `Blocked-by` id `done` +
   `area:` disjoint from every `in_progress` row. See "Parallel claimability" below.
 - Coding agents check off boxes in the assignment file and mirror “Next action” in `docs/SESSION.md`.
 - On done: move `active/A-###-*.md` → `done/`, update QUEUE + INDEX + PROGRESS.
@@ -146,6 +146,9 @@ recovery](../../START.md#recovering-a-stale-claim), not silently reclaimed.
 - Link existing ADRs/passes instead of pasting novels.
 - Leave `parallel-ok: YES` (the default) unless one of the three named reasons above applies;
   a `NO` must say which. Do not encode ordering here — use `Blocked-by:`.
+- Closing behavior work needs a relevant regression artifact (a `tests/` case, and a
+  [`docs/evals/`](../evals/README.md) entry when it names a capability/regression worth
+  pinning) or a documented reason only human/VM validation is possible (A-028).
 
 ## Alex commands (coding agent interpretation)
 | Alex says | Coding agent does |
