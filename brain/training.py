@@ -18,7 +18,9 @@ import validation
 LOCK = threading.RLock()
 PREVIEWS = {}
 KINDS = ('claude-code', 'cursor', 'human')
-REASONING_EFFORTS = ('low', 'medium', 'high', 'xhigh')
+CURSOR_REASONING_EFFORTS = ('low', 'medium', 'high', 'xhigh')
+CLAUDE_REASONING_EFFORTS = ('low', 'medium', 'high', 'xhigh', 'max')
+REASONING_EFFORTS_BY_KIND = {'cursor': CURSOR_REASONING_EFFORTS, 'claude-code': CLAUDE_REASONING_EFFORTS}
 AREAS = ('overlay', 'brain', 'actions', 'skills', 'docs')
 QUEUE = 'docs/assignments/QUEUE.md'
 INDEX = 'docs/assignments/INDEX.md'
@@ -271,7 +273,7 @@ def slots(root):
         if slot.get('kind') not in KINDS or slot.get('status') not in ('idle','busy'):
             raise ValueError('Invalid agent kind or status')
         effort = slot.get('reasoning_effort')
-        if effort is not None and (slot.get('kind') != 'cursor' or effort not in REASONING_EFFORTS):
+        if effort is not None and effort not in REASONING_EFFORTS_BY_KIND.get(slot.get('kind'), ()):
             raise ValueError('Invalid agent reasoning effort')
         short(slot.get('label'), 'Agent label', 60)
         queued = slot.get('queued_assignment_ids')
@@ -298,7 +300,20 @@ def codex_default_reasoning_effort(path=None):
         effort = tomllib.loads(target.read_text()).get('model_reasoning_effort')
     except (OSError, tomllib.TOMLDecodeError):
         return None
-    return effort if effort in REASONING_EFFORTS else None
+    return effort if effort in CURSOR_REASONING_EFFORTS else None
+
+
+def claude_default_reasoning_effort(path=None):
+    """Read only Claude Code's non-secret effortLevel. Missing/malformed settings are unknown."""
+    target = path or Path.home()/'.claude'/'settings.json'
+    try:
+        data = json.loads(target.read_text())
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    effort = data.get('effortLevel')
+    return effort if effort in CLAUDE_REASONING_EFFORTS else None
 
 
 def busy(slot, queue):
@@ -543,11 +558,15 @@ def dashboard(root, version, revision):
     problems.extend(dict(id='validation:'+v['id'], title=v['title'], source='Failed human test', area=v['area'], version=v.get('jarvis_version'), context=json.dumps(dict(expected=v['expected'], last_run=v.get('last_run')))) for v in validations if v['status']=='failed')
     problems = reconcile_problems(root, problems)
     codex_default = codex_default_reasoning_effort()
+    claude_default = claude_default_reasoning_effort()
     for slot in registry['agents']:
         slot['busy'] = busy(slot, queue)
         if slot['kind'] == 'cursor':
             slot['effective_reasoning_effort'] = slot.get('reasoning_effort') or codex_default
             slot['reasoning_effort_source'] = 'slot launch setting' if slot.get('reasoning_effort') else ('Codex config' if codex_default else None)
+        elif slot['kind'] == 'claude-code':
+            slot['effective_reasoning_effort'] = slot.get('reasoning_effort') or claude_default
+            slot['reasoning_effort_source'] = 'slot launch setting' if slot.get('reasoning_effort') else ('Claude settings' if claude_default else None)
         else:
             slot['effective_reasoning_effort'] = None
             slot['reasoning_effort_source'] = None
@@ -608,10 +627,10 @@ def preview(root, data, version='unknown', revision='unknown'):
         else:
             requested_effort = data.get('reasoning_effort')
             if requested_effort not in (None, ''):
-                if slot['kind'] != 'cursor' or requested_effort not in REASONING_EFFORTS:
-                    raise ValueError('Reasoning effort is supported only for Cursor / Codex slots')
+                if requested_effort not in REASONING_EFFORTS_BY_KIND.get(slot['kind'], ()):
+                    raise ValueError('Reasoning effort is not valid for this slot type')
                 slot['reasoning_effort'] = requested_effort
-            elif slot['kind'] == 'cursor' and 'reasoning_effort' in data:
+            elif slot['kind'] in REASONING_EFFORTS_BY_KIND and 'reasoning_effort' in data:
                 slot.pop('reasoning_effort', None)
             mode = data.get('mode')
             if mode not in ('queue','now'): raise ValueError('Choose queue or prepare now')

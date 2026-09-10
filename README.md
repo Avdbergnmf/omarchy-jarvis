@@ -147,6 +147,8 @@ slots and opens the agent window after confirmation. Personal queues retain mult
 handoffs in FIFO order. While Agent manager is open, completion on `origin/main` advances the
 next claimable personal item, opens/focuses the visible window and displays its prompt. Jarvis
 never pastes or submits that prompt, and no connector silently spends credits.
+Cursor/Codex and Claude Code tiles can set launch depth (Claude includes **Max**; Codex
+does not). The choice is applied only when a **new** window starts.
 
 ### Validate features
 In Training, **Validate features** lists unvalidated and failed guides, each showing its last

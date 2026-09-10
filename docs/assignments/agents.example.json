@@ -16,6 +16,7 @@
       "label": "Claude Code",
       "kind": "claude-code",
       "status": "idle",
+      "reasoning_effort": "high",
       "current_assignment": null,
       "queued_assignment_ids": [],
       "handoff_dir": "docs/backlog/handoffs/active/"

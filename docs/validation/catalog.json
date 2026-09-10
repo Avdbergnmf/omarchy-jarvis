@@ -223,14 +223,15 @@
       "id": "feat-agent-monitor",
       "title": "Agent manager: visible agents and personal auto-queues",
       "area": "overlay",
-      "jarvis_version_shipped": "0.5.11",
+      "jarvis_version_shipped": "0.5.12",
       "status": "unvalidated",
       "jarvis_version": null,
       "last_run": null,
       "steps": [
         "Open Training and choose Agent manager. Confirm horizontally stacked, color-coded agent tiles appear at the top with idle / working / waiting / blocked / error labels and each tile's ordered personal queue directly underneath.",
-        "Select a Cursor / Codex slot. Confirm its effective reasoning depth and source are shown. Choose Low, Medium, High or Ultra (xhigh), preview a handoff and confirm it; verify the selected depth remains on that slot after refresh.",
-        "Read the reasoning-depth help. Confirm it says the choice applies only when a new Codex window starts and that focusing an existing session cannot change its depth. Confirm Claude Code and Human slots say this launcher does not control their depth.",
+        "Select a Cursor / Codex slot. Confirm its effective reasoning depth and source are shown. Choose Low, Medium, High or Ultra (xhigh), preview a handoff and confirm it; verify the selected depth remains on that slot after refresh. Confirm Max is not offered for Codex.",
+        "Select a Claude Code slot. Confirm depth is selectable, including Max. Choose a depth, preview a handoff and confirm it; verify the selected depth remains on that slot after refresh. Read the help: Claude applies `claude --effort` only when a new window starts; focusing an existing session cannot change its depth.",
+        "Read the Codex reasoning-depth help. Confirm it says the choice applies only when a new Codex window starts and that focusing an existing session cannot change its depth. Confirm Human slots still say this launcher does not control their depth.",
         "In Available work, select a claimable assignment and an existing tile, or choose + New agent. Confirm the normal flow automatically chooses cold-start versus continue; manual template choice appears only in Advanced prompt override.",
         "Choose Start visibly now, confirm a handoff for an idle non-human slot, and verify a real visible terminal opens or focuses while the exact prompt remains available for you to paste.",
         "Add at least two future assignments to one agent's queue. Confirm their ids, titles and ready-next / blocked-waiting states appear under that tile in FIFO order.",
@@ -238,7 +239,7 @@
         "Use Mark slot busy or Mark slot idle; review and confirm. Verify the copy says this is local metadata and does not claim to detect, start or stop a Codex or Claude process.",
         "Inspect the Queue board. Confirm it lists assignment id/status/area/parallel policy, identifies blocked rows as waiting, and names the current worker when a slot holds that assignment."
       ],
-      "expected": "Agent tiles make status and per-agent FIFO work visible at a glance. Available work reuses canonical claimability. Confirmed queues auto-advance only by preparing the next handoff and opening/focusing a visible window; Jarvis never pastes, submits, or silently spends agent credits."
+      "expected": "Agent tiles make status and per-agent FIFO work visible at a glance. Available work reuses canonical claimability. Cursor/Codex and Claude Code slots can set launch depth (Claude includes Max; Codex does not). Confirmed queues auto-advance only by preparing the next handoff and opening/focusing a visible window; Jarvis never pastes, submits, or silently spends agent credits."
     }
   ]
 }

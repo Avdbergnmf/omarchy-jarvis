@@ -115,8 +115,22 @@ class TrainingTest(unittest.TestCase):
         training.confirm(self.root, result['preview_id'])
         slot = training.slots(self.root)['agents'][0]
         self.assertEqual(slot['reasoning_effort'], 'xhigh')
-        with self.assertRaisesRegex(ValueError, 'only for Cursor / Codex'):
+        with self.assertRaisesRegex(ValueError, 'not valid for this slot type'):
             training.preview(self.root, dict(self.payload, reasoning_effort='high'))
+        with self.assertRaisesRegex(ValueError, 'not valid for this slot type'):
+            training.preview(self.root, dict(self.payload, kind='cursor', reasoning_effort='max'))
+
+    def test_claude_handoff_persists_launch_effort(self):
+        payload = dict(self.payload, kind='claude-code', reasoning_effort='max')
+        result = training.preview(self.root, payload)
+        training.confirm(self.root, result['preview_id'])
+        slot = training.slots(self.root)['agents'][0]
+        self.assertEqual(slot['kind'], 'claude-code')
+        self.assertEqual(slot['reasoning_effort'], 'max')
+        cleared = training.preview(self.root, dict(operation='work', slot_id=slot['id'],
+            assignment_id=slot['current_assignment'], mode='queue', reasoning_effort=''))
+        training.confirm(self.root, cleared['preview_id'])
+        self.assertNotIn('reasoning_effort', training.slots(self.root)['agents'][0])
 
     def test_dashboard_offline_and_metrics(self):
         with patch.object(training.subprocess,'run',side_effect=OSError('offline')):
