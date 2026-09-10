@@ -69,6 +69,8 @@ worktree) is released via [START's stale-claim
 recovery](../../START.md#recovering-a-stale-claim), not silently reclaimed.
 
 ### Constraints for good assignments
+- Every assignment gets a **Recommended depth** (`low|medium|high|xhigh`) in the brief **and** the QUEUE `depth` column.
+- On batch closeout, agents must name the **next** queued row’s recommended depth for Alex.
 - **One area** when possible; if multi-area, split into two assignments.
 - Checklist items must be **verifiable**.
 - Explicit **out of scope** to stop mega-passes.

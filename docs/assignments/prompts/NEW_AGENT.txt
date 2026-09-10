@@ -116,3 +116,7 @@ git pull origin main
 4. Only then stop and report — or, if Batch allows another assignment, claim the next one **from this updated `main`** (new worktree for the new assignment). Do not start the next prompt while still sitting in the old feature worktree.
 
 Remove only clean, merged, unowned trees; never force. Default batch size is 1 unless Alex explicitly enabled more.
+
+## On closeout: next recommended depth
+When you stop after a batch (after landing on main), look at the **next** claimable/queued row in QUEUE and tell Alex its **depth** column (or the brief’s Recommended depth). Example: `Next up: A-037 — recommended depth medium.` If the queue is empty, say so.
+

@@ -3,6 +3,7 @@
 - **Status:** blocked
 - **Area:** area:docs (+ light tests/scripts)
 - **parallel-ok:** NO (protected evaluator/runner work is serial)
+- **Recommended depth:** high
 - **Soft path hints:** `tests/`, `scripts/`, `docs/evals/`
 - **Blocks / blocked-by:** **After A-028 + A-030** (and A-038 through A-028).
 - **Links:** SELF_IMPROVE_ROADMAP · ChatGPT step 4 · A-032 review

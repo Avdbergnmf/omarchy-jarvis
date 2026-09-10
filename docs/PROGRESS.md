@@ -641,6 +641,9 @@ validation remains pending because the browser connector exposes no browser on t
   `assignment-status.sh` reports the `MISMATCH`, then reverted the test edit. Docs/scripts only;
   no shared service restart required.
 
+## 2026-09-10 — desk: QUEUE depth column + closeout next-depth
+- Added Recommended depth to TEMPLATE/briefs; QUEUE `depth` column; prompts/START closeout must name next depth.
+
 ## 2026-09-10 — A-040 test suite optimization (ADR-040)
 - Audited all 158 Python `unittest` cases + 5 `.cjs` suites for redundancy: found none safe to
   cull (no duplicate py/cjs coverage — different layers; `subTest` already table-driven in 5

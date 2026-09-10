@@ -3,6 +3,7 @@
 - **Status:** queued
 - **Area:** area:docs (+ light `area:overlay` / `brain/training.py` for surfacing)
 - **parallel-ok:** NO (after **A-036**; coordinate with **A-026**)
+- **Recommended depth:** medium
 - **Soft path hints:** `docs/assignments/`, `START.md`, `scripts/assignment-status.sh`, Training panels, `docs/MILESTONES.md`, ledger docs when present
 - **Blocks / blocked-by:** After **A-036**. Do not invent a parallel ID space vs A-026.
 - **Links:** Alex stages/waves idea; desk review vs roadmap/ledger

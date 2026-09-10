@@ -3,6 +3,7 @@
 - **Status:** queued
 - **Area:** area:overlay
 - **parallel-ok:** NO
+- **Recommended depth:** medium
 - **Wave:** **1**
 - **Blocks / blocked-by:** **Blocked by A-033**
 - **Soft path hints:** `overlay/` Training UI, A-033 store APIs, `tests/`

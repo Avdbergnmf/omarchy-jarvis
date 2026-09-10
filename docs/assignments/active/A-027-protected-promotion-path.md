@@ -3,6 +3,7 @@
 - **Status:** blocked
 - **Area:** area:docs
 - **parallel-ok:** NO (promotion/control-plane work is serial)
+- **Recommended depth:** high
 - **Soft path hints:** `docs/`, `START.md`, `scripts/`, `.github/`
 - **Blocks / blocked-by:** Blocked on Alex choosing GitHub Pro, deliberate public visibility,
   or another authoritative host with private-repo protection. Blocks A-030 and unattended Forge.

@@ -27,7 +27,7 @@ Ongoing “Alex asked for X” work lives in [docs/assignments/QUEUE.md](docs/as
 
 Desk agents (Firsty or anyone authoring work) follow [docs/assignments/README.md](docs/assignments/README.md).
 
-**Default:** one assignment → report to Alex. **Batch / keep going** only when Alex says so (`batch N`, `keep going`, `until queue empty`) — see [prompts/README](docs/assignments/prompts/README.md).
+**Default:** one assignment → report to Alex (include the **next** QUEUE row’s recommended **depth**). **Batch / keep going** only when Alex says so (`batch N`, `keep going`, `until queue empty`) — see [prompts/README](docs/assignments/prompts/README.md).
 
 ## Token & context discipline
 

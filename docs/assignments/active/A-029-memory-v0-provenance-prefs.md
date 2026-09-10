@@ -3,6 +3,7 @@
 - **Status:** blocked
 - **Area:** area:actions
 - **parallel-ok:** NO
+- **Recommended depth:** high
 - **Soft path hints:** `actions/core.py`, `brain/server.py` only if run provenance is required, `~/.config/jarvis/` schema, `tests/`, `docs/`
 - **Blocks / blocked-by:** After A-026; last assignment in revised Wave 0.
 - **Links:** docs/SELF_IMPROVE_ROADMAP.md · extends A-025 · A-032 review
