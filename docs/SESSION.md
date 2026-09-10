@@ -3,6 +3,7 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
+- **A-048** done — Claude Code launch `--effort` picker (PR #43)
 - **A-047** queued — Agent monitor dynamic status + simpler send (Alex JARVIS)
 - **Claude Code `--effort`** done — depth picker for claude-code slots (ADR-039 follow-up); landing PR
 - **A-046** queued — Validate features overhaul (simple cards; Alex JARVIS)

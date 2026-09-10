@@ -10,7 +10,7 @@ Oldest queued at the top among `queued`. At most one `in_progress` unless extras
 | A-046 | Validate features overhaul (simple cards) | queued | area:overlay | YES | high | [active/A-046-validate-features-overhaul.md](active/A-046-validate-features-overhaul.md) |
 | A-047 | Agent monitor: dynamic status + simpler send | queued | area:overlay | YES | high | [active/A-047-agent-monitor-dynamic-status-send.md](active/A-047-agent-monitor-dynamic-status-send.md) |
 
-Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-030, A-031, A-032, A-033, A-034, A-035, A-036, A-037, A-038, A-039, A-040, A-041, A-042 (see [done/](done/)).
+Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-030, A-031, A-032, A-033, A-034, A-035, A-036, A-037, A-038, A-039, A-040, A-041, A-042, A-048 (see [done/](done/)).
 
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
