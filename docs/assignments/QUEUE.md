@@ -4,7 +4,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| A-018 | Training Agent monitor (tiles + visible windows) | queued | area:overlay | NO | [active/A-018-training-agent-monitor.md](active/A-018-training-agent-monitor.md) |
+| A-018 | Training Agent monitor (tiles + visible windows) | in_progress | area:overlay | NO | [active/A-018-training-agent-monitor.md](active/A-018-training-agent-monitor.md) |
 
 Recently completed: A-001 … A-017 (see [done/](done/)).
 

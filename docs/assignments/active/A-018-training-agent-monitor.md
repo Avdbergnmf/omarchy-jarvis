@@ -1,6 +1,6 @@
 # A-018 — Training Agent monitor (tiles, visible agent windows, queue board)
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:overlay (+ light `area:brain` / `scripts` for launch + window focus)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/` (Agent monitor panel), `brain/training.py`, `brain/server.py` (agent slot / launch endpoints), `scripts/` (launch Claude/Codex/etc. into real Hyprland windows), Hyprland helpers as needed, `tests/`, `docs/assignments/`, `docs/SESSION.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `docs/FEATURES.md`, `docs/HOST.md`, `README.md`, `START.md`, `VERSION`
