@@ -4,7 +4,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
-| A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
+| A-034 | Training Latency Profiler UI (history + inspector) | in_progress | area:overlay | YES | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-041 | Agent Monitor tiles + per-agent auto-queue redesign | in_progress | area:overlay | YES | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
 | A-042 | Parallel claimability tooling migration (default YES + status hints) | queued | area:docs | NO | medium | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |

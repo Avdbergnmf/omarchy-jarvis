@@ -35,7 +35,7 @@
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | done | area:docs | NO | [done/A-031-stochastic-evals-v0.md](done/A-031-stochastic-evals-v0.md) |
 | A-032 | ChatGPT deep review: plan vs codebase (plan perfection) | done | area:docs | NO | [done/A-032-chatgpt-plan-codebase-review.md](done/A-032-chatgpt-plan-codebase-review.md) |
 | A-033 | Latency profiler foundation (traces/spans/store) | done | area:brain | YES | [done/A-033-latency-trace-foundation.md](done/A-033-latency-trace-foundation.md) |
-| A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
+| A-034 | Training Latency Profiler UI (history + inspector) | in_progress | area:overlay | YES | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-036 | Agent monitor usability (depth, delivery, live work) | done | area:overlay | YES | [done/A-036-agent-monitor-usability.md](done/A-036-agent-monitor-usability.md) |
 | A-037 | Release gates + claimability visibility | done | area:docs | NO | [done/A-037-assignment-stages.md](done/A-037-assignment-stages.md) |

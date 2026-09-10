@@ -1,6 +1,6 @@
 # A-034 — Training Latency Profiler UI (history + inspector)
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:overlay
 - **parallel-ok:** YES
 - **Recommended depth:** medium

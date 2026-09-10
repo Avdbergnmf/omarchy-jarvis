@@ -3,8 +3,9 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
+- **A-034** in_progress — Training Latency Profiler UI (Alex force-parallel with A-041 overlay; ADR-053 reserved). Avoid `overlay/agents.js`.
 - **A-041** in_progress — Codex @ `a041-agent-monitor-auto-queue` / `~/Work/omarchy-jarvis-a041-agent-monitor-auto-queue` (parallel area:overlay; ADR-043 reserved)
-- **A-033** done — latency profiler foundation (ADR-052); landing via rebase of PR #27
+- **A-033** done — merged PR #27 / ADR-052
 - **A-031** done — merged PR #25 / ADR-051
 
 ## Checklist
@@ -20,6 +21,7 @@
 - [x] A-030 Protect control-plane paths — done (PR + `test` enforced; CODEOWNERS review remains policy)
 - [x] A-031 Stochastic planner evals v0 — done (ADR-051); baseline remains human-unapproved
 - [x] A-033 Latency profiler foundation — done (ADR-052); no Training UI
+- [ ] A-034 Training Latency Profiler UI — in_progress (force-parallel with A-041; ADR-053)
 - [ ] A-041 Agent Monitor redesign — in_progress (isolated worktree; area:overlay)
 
 ## Done this session (evidence)
@@ -39,10 +41,10 @@
 - Cursor/Grok: implemented A-033 (ADR-052) — InteractionTrace + hierarchical spans + local SQLite store. Product metric is `meaningful_response_latency` (Enter → first non-placeholder paint), not TTFT. Overlay stamps `client_submit_ms` / POST ack+meaningful; GET polls stay write-free. Late client marks rewrite the store. No prompts persisted.
 
 ## Next action (one concrete step)
-- A-041: redesign Agent Monitor tiles/available-work/per-agent queues in the isolated worktree; preserve visible-window and no-silent-spend policy. Next latency UI: **A-034** (depth medium) once claimed.
+- A-034: Training Latency panel (history bars + waterfall inspector) on A-033 store; do not edit `overlay/agents.js`.
 
 ## Parallel agent
-- none
+- A-041 Codex (area:overlay) — isolate to Agent monitor files; A-034 owns Latency nav/panel + `overlay/latency.js`
 
 ## Blockers
 - none
