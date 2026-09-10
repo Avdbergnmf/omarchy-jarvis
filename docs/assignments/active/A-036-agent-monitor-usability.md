@@ -1,6 +1,6 @@
 # A-036 — Agent monitor usability (depth, delivery clarity, live work visibility)
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:overlay (+ light `area:brain` / scripts for depth + handoff launch)
 - **parallel-ok:** YES (overlay; disjoint from pure docs Wave 0 if careful on shared Training files — prefer after A-032, before relying on Training to dispatch Wave 0)
 - **Wave / stage:** **0** (usability gate for dispatching from Training) — ahead of latency Wave 1

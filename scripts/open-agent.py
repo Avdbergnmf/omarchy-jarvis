@@ -21,6 +21,7 @@ from core import hypr, dispatch
 # One real CLI per known agent kind; 'human' has no process for Jarvis to launch —
 # a human slot means Alex works it himself in his own terminal.
 AGENT_COMMANDS = {'claude-code': ['claude'], 'cursor': ['codex']}
+REASONING_EFFORTS = ('low', 'medium', 'high', 'xhigh')
 
 
 def app_id(slot_id):
@@ -31,12 +32,16 @@ def is_agent_window(client, target_app_id):
     return target_app_id in (client.get('class') or '')
 
 
-def open_agent(slot_id, kind):
+def open_agent(slot_id, kind, reasoning_effort=None):
     if not re.fullmatch(r'slot-[0-9a-f]{1,60}', slot_id):
         raise ValueError('Invalid agent slot id')
     command = AGENT_COMMANDS.get(kind)
     if not command:
         raise ValueError('Human slots are worked in your own terminal; there is nothing for Jarvis to open.')
+    if reasoning_effort is not None:
+        if kind != 'cursor' or reasoning_effort not in REASONING_EFFORTS:
+            raise ValueError('Reasoning effort is supported only for Cursor / Codex slots')
+        command = [*command, '-c', f'model_reasoning_effort="{reasoning_effort}"']
     with urlopen('http://127.0.0.1:7421/health', timeout=2) as response:
         if json.load(response).get('service') != 'omarchy-jarvis':
             raise RuntimeError('Start Jarvis before opening an agent window')
@@ -65,9 +70,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--slot-id', required=True)
     parser.add_argument('--kind', required=True)
+    parser.add_argument('--reasoning-effort', choices=REASONING_EFFORTS)
     args = parser.parse_args()
     try:
-        open_agent(args.slot_id, args.kind)
+        open_agent(args.slot_id, args.kind, args.reasoning_effort)
     except Exception as error:
         print(str(error), file=sys.stderr)
         sys.exit(1)

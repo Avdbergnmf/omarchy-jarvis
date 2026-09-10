@@ -793,7 +793,9 @@ class Handler(BaseHTTPRequestHandler):
                     result = {'ok': True}
                 elif self.path.endswith('/agent-window'):
                     slot = training.find_slot(ROOT, body.get('slot_id'))
-                    launch = subprocess.run([sys.executable, str(ROOT/'scripts/open-agent.py'), '--slot-id', slot['id'], '--kind', slot['kind']],
+                    command = [sys.executable, str(ROOT/'scripts/open-agent.py'), '--slot-id', slot['id'], '--kind', slot['kind']]
+                    if slot.get('reasoning_effort'): command += ['--reasoning-effort', slot['reasoning_effort']]
+                    launch = subprocess.run(command,
                                             capture_output=True, text=True, timeout=15)
                     if launch.returncode: raise RuntimeError(launch.stderr.strip() or 'Agent window could not open')
                     result = {'ok': True}

@@ -18,9 +18,10 @@
 - Claude: claimed A-039 by pushing QUEUE/INDEX/SESSION status → in_progress directly to `origin/main` *before* opening the feature worktree (dogfooding the fix itself).
 - Claude: implemented A-039 (ADR-038) — `assignment-status.sh` reads `origin/main` as canonical claim truth + cross-worktree mismatch detector; claim-on-main-first is step 1 in START/prompts; stale-claim recovery documented. Reconciled with Alex's concurrent direct-to-main commits (merge-to-main-at-batch-end, post-merge worktree cleanup, A-040 queued).
 - Claude: merged to `main` (`4ecd639`), pushed, removed the `a039-cross-worktree-claim-visibility` worktree and local+remote branch. `origin/main` confirmed up to date.
+- Codex: implemented A-036 launch-depth, delivery, local-status and active-work behavior. Focused tests and all 158 Python tests pass.
 
 ## Next action (one concrete step)
-- Report to Alex (done). Next claimable per QUEUE: A-040 is `parallel-ok: NO` so it waits for A-036 to clear; otherwise continue A-036 or pick up A-037+ once unblocked.
+- Finish A-036 validation and closeout in its worktree; A-040 follows after A-036 lands.
 
 ## Parallel agent
 - A-036 overlay worktree — do not edit

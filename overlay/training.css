@@ -56,5 +56,8 @@ a{color:#9dd9d2}
 #assign-body{max-height:320px!important;line-height:1.5}
 @media(max-width:850px){.assignment-layout{grid-template-columns:1fr}.assignment-layout aside{position:static}.assignment-layout #train-assignments{max-height:260px}}
 .assignment-layout #agent-board{max-height:220px;font-size:12px;color:#b7c5d6}
+.active-work{border:1px solid #5b9d83;background:#172a27;border-radius:6px;padding:8px 10px;margin-bottom:14px}
+.active-work p{margin:4px 0;line-height:1.45}
 #agent-detail{border:1px solid #3b4b60;border-radius:6px;padding:12px;margin-bottom:14px}
 #agent-open-window{background:#22523f}
+.field-help{margin:0 0 8px;line-height:1.45}

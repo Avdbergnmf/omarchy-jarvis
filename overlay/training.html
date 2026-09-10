@@ -64,6 +64,8 @@
 <section id="train-panel-agents" hidden>
 <h2>Agent monitor</h2><p class="muted">Local slots describe intended work and open a real, visible window — never a hidden background job.</p>
 <div class="assignment-layout"><aside>
+<h3>Now working</h3><div id="agent-active" class="active-work" aria-live="polite"></div>
+<h3>Agent slots</h3>
 <div id="train-agents" class="training-list"></div>
 <h3>Queue board</h3><p class="muted">Live disk QUEUE, not a separate claim.</p><div id="agent-board" class="training-list"></div>
 </aside>
@@ -72,21 +74,26 @@
 <div id="agent-detail" hidden>
 <h3 id="agent-heading"></h3>
 <p id="agent-status" class="muted"></p>
+<p id="agent-effort-summary" class="muted"></p>
 <p id="agent-current"></p>
 <p id="agent-queued"></p>
 <p id="agent-handoff" class="muted"></p>
-<button id="agent-open-window" type="button">Open agent window</button>
-<button id="agent-toggle-status" type="button">Preview marking idle</button>
+<button id="agent-open-window" type="button">Open / focus visible window</button>
+<button id="agent-toggle-status" type="button">Mark slot idle</button>
+<p id="agent-status-note" class="muted"></p>
 </div>
 <div class="training-fields">
 <label for="train-slot">Prepare for</label><select id="train-slot"><option value="new">New agent slot</option></select>
 <label for="train-agent-label">New slot name</label><input id="train-agent-label" maxlength="60" value="My coding agent">
 <label for="train-kind">New slot type</label><select id="train-kind"><option value="claude-code">Claude Code</option><option value="cursor">Cursor / Codex</option><option value="human">Human</option></select>
-<label for="train-mode">Delivery</label><select id="train-mode"><option value="now">Prepare now if idle — paste yourself</option><option value="queue">Queue locally until free — no automatic send</option></select>
+<label for="train-effort">Codex reasoning depth</label><select id="train-effort" disabled><option value="">Use Codex config</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="xhigh">Ultra (xhigh)</option></select>
+<span></span><p id="agent-effort-help" class="muted field-help">This launcher does not control reasoning depth for this slot type.</p>
+<label for="train-mode">Delivery</label><select id="train-mode"><option value="now">Open visible window now</option><option value="queue">Save in local queue for later</option></select>
+<span></span><p id="agent-delivery-help" class="muted field-help"></p>
 </div>
 <form id="work-form"><label for="train-assignment">Work on assignment</label><select id="train-assignment"></select>
 <label for="train-template">Prompt</label><select id="train-template"><option value="NEW_AGENT">New agent — cold start</option><option value="CONTINUE">Continue an existing chat</option></select>
-<button type="submit">Preview work handoff</button></form>
+<button type="submit">Preview handoff</button></form>
 </section></div>
 </section>
 <section id="train-preview" hidden><h2>Review changes</h2><p id="train-preview-message"></p><pre id="train-preview-files" tabindex="0"></pre><button id="train-confirm" type="button">Confirm — write these files</button><button id="train-cancel" type="button">Cancel</button></section>

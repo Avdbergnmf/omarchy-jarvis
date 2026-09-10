@@ -101,7 +101,8 @@ insufficient acceptance before broadening work. Preparation does not claim the a
 
 Local slots are stored in ignored `logs/training/agents.json` (version 1, `agents` list),
 following `agents.example.json`: id, label, kind, status idle/busy, current_assignment,
-queued_assignment_ids, plus last_handoff. QUEUE in_progress makes a matching slot busy even
+queued_assignment_ids, optional Cursor/Codex `reasoning_effort` (`low|medium|high|xhigh`),
+plus last_handoff. QUEUE in_progress makes a matching slot busy even
 if its manual status says idle. This is coordination metadata, not live agent telemetry.
 Queued handoffs never auto-send. Confirm previews expire after 15 minutes, are single-use,
 and reject intervening changes to SESSION, QUEUE, INDEX, slots or target files. Writes are

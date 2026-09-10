@@ -40,7 +40,7 @@ function renderTraining(data){
  if(typeof renderAgents==='function')renderAgents(data);
  if(typeof renderValidations==='function')renderValidations(data.validations||[]);
 }
-function trainingTarget(){return {slot_id:trainEl('slot').value,label:trainEl('agent-label').value,kind:trainEl('kind').value,mode:trainEl('mode').value,template:trainEl('template').value};}
+function trainingTarget(){return {slot_id:trainEl('slot').value,label:trainEl('agent-label').value,kind:trainEl('kind').value,mode:trainEl('mode').value,template:trainEl('template').value,reasoning_effort:trainEl('effort').disabled?'':trainEl('effort').value};}
 async function previewTraining(payload){
  const load=++previewLoad;
  trainingPreview=null;lastPreviewPayload=payload;trainEl('preview').hidden=true;trainEl('result').hidden=true;

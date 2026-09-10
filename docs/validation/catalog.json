@@ -221,22 +221,22 @@
     },
     {
       "id": "feat-agent-monitor",
-      "title": "Agent monitor: tiles, open window, queue board",
+      "title": "Agent monitor: visible handoff, depth and active work",
       "area": "overlay",
-      "jarvis_version_shipped": "0.5.6",
+      "jarvis_version_shipped": "0.5.10",
       "status": "unvalidated",
       "jarvis_version": null,
       "last_run": null,
       "steps": [
-        "Open Training and choose Agent monitor. Confirm each local agent slot shows as a tile with kind, idle/busy and its current assignment.",
-        "Select a tile. Confirm the detail overview shows status, current/queued assignments, last handoff, and (for a Claude Code or Cursor/Codex slot) an Open agent window button; confirm a Human slot has no such button.",
-        "Click Open agent window for an idle Claude Code or Codex slot. Confirm a real, visible terminal window opens running that CLI — not a hidden background process.",
-        "Click Open agent window again for the same slot. Confirm it focuses the existing window instead of opening a second one.",
-        "Select an open assignment, choose Prepare now for an idle slot, and confirm the work handoff. Confirm the agent's window opens automatically and the paste-ready handoff is still available via Copy handoff.",
-        "Use the idle/busy toggle on a slot's detail overview; preview and confirm. Confirm the tile and Prepare for picker reflect the new status.",
-        "Inspect the Queue board. Confirm it lists assignment id/status/area/parallel policy and names the current worker for any assignment a slot holds, matching docs/assignments/QUEUE.md."
+        "Open Training and choose Agent monitor. Confirm the Now working section remains visible and lists each in-progress assignment with its local slot and busy/idle state, or says when no local slot is assigned.",
+        "Select a Cursor / Codex slot. Confirm its effective reasoning depth and source are shown. Choose Low, Medium, High or Ultra (xhigh), preview a handoff and confirm it; verify the selected depth remains on that slot after refresh.",
+        "Read the reasoning-depth help. Confirm it says the choice applies only when a new Codex window starts and that focusing an existing session cannot change its depth. Confirm Claude Code and Human slots say this launcher does not control their depth.",
+        "Choose Open visible window now and read its help. Confirm a handoff for an idle non-human slot; verify a real visible terminal opens or focuses and the exact prompt remains available to copy and paste.",
+        "Choose Save in local queue for later and read its help. Confirm it only records local queued work and does not open a window or promise an automatic later send.",
+        "Use Mark slot busy or Mark slot idle; review and confirm. Verify the copy says this is local metadata and does not claim to detect, start or stop a Codex or Claude process.",
+        "Inspect the Queue board. Confirm it lists assignment id/status/area/parallel policy, identifies blocked rows as waiting, and names the current worker when a slot holds that assignment."
       ],
-      "expected": "Agent monitor shows real slot state and a live queue board without duplicating Assignments' editor. Opening an agent always yields a visible, individually focusable terminal window per slot (never hidden), and a second open focuses rather than relaunches. Human slots never get an automated launch."
+      "expected": "Agent monitor makes active work, local slot state, delivery behavior and Codex launch depth explicit. Immediate delivery opens or focuses a visible window with a paste-ready prompt; queued delivery stays local and inert. Status labels never claim process detection, and an existing Codex session never claims to change depth mid-flight."
     }
   ]
 }

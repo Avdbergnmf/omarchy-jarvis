@@ -51,8 +51,14 @@ class OpenAgentScriptTest(unittest.TestCase):
              patch.object(open_agent_module, 'hypr', side_effect=[[], [client]]), \
              patch.object(open_agent_module, 'dispatch'), \
              patch.object(open_agent_module.subprocess, 'Popen') as launch:
-            open_agent_module.open_agent('slot-b2', 'cursor')
-            self.assertEqual(launch.call_args.args[0], ['omarchy-launch-or-focus-tui', '--app-id=jarvis-agent-slot-b2', 'codex'])
+            open_agent_module.open_agent('slot-b2', 'cursor', 'xhigh')
+            self.assertEqual(launch.call_args.args[0], ['omarchy-launch-or-focus-tui', '--app-id=jarvis-agent-slot-b2', 'codex', '-c', 'model_reasoning_effort="xhigh"'])
+
+    def test_reasoning_effort_is_bounded_to_codex_slots(self):
+        with self.assertRaisesRegex(ValueError, 'only for Cursor / Codex'):
+            open_agent_module.open_agent('slot-a1', 'claude-code', 'high')
+        with self.assertRaisesRegex(ValueError, 'only for Cursor / Codex'):
+            open_agent_module.open_agent('slot-b2', 'cursor', 'ultra')
 
     def test_human_kind_has_nothing_to_launch(self):
         with patch.object(open_agent_module.subprocess, 'Popen') as launch:
@@ -87,7 +93,8 @@ class AgentWindowRouteTest(unittest.TestCase):
         path = self.root/training.SLOTS
         path.parent.mkdir(parents=True)
         path.write_text(json.dumps({'version': 1, 'agents': [
-            dict(id='slot-a1', label='My coding agent', kind='claude-code', status='idle', current_assignment=None, queued_assignment_ids=[])]}))
+            dict(id='slot-a1', label='My coding agent', kind='claude-code', status='idle', current_assignment=None, queued_assignment_ids=[]),
+            dict(id='slot-b2', label='Codex', kind='cursor', status='idle', current_assignment=None, queued_assignment_ids=[], reasoning_effort='high')]}))
 
     def tearDown(self):
         self.temp.cleanup()
@@ -117,6 +124,14 @@ class AgentWindowRouteTest(unittest.TestCase):
         self.assertEqual(status, 400)
         run.assert_not_called()
 
+    def test_registered_codex_effort_is_passed_to_launcher(self):
+        with patch.object(server, 'ROOT', self.root), patch.object(server.subprocess, 'run') as run:
+            run.return_value = subprocess.CompletedProcess([], 0, '', '')
+            status, body = self.request({'slot_id': 'slot-b2', 'reasoning_effort': 'low'})
+        self.assertEqual(status, 200)
+        argv = run.call_args.args[0]
+        self.assertEqual(argv[argv.index('--reasoning-effort')+1], 'high')
+
     def test_script_failure_surfaces_as_conflict(self):
         with patch.object(server, 'ROOT', self.root), patch.object(server.subprocess, 'run') as run:
             run.return_value = subprocess.CompletedProcess([], 1, '', 'Agent window did not appear')
@@ -143,6 +158,24 @@ class FindSlotTest(unittest.TestCase):
     def test_unknown_id_raises(self):
         with self.assertRaisesRegex(ValueError, 'Unknown agent slot'):
             training.find_slot(self.root, 'slot-nope')
+
+    def test_codex_config_effort_is_bounded(self):
+        config = self.root/'config.toml'
+        config.write_text('model_reasoning_effort = "medium"\n')
+        self.assertEqual(training.codex_default_reasoning_effort(config), 'medium')
+        config.write_text('model_reasoning_effort = "ultra"\n')
+        self.assertIsNone(training.codex_default_reasoning_effort(config))
+
+    def test_dashboard_reports_config_default_and_slot_override(self):
+        path = self.root/training.SLOTS
+        path.write_text(json.dumps({'version': 1, 'agents': [
+            dict(id='slot-a1', label='Default', kind='cursor', status='idle', current_assignment=None, queued_assignment_ids=[]),
+            dict(id='slot-b2', label='Override', kind='cursor', status='idle', current_assignment=None, queued_assignment_ids=[], reasoning_effort='high')]}))
+        with patch.object(training, 'codex_default_reasoning_effort', return_value='medium'), \
+             patch.object(training.subprocess, 'run', side_effect=OSError('offline')):
+            agents = training.dashboard(self.root, 'test', 'abc')['agents']
+        self.assertEqual((agents[0]['effective_reasoning_effort'], agents[0]['reasoning_effort_source']), ('medium', 'Codex config'))
+        self.assertEqual((agents[1]['effective_reasoning_effort'], agents[1]['reasoning_effort_source']), ('high', 'slot launch setting'))
 
 
 if __name__ == '__main__':
