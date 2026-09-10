@@ -12,7 +12,7 @@
 - [x] Chunk 1 bookkeeping (overnight)
 - [x] Chunk 2 tests (87 Python tests; CI checks pass)
 - [x] Chunk 3 dead code
-- [ ] Chunk 4 honesty
+- [x] Chunk 4 honesty
 - [ ] Chunk 5 logging
 - [ ] Chunk 6 docs drift
 - [ ] Chunk 7 micro-fixes
@@ -22,7 +22,7 @@
 - Morning: desk relaunched keep-going Codex from chunk 2
 
 ## Next action (one concrete step)
-- Continue A-014 Chunk 4: harden empty-plan replies without changing approval routing.
+- Continue A-014 Chunk 5: inspect journal bounds, rotation and debug noise.
 
 ## Parallel agent
 - `codex/training-track` — overlay A-007→A-009 — **do not touch**

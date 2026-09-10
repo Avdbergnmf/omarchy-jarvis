@@ -143,7 +143,19 @@ class JsonPlanTest(unittest.TestCase):
    result=server.json_plan('open youtube')
   self.assertEqual(result['actions'],[])
   self.assertNotIn('Opening YouTube',result['reply'])
-  self.assertIn("don't have a way",result['reply'])
+  self.assertIn("No actions were run",result['reply'])
+ def test_empty_plan_claim_variants_and_blank_replies(self):
+  for reply in ('', '  ', 'Done.', 'Completed!', "I've opened Spotify.", 'Sure, opening YouTube.', 'I will launch Spotify.', 'Moved the window.'):
+   with self.subTest(reply=reply):
+    self.assertIn('No actions were run',server.empty_plan_reply(reply))
+  for reply in ('Hello!', "I cannot open that app.", 'You can open Spotify yourself.'):
+   self.assertEqual(server.empty_plan_reply(reply),reply)
+ def test_tools_completion_uses_executed_labels(self):
+  rid='tools-summary-unit'; server.RUNS[rid]={'steps':[]}; server.BUSY.acquire()
+  messages=[{'role':'assistant','tool_calls':[{'function':{'name':'scratch_toggle','arguments':{}}}]}]
+  with patch.object(server,'restore_target'),patch.object(server,'announce'),patch.object(server,'log'),patch.object(server.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'{"ok":true}','')),patch.object(server,'ollama_chat',return_value={'content':'I opened Spotify and YouTube.'}):
+   server.execute_tools_plan(rid,None,messages)
+  self.assertEqual(server.RUNS[rid]['reply'],'Completed: scratch toggle.')
  def test_honest_empty_reply_is_left_alone(self):
   plan={'actions':[],'reply':'Hello! How can I help?'}
   with patch.object(server,'urlopen',return_value=self.response(plan)):

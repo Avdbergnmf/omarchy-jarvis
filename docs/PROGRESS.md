@@ -257,3 +257,6 @@ Claimed by Codex on `a014-hygiene` in the assigned absolute worktree; desk and t
 
 ## 2026-09-10 — A-014 Chunk 3
 - Worked: removed unreachable duplicate/recipe-combination checks after the JSON planner’s existing one-action limit, plus three unused test imports. Existing multi-action rejection test and all 87 tests pass. Kept callable action/script entry points; no speculative deletions.
+
+## 2026-09-10 — A-014 Chunk 4
+- Worked: shared empty-plan guard catches blank replies, bare completion and common first-person claims; tools completion now uses executed labels. 89 tests pass; VERSION 0.4.2. Limitation: lexical guard is not semantic verification. Shared live service was not restarted (other track owns it); deploy/restart and CURRENT version rotation remain for merge handoff.

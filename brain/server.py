@@ -174,14 +174,20 @@ def ollama_chat(payload):
     request = Request('http://127.0.0.1:11434/api/chat', data=json.dumps(payload).encode(), headers={'Content-Type':'application/json'})
     with urlopen(request, timeout=180) as response: return json.load(response)['message']
 
-# A-012: the planner (qwen2.5:3b) has shipped a real "Opening YouTube." reply with
-# actions:[] (run fad6f832, rated bad by the user) — a false success claim for a zero-
-# action plan, which skips approval entirely (commit_plan's own zero-action branch) and
-# reaches the user as a already-"done" lie with nothing to review first. Chitchat replies
-# ("Hello! How can I help?") correctly have no actions and make no such claim; only a
-# reply that *itself* opens with one of these verbs is the dishonest pattern to catch —
-# matching this project's own example replies for real actions ("Opening …", "Moving …").
-FALSE_ACTION_CLAIM_RE = re.compile(r'^(opening|moving|switching|toggling|launching|starting|closing|focusing|filing)\b', re.I)
+# A bounded language guard, not semantic verification of arbitrary model prose.
+FALSE_ACTION_CLAIM_RE = re.compile(
+    r"^(?:(?:sure|okay|ok|certainly)[,!:.]?\s+)?"
+    r"(?:(?:i(?:['’](?:ve|m|ll)| have| am| will)?)[ ]+)?"
+    r"(?:open(?:ing|ed)?|mov(?:e|ing|ed)|switch(?:ing|ed)?|toggl(?:e|ing|ed)|"
+    r"launch(?:ing|ed)?|start(?:ing|ed)?|clos(?:e|ing|ed)|focus(?:ing|ed)?|fil(?:e|ing|ed))\b"
+    r"|^(?:done|completed|success(?:ful(?:ly)?)?)[.!\s]*$", re.I)
+
+
+def empty_plan_reply(reply):
+    reply = reply.strip()
+    if not reply or FALSE_ACTION_CLAIM_RE.match(reply):
+        return "No actions were run. Try rephrasing, or ask for something more specific."
+    return reply[:1000]
 
 def json_plan(prompt):
     instructions = (ROOT/'brain/system_prompt.md').read_text() + '\nReturn a JSON object with actions (tool + arguments) and reply. Choose at most ONE action. Compound requests MUST use a complete run_skill recipe. Never combine a recipe with its individual steps. Use these exact examples:\n' + json.dumps([
@@ -196,8 +202,8 @@ def json_plan(prompt):
     for action in plan['actions']:
         if not isinstance(action,dict) or set(action)!={'tool','arguments'}: raise ValueError('Invalid plan action')
         tool_argv(action['tool'],action['arguments'])
-    if not plan['actions'] and FALSE_ACTION_CLAIM_RE.match(plan['reply'].strip()):
-        plan['reply'] = "I don't have a way to do that yet, so nothing happened — try rephrasing, or ask for something more specific."
+    if not plan['actions']:
+        plan['reply'] = empty_plan_reply(plan['reply'])
     return plan
 
 # Backlog/handoff tools file GitHub issues or write local files; they don't touch
@@ -239,7 +245,8 @@ def commit_plan(run_id, plan, target):
     execute_plan's own contract."""
     log(run_id, 'plan', json.dumps(plan))
     if not plan['actions']:
-        reply = plan['reply'][:1000]
+        reply = empty_plan_reply(plan['reply'])
+        plan = {**plan, 'reply': reply}
         try:
             announce(run_id, reply)
         finally:
@@ -292,9 +299,7 @@ def plan_tools_run(run_id, prompt, target):
         messages.append(msg)
         calls = msg.get('tool_calls') or []
         if not calls:
-            reply = msg.get('content', '').strip() or 'Done.'
-            if FALSE_ACTION_CLAIM_RE.match(reply):  # A-012: same false-success guard as json_plan
-                reply = "I don't have a way to do that yet, so nothing happened — try rephrasing, or ask for something more specific."
+            reply = empty_plan_reply(msg.get('content', ''))
             try:
                 announce(run_id, reply[:250])
             finally:
@@ -348,7 +353,7 @@ def execute_tools_plan(run_id, target, messages):
             messages.append(msg)
             pending_calls = msg.get('tool_calls') or []
             if not pending_calls:
-                reply = msg.get('content', '').strip() or 'Done.'
+                reply = 'Completed: ' + ', '.join(step['label'] for step in RUNS[run_id]['steps']) + '.'
                 announce(run_id, reply[:250])
                 with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
                 return
