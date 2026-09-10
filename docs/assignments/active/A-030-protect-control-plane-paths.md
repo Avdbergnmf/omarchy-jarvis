@@ -1,6 +1,6 @@
 # A-030 — Protect safety / eval / control-plane paths
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:docs
 - **parallel-ok:** NO (promotion/evaluator ownership is serial Control Plane work)
 - **Recommended depth:** medium
