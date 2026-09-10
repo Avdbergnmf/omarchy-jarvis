@@ -10,17 +10,29 @@ Only if Alex explicitly said one of:
 Then set SESSION `Batch: N` or `Batch: until-empty` and after each done assignment, re-run claimable logic (NEW_AGENT rules) and continue until N finished, queue has nothing claimable, or you must stop for tokens/blockers — then report.
 
 ## Steps
-1) Run `./scripts/assignment-status.sh`. Read START.md (skim), QUEUE.md, SESSION.md.
-2) Resume SESSION’s in_progress (or claim per NEW_AGENT if none and user said continue/next).
+1) Run `./scripts/assignment-status.sh` (fetches + reads canonical `origin/main`, not your local branch). Read START.md (skim), QUEUE.md, SESSION.md.
+2) Resume SESSION’s in_progress (or claim per NEW_AGENT if none and user said continue/next). A fresh claim must be **pushed to `origin/main`** before you touch product code — see below.
 3) Work checklist; flush SESSION Next action before any pause.
 4) On acceptance: QUEUE/INDEX → done; move file to docs/assignments/done/; PROGRESS note.
 5) If batch remaining → claim next claimable; else **stop and summarize for Alex**.
 6) If nothing claimable → “No assignment in queue is possible right now.” + queue list / empty.
 
-## Required worktree setup (before claim edits or coding)
+## Push the claim to origin/main BEFORE opening a worktree (required, A-039)
+`origin/main` is the only place a claim counts. From your current checkout:
+
+    git fetch origin
+    ./scripts/assignment-status.sh   # re-check: still claimable on origin/main?
+    git add docs/assignments/QUEUE.md docs/assignments/INDEX.md docs/SESSION.md
+    git commit -m "docs: claim A-NNN on main before opening worktree"
+    git push origin main
+
+If the push is rejected, `git fetch && git pull --ff-only`, re-check, and either
+retry or pick a different claimable id — never force-push over another claim.
+
+## Required worktree setup (only after the claim commit is on origin/main)
 Concurrent agents must each use a separate worktree + branch, even if clean.
 If already assigned an isolated directory, verify it and resume there; do not
-run the creation commands again. Otherwise, after read-only claim checks:
+run the creation commands again. Otherwise:
 
     git worktree list
     git status --short --branch
@@ -31,14 +43,15 @@ run the creation commands again. Otherwise, after read-only claim checks:
     cd "$jarvis_tree"
     git status --short --branch
 
-Use START's isolation section for offline/existing-branch handling and cleanup.
-Never checkout/stash/reset/clean/edit another agent's tree. Before claiming,
-check the listed trees' QUEUE/SESSION + scopes read-only and coordinate with the
-desk: each is a branch snapshot, not a global lock. Record owner, branch,
-absolute worktree path and Batch in your own SESSION; reconcile shared status
-files on merge without reverting others' claims. Isolation does not waive
-parallel-ok/area rules (path hints stay optional, never a gate) or permit shared-service restarts.
-Commit the scoped assignment, then `git push -u origin HEAD`.
+Use START's isolation section for offline/existing-branch handling, recovering
+a stale claim, and cleanup. Never checkout/stash/reset/clean/edit another
+agent's tree. Before claiming, check the listed trees' QUEUE/SESSION + scopes
+read-only and coordinate with the desk: a worktree's own copy can still lag
+`origin/main`, which is why the claim above must land there directly, not on a
+branch. Reconcile shared status files on merge without reverting others'
+claims. Isolation does not waive parallel-ok/area rules (path hints stay
+optional, never a gate) or permit shared-service restarts. Commit the scoped
+assignment, then `git push -u origin HEAD`.
 
 ## Land on main before you stop (required)
 Leaving finished work only on a feature branch causes forgotten merges, conflicts, and wasted tokens.

@@ -1,16 +1,28 @@
 Working directory: use Alex’s assigned Jarvis worktree; stay there if already isolated.
 Another agent may already own an in_progress assignment. You take a PARALLEL track only.
 
-1) Run `./scripts/assignment-status.sh`. Read START.md parallel rules, QUEUE.md, SESSION.md.
-2) Note every `in_progress` row's `area:` (and any optional path hints in its active/*.md — context only).
+1) Run `./scripts/assignment-status.sh` (fetches + reads canonical `origin/main`, not your local branch). Read START.md parallel rules, QUEUE.md, SESSION.md.
+2) Note every `in_progress` row's `area:` on `origin/main` (and any optional path hints in its active/*.md — context only).
 3) Claim the first `queued` assignment with **parallel-ok: YES** whose `area:` differs from every in_progress row's area. Path hints never override this — same area, no claim, even if paths look disjoint.
 4) If none: stop with the same **“No assignment in queue is possible right now.”** + queue list as in NEW_AGENT.txt. Do not touch in_progress work.
-5) If claimed: mark in_progress, update SESSION “Parallel agent”, work within the assignment's area/goal/out-of-scope (any path hints are non-binding), finish → done/, then **land on main** before stopping.
+5) If claimed: mark in_progress, update SESSION “Parallel agent”, **push that claim to `origin/main` before opening a worktree** (see below), work within the assignment's area/goal/out-of-scope (any path hints are non-binding), finish → done/, then **land on main** before stopping.
 
-## Required worktree setup (before claim edits or coding)
+## Push the claim to origin/main BEFORE opening a worktree (required, A-039)
+`origin/main` is the only place a claim counts. From your current checkout:
+
+    git fetch origin
+    ./scripts/assignment-status.sh   # re-check: still claimable on origin/main?
+    git add docs/assignments/QUEUE.md docs/assignments/INDEX.md docs/SESSION.md
+    git commit -m "docs: claim A-NNN on main before opening worktree"
+    git push origin main
+
+If the push is rejected, `git fetch && git pull --ff-only`, re-check, and either
+retry or pick a different claimable id — never force-push over another claim.
+
+## Required worktree setup (only after the claim commit is on origin/main)
 Concurrent agents must each use a separate worktree + branch, even if clean.
 If already assigned an isolated directory, verify it and resume there; do not
-run the creation commands again. Otherwise, after read-only claim checks:
+run the creation commands again. Otherwise:
 
     git worktree list
     git status --short --branch
@@ -21,14 +33,15 @@ run the creation commands again. Otherwise, after read-only claim checks:
     cd "$jarvis_tree"
     git status --short --branch
 
-Use START's isolation section for offline/existing-branch handling and cleanup.
-Never checkout/stash/reset/clean/edit another agent's tree. Before claiming,
-check the listed trees' QUEUE/SESSION + scopes read-only and coordinate with the
-desk: each is a branch snapshot, not a global lock. Record owner, branch,
-absolute worktree path and Batch in your own SESSION; reconcile shared status
-files on merge without reverting others' claims. Isolation does not waive
-parallel-ok/area rules (path hints stay optional, never a gate) or permit shared-service restarts.
-Commit the scoped assignment, then `git push -u origin HEAD`.
+Use START's isolation section for offline/existing-branch handling, recovering
+a stale claim, and cleanup. Never checkout/stash/reset/clean/edit another
+agent's tree. Before claiming, check the listed trees' QUEUE/SESSION + scopes
+read-only and coordinate with the desk: a worktree's own copy can still lag
+`origin/main`, which is why the claim above must land there directly, not on a
+branch. Reconcile shared status files on merge without reverting others'
+claims. Isolation does not waive parallel-ok/area rules (path hints stay
+optional, never a gate) or permit shared-service restarts. Commit the scoped
+assignment, then `git push -u origin HEAD`.
 
 ## Land on main before you stop (required)
 Leaving finished work only on a feature branch causes forgotten merges, conflicts, and wasted tokens.

@@ -2,9 +2,9 @@ Working directory: use Alex’s assigned Jarvis worktree; stay there if already 
 You are a NEW agent on Omarchy Jarvis (cold start). No prior chat context.
 
 ## Where “who is working” lives
-- **docs/assignments/QUEUE.md** — status column (`queued` / `in_progress` / …)
+- **`origin/main`'s `docs/assignments/QUEUE.md`** is the only canonical claim truth (A-039) — a branch-local edit does not count until pushed there.
 - **docs/SESSION.md** — which assignment the current session claims + Next action + optional Batch
-- Run **`./scripts/assignment-status.sh`** first
+- Run **`./scripts/assignment-status.sh`** first — it fetches and reads `origin/main`, not your local branch
 
 ## Batch policy (important)
 - **Default:** do **exactly one** assignment, then **stop and report** to Alex.
@@ -21,7 +21,7 @@ B) Else compute **claimable** queued rows:
    - `status=queued`
    - If any `in_progress`: only `parallel-ok: YES` with an `area:` different from every in_progress row's area; never claim `parallel-ok: NO` while something else is in_progress; never same area as an in_progress, even if that row's active/*.md lists path hints — paths are optional context, never a gate that excuses a same-area claim.
    - If nothing in_progress → first queued row.
-C) Claimed → mark in_progress in QUEUE+INDEX, fill SESSION, execute.
+C) Claimed → mark in_progress in QUEUE+INDEX, fill SESSION, **commit and push straight to `origin/main`** (see "Required worktree setup" below) *before* opening your worktree or writing product code, then execute.
 D) If nothing claimable, do not code. Reply:
 
 ```
@@ -43,10 +43,22 @@ Or: `No assignment in queue is possible right now. The queue is empty.`
 - Steal files from a non-parallel in_progress assignment
 - Chain multiple assignments without an explicit batch/keep-going ask
 
-## Required worktree setup (before claim edits or coding)
+## Push the claim to origin/main BEFORE opening a worktree (required, A-039)
+`origin/main` is the only place a claim counts. From your current checkout:
+
+    git fetch origin
+    ./scripts/assignment-status.sh   # re-check: still claimable on origin/main?
+    git add docs/assignments/QUEUE.md docs/assignments/INDEX.md docs/SESSION.md
+    git commit -m "docs: claim A-NNN on main before opening worktree"
+    git push origin main
+
+If the push is rejected, `git fetch && git pull --ff-only`, re-check, and either
+retry or pick a different claimable id — never force-push over another claim.
+
+## Required worktree setup (only after the claim commit is on origin/main)
 Concurrent agents must each use a separate worktree + branch, even if clean.
 If already assigned an isolated directory, verify it and resume there; do not
-run the creation commands again. Otherwise, after read-only claim checks:
+run the creation commands again. Otherwise:
 
     git worktree list
     git status --short --branch
@@ -57,14 +69,15 @@ run the creation commands again. Otherwise, after read-only claim checks:
     cd "$jarvis_tree"
     git status --short --branch
 
-Use START's isolation section for offline/existing-branch handling and cleanup.
-Never checkout/stash/reset/clean/edit another agent's tree. Before claiming,
-check the listed trees' QUEUE/SESSION + scopes read-only and coordinate with the
-desk: each is a branch snapshot, not a global lock. Record owner, branch,
-absolute worktree path and Batch in your own SESSION; reconcile shared status
-files on merge without reverting others' claims. Isolation does not waive
-parallel-ok/area rules (path hints stay optional, never a gate) or permit shared-service restarts.
-Commit the scoped assignment, then `git push -u origin HEAD`.
+Use START's isolation section for offline/existing-branch handling, recovering
+a stale claim, and cleanup. Never checkout/stash/reset/clean/edit another
+agent's tree. Before claiming, check the listed trees' QUEUE/SESSION + scopes
+read-only and coordinate with the desk: a worktree's own copy can still lag
+`origin/main`, which is why the claim above must land there directly, not on a
+branch. Reconcile shared status files on merge without reverting others'
+claims. Isolation does not waive parallel-ok/area rules (path hints stay
+optional, never a gate) or permit shared-service restarts. Commit the scoped
+assignment, then `git push -u origin HEAD`.
 
 ## Land on main before you stop (required)
 Leaving finished work only on a feature branch causes forgotten merges, conflicts, and wasted tokens.

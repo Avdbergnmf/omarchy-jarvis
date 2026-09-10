@@ -52,15 +52,21 @@ When Alex asks for a change/add (in any chat):
 
 Concurrent coding agents **must** each have a dedicated branch and worktree;
 single-agent serial work may use the canonical checkout. Follow the exact
-[creation, push and cleanup commands in START](../../START.md#required-isolation-for-concurrent-agents).
+[creation, push and cleanup commands in START](../../START.md#required-isolation-for-concurrent-agents),
+which now require **pushing the claim commit to `origin/main` first**
+(A-039) — a worktree is only opened after the claim lands on `origin/main`, so
+`git fetch origin` + `./scripts/assignment-status.sh` is always enough to see
+every live claim, not just this branch's copy.
 Dispatch the absolute working directory with the prompt; an already assigned
 isolated tree must be reused. Never send parallel agents a blanket `cd` to the
-canonical tree. Record owner + branch + worktree in the desk claim and the
-worker's SESSION before implementation. Reconcile claims read-only across
-`git worktree list` and the desk queue: branch-local QUEUE/SESSION can be stale.
-Worktrees do not relax area disjointness (the actual parallel-safety rule — see
+canonical tree. Record owner + branch + worktree in the desk claim (pushed to
+`origin/main`) and the worker's SESSION before implementation. Worktrees do not
+relax area disjointness (the actual parallel-safety rule — see
 [ADR-034](../DECISIONS.md#adr-034--assignment-scope-is-area--worktree-not-hard-path-fences-2026-09-10))
-or isolate live services. Merge shared bookkeeping carefully, preserving other workers' claims and evidence.
+or isolate live services. Merge shared bookkeeping carefully, preserving other
+workers' claims and evidence. A claim that outlives its agent (crash, abandoned
+worktree) is released via [START's stale-claim
+recovery](../../START.md#recovering-a-stale-claim), not silently reclaimed.
 
 ### Constraints for good assignments
 - **One area** when possible; if multi-area, split into two assignments.

@@ -20,14 +20,15 @@ Acceptance:
 Keep plan→approve→execute untouched. Do not require merging the whole feature branch to advertise a claim.
 
 ## Checklist
-- [ ] Reproduce: claim on worktree-only leaves `main` saying `queued` (A-036 case)
-- [ ] Implement shared claim visibility (prefer: claim commit/PR-less push of bookkeeping to `origin/main`, or `docs/assignments/CLAIMS.md` updated on main)
-- [ ] Update prompts + START so claim-to-shared-truth is step 1 of claiming
-- [ ] Harden `assignment-status.sh` to scan worktrees + origin
-- [ ] Tests or scripted smoke; ADR; PROGRESS; SESSION; QUEUE/INDEX → done
-- [ ] Verify a second CONTINUE cannot claim an id already in_progress elsewhere
+- [x] Reproduce: claim on worktree-only leaves `main` saying `queued` (A-036 case) — confirmed live before this assignment started (SESSION/PROGRESS 2026-09-10), then re-created synthetically by editing a worktree's local `QUEUE.md` without pushing and confirming `assignment-status.sh` flags it, then reverted.
+- [x] Implement shared claim visibility: claim commit pushed straight to `origin/main` *before* opening the feature worktree (no separate CLAIMS file needed — QUEUE/INDEX/SESSION on `origin/main` already carry owner/branch/worktree).
+- [x] Update prompts + START so claim-to-shared-truth is step 1 of claiming (`START.md`, `NEW_AGENT.txt`, `CONTINUE.txt`, `PARALLEL.txt`, `prompts/README.md`, `docs/assignments/README.md`).
+- [x] Harden `assignment-status.sh` to scan worktrees + origin (canonical `origin/main` QUEUE read, per-worktree SESSION listing, cross-worktree `MISMATCH` detector).
+- [x] Tests or scripted smoke; ADR; PROGRESS; SESSION; QUEUE/INDEX → done — see ADR-038, PROGRESS 2026-09-10 entry.
+- [x] Verify a second CONTINUE cannot claim an id already in_progress elsewhere — `assignment-status.sh` claim hint now reads `origin/main`, where both A-039 and A-036 show `in_progress`, so neither is offered as claimable.
+- [~] Training Agent monitor shows live claims from the same source of truth — **deferred to A-036** (`area:overlay`, already `in_progress`, whose own checklist item "In-progress / active-work visibility even when queue filter excludes them" covers this surface exactly; touching `overlay/training.*` now would duplicate/conflict with that in-flight work).
 
-Also ensure prompts require **merge to main at batch end** (CONTINUE/NEW_AGENT/START).
+Also ensure prompts require **merge to main at batch end** (CONTINUE/NEW_AGENT/START) — already landed by Alex directly on `main` (commit `73e44f7`) while this assignment was being claimed; picked up via merge and left intact.
 
 ## Out of scope
 Rewriting A-036 product UI (coordinate only); full lock server; changing parallel-ok area rules.

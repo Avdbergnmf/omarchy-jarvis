@@ -4,7 +4,6 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| A-039 | Cross-worktree claim visibility (stop double-claiming) | in_progress | area:docs | YES | [active/A-039-cross-worktree-claim-visibility.md](active/A-039-cross-worktree-claim-visibility.md) |
 | A-036 | Agent monitor usability (depth, delivery, live work) | in_progress | area:overlay | YES | [active/A-036-agent-monitor-usability.md](active/A-036-agent-monitor-usability.md) |
 | A-040 | Test suite optimization (token cost + redundancy) | queued | area:docs | NO | [active/A-040-test-suite-token-optimization.md](active/A-040-test-suite-token-optimization.md) |
 | A-037 | Release gates + claimability visibility | queued | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
@@ -19,17 +18,21 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 
-Recently completed: A-001 … A-025, A-032 (see [done/](done/)).
+Recently completed: A-001 … A-025, A-032, A-039 (see [done/](done/)).
 
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
 status and dependency changes below.
 
-**High (Alex):** **A-040** — lean the test suite / smoke vs full so agents waste fewer tokens (after A-039 docs track).
+**A-039 complete (ADR-038):** claims are only real once pushed to `origin/main`, *before* a
+worktree is opened; `assignment-status.sh` reads `origin/main` as canonical and flags any
+worktree whose local claim disagrees with it. This is now step 1 in every paste prompt and in
+`START.md`'s isolation section.
 
-**HIGHEST (Alex):** **A-039** — claims must be visible on shared main/all worktrees so CONTINUE cannot double-claim (parallel-ok with A-036).
+**High (Alex):** **A-040** — lean the test suite / smoke vs full so agents waste fewer tokens (now claimable, A-039 docs track is done).
 
-**A-036** is **in_progress** on worktree `~/Work/omarchy-jarvis-a036-agent-monitor-usability` (desk synced status onto main).
+**A-036** is **in_progress** on worktree `~/Work/omarchy-jarvis-a036-agent-monitor-usability`
+(claim confirmed on `origin/main`, per A-039).
 
 **After A-032 — Training dispatch usability (do before grinding Wave 0 from the window):** A-036 then A-037 (gates + blocked-by, not stage integers).
 

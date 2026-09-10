@@ -611,3 +611,19 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: queue A-040 test suite optimization
 - Alex: too many tests; token waste concern. Snapshot ~153 Python tests; test_jarvis.py largest.
 - Goal: smoke vs full, cull redundancy, teach agents not to paste full logs.
+
+## 2026-09-10 — A-039 cross-worktree claim visibility (ADR-038)
+- Claimed A-039 itself by pushing its QUEUE/INDEX/SESSION status flip straight to `origin/main`
+  before opening a worktree — the first real use of the protocol it implements.
+- `scripts/assignment-status.sh`: reads `origin/main`'s `QUEUE.md` as canonical claim truth
+  (fetches first; falls back to the local branch with an explicit OFFLINE warning), lists every
+  worktree's `SESSION.md` Active goal, and cross-checks each worktree's local `QUEUE.md` against
+  canonical rows, printing `MISMATCH` for any unpushed/stale claim (fixed an off-by-one field
+  index in the new `row_status` helper found while smoke-testing this).
+- `START.md`, `docs/assignments/README.md`, `prompts/{NEW_AGENT,CONTINUE,PARALLEL,README}.md`:
+  claim-on-origin/main-first is now step 1 of claiming, ahead of `git worktree add`; added a
+  "Recovering a stale claim" procedure to `START.md`.
+- Evidence: `./scripts/doctor.sh --syntax` passes; reproduced the original A-036 bug shape
+  (uncommitted status edit in one worktree's local `QUEUE.md`) and confirmed
+  `assignment-status.sh` reports the `MISMATCH`, then reverted the test edit. Docs/scripts only;
+  no shared service restart required.
