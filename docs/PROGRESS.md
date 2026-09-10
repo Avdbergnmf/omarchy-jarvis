@@ -573,3 +573,7 @@ validation remains pending because the browser connector exposes no browser on t
 
 ## 2026-09-10 — desk: Wave 1 latency profiler (A-033–A-035)
 - Split ChatGPT text-latency brief; standing work (A-032 + Wave 0) stays first.
+
+## 2026-09-10 — desk: A-036/A-037 Training agent handling usability
+- Depth selector/display; rewrite delivery options + immediate prompt path; clarify busy preview; show in-progress work (e.g. A-032).
+- Formal stages (shift-up, assign stage, blocked-by-stage/parallel) in editor + agent monitor.

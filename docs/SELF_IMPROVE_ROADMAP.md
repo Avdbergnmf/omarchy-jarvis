@@ -34,6 +34,10 @@ Forge may modify Runtime. Forge must **not** freely modify Control Plane authori
 ## Build order
 
 ### Gate before Wave 0
+**A-032** — plan vs codebase review.  
+**A-036 / A-037** — Training agent-monitor usability + formal **stages** (so Alex can dispatch from Training and see blocked/in-progress clearly). Prefer before grinding Wave 0 from the window.
+
+### Gate before Wave 0 (plan)
 **A-032** — ChatGPT/Sol deep review of this roadmap vs the codebase (docs-only). Do not implement Wave 0 until A-032 lands and Alex accepts deltas.
 
 ### Wave 0 — now (after A-032)
