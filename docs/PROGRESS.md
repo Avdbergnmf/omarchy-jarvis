@@ -971,5 +971,10 @@ validation remains pending because the browser connector exposes no browser on t
   store a value for it to pass.
 - Docs: ADR-039 amended; HOST; `feat-agent-monitor` guide; VERSION 0.5.12. A-043–A-046
   untouched. Host restart after merge so the live overlay loads the new JS.
+- Evidence: `./scripts/test-full.sh` green (unittest + five JS suites + doctor +
+  ShellCheck + coverage/evals/control-plane). Log: `logs/tests/full-20260910-183634.log`.
+  This cloud image did not ship `shellcheck`; installed v0.10.0 from the upstream
+  release only to run the local full suite. CI `test` on ubuntu-latest is the merge gate.
+
 
 

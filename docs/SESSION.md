@@ -53,10 +53,11 @@
 - Codex: implemented A-041 (ADR-043) — Agent Manager status-colored top tiles, per-agent FIFO queues, canonical available-work/auto-advance checks, automatic cold-start-vs-continue, and visible-window prompt preparation without automatic paste/submit. Updated `feat-agent-monitor`; 256 Python tests + five JS suites pass.
 - Cursor/Grok: implemented A-034 (ADR-053) — Training Latency panel: MRL history bars + waterfall inspector on the A-033 store. Incomplete/error traces stay listed. Did not edit `overlay/agents.js`.
 - Cursor/Grok: claimed A-035 via PR #33 (merged). Implemented A-035 (ADR-054) on `cursor/a035-latency-distributions-a468` from `origin/main`: nearest-rank p50/p90/p95/p99, bounded filters, version/SHA compare, slow-tail jump, Copy PERF note. Budget keys unset by default and never enforced. Did not write `docs/ledger/` or allocate IMP-007.
-- Cursor/Grok: implemented A-042 (ADR-048 tooling) on `cursor/a042-parallel-claimability-tooling-967e` from `origin/main`. Training new-brief default YES (workflow-owned, not META_FIELDS); assignment-status reasons/warnings/HEADS-UP; paste prompts match the script; agent-status dropped the path-fence rule. `area:docs` vs `area:control-plane` written, not executed. Queue empty after this row.
+- Cursor/Grok: focused Claude Code `--effort` fix on `cursor/claude-code-effort-a825` (ADR-039 follow-up, VERSION 0.5.12). `./scripts/test-full.sh` green. Did not claim A-043–A-046.
 
 ## Next action (one concrete step)
 - Reproduce the Copy handoff clipboard failure in `overlay/training.js` `#train-copy`, then fix the write path + fallback per A-044 brief.
+- Alex: review/merge PR #41 (Claude Code `--effort`). Then stop. A-043–A-046 stay queued.
 
 ## Parallel agent
 - none
