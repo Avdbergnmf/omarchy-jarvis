@@ -248,3 +248,26 @@ Verification: all **80 Python tests** pass; shellcheck across scripts/skills, `d
 - Merged `a013-parallel-worktrees` into main (conflict reconcile).
 - A-012 already on main; bookkeeping done.
 - Queued **A-014** for Codex keep-going hygiene until session tokens.
+
+### 2026-09-09 — A-014 chunk 1: bookkeeping
+Claimed by Codex on `a014-hygiene` in the assigned absolute worktree; desk and training SESSION checked read-only, overlay claims untouched. QUEUE/INDEX matched disk; assignment body reconciled. GitHub confirms smoke #8 closed; corrected stale local backlog row and retained fixture with triage note. Assignment-status and syntax Doctor pass; baseline 85 Python tests pass. No live service restart. Next: test gaps.
+
+## 2026-09-10 — A-014 Chunk 2
+- Worked: baseline 85 tests green; added app-plan approval and YouTube missing-window regressions (87 tests). Python, doctor syntax, ShellCheck and overlay checks pass. No live desktop actions or service changes.
+
+## 2026-09-10 — A-014 Chunk 3
+- Worked: removed unreachable duplicate/recipe-combination checks after the JSON planner’s existing one-action limit, plus three unused test imports. Existing multi-action rejection test and all 87 tests pass. Kept callable action/script entry points; no speculative deletions.
+
+## 2026-09-10 — A-014 Chunk 4
+- Worked: shared empty-plan guard catches blank replies, bare completion and common first-person claims; tools completion now uses executed labels. 89 tests pass; VERSION 0.4.2. Limitation: lexical guard is not semantic verification. Shared live service was not restarted (other track owns it); deploy/restart and CURRENT version rotation remain for merge handoff.
+
+## 2026-09-10 — A-014 Chunk 5
+- Worked: malformed CURRENT headers now archive byte-for-byte instead of blocking all later evidence; removed redundant plan cleaning before Journal.write. 91 tests pass, including quiet access logging and damaged-header recovery; existing debug/retention/version-rotation tests stay green. No live journal reset.
+
+## 2026-09-10 — A-014 Chunk 6
+- Worked: clarified batch override, default approval behavior, planned overlay features vs shipped code, partial validation catalog, lexical honesty limits, and file-count retention vs unbounded CURRENT bytes. Human validation remains unvalidated; no overlay assignment bodies or UI changed. Checked edited docs against implementation and git diff whitespace.
+
+## 2026-09-10 — A-014 Chunk 7 / handoff
+- Worked: experimental tools executor stops before unreviewed follow-up actions; both planners enforce intake-only issue filing. Removed the now-unreachable six-turn loop. All 93 Python tests, doctor syntax, ShellCheck, JS syntax and overlay behavior checks pass.
+- Failed/limited: sandboxed host doctor could not access sockets; rerunning with host access passed all checks except report-last-failure --dry-run. In a fresh checkout without logs/runs, that skill’s find pipeline exits under set -e/pipefail before its intended no-log dry-run fallback. skills/ is outside A-014’s allowed paths; follow-up owner should fix and test it with no log directory. No issues filed, desktop mutations, service restarts or changes to other worktrees.
+- Handoff: chunks 1–7 complete on a014-hygiene, VERSION 0.4.2; merge owner must reconcile shared bookkeeping with the overlay track, deploy/restart the shared service, and verify the first-write CURRENT rotation. No live deployment claimed.

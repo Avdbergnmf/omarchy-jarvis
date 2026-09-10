@@ -66,7 +66,7 @@ def journal_event(run_id, phase, **fields):
 
 def log(run_id, event, value):
     if event == 'plan':
-        journal_event(run_id, 'process', process=clean(json.loads(value)))
+        journal_event(run_id, 'process', process=json.loads(value))
         return
     if CONFIG.get('log_level', 'info') != 'debug':
         return
@@ -174,14 +174,20 @@ def ollama_chat(payload):
     request = Request('http://127.0.0.1:11434/api/chat', data=json.dumps(payload).encode(), headers={'Content-Type':'application/json'})
     with urlopen(request, timeout=180) as response: return json.load(response)['message']
 
-# A-012: the planner (qwen2.5:3b) has shipped a real "Opening YouTube." reply with
-# actions:[] (run fad6f832, rated bad by the user) — a false success claim for a zero-
-# action plan, which skips approval entirely (commit_plan's own zero-action branch) and
-# reaches the user as a already-"done" lie with nothing to review first. Chitchat replies
-# ("Hello! How can I help?") correctly have no actions and make no such claim; only a
-# reply that *itself* opens with one of these verbs is the dishonest pattern to catch —
-# matching this project's own example replies for real actions ("Opening …", "Moving …").
-FALSE_ACTION_CLAIM_RE = re.compile(r'^(opening|moving|switching|toggling|launching|starting|closing|focusing|filing)\b', re.I)
+# A bounded language guard, not semantic verification of arbitrary model prose.
+FALSE_ACTION_CLAIM_RE = re.compile(
+    r"^(?:(?:sure|okay|ok|certainly)[,!:.]?\s+)?"
+    r"(?:(?:i(?:['’](?:ve|m|ll)| have| am| will)?)[ ]+)?"
+    r"(?:open(?:ing|ed)?|mov(?:e|ing|ed)|switch(?:ing|ed)?|toggl(?:e|ing|ed)|"
+    r"launch(?:ing|ed)?|start(?:ing|ed)?|clos(?:e|ing|ed)|focus(?:ing|ed)?|fil(?:e|ing|ed))\b"
+    r"|^(?:done|completed|success(?:ful(?:ly)?)?)[.!\s]*$", re.I)
+
+
+def empty_plan_reply(reply):
+    reply = reply.strip()
+    if not reply or FALSE_ACTION_CLAIM_RE.match(reply):
+        return "No actions were run. Try rephrasing, or ask for something more specific."
+    return reply[:1000]
 
 def json_plan(prompt):
     instructions = (ROOT/'brain/system_prompt.md').read_text() + '\nReturn a JSON object with actions (tool + arguments) and reply. Choose at most ONE action. Compound requests MUST use a complete run_skill recipe. Never combine a recipe with its individual steps. Use these exact examples:\n' + json.dumps([
@@ -193,17 +199,13 @@ def json_plan(prompt):
     plan = json.loads(ollama_chat({'model':MODEL,'messages':[{'role':'system','content':instructions},{'role':'user','content':prompt}],'format':PLAN_SCHEMA,'stream':False,'options':{'temperature':0,'num_ctx':8192}})['content'])
     if not isinstance(plan,dict) or set(plan)!={'actions','reply'} or not isinstance(plan['actions'],list) or len(plan['actions'])>1 or not isinstance(plan['reply'],str):
         raise ValueError('Invalid JSON action plan')
-    seen=set()
     for action in plan['actions']:
         if not isinstance(action,dict) or set(action)!={'tool','arguments'}: raise ValueError('Invalid plan action')
+        if action['tool'] in LLM_EXCLUDED_TOOLS:
+            raise ValueError('Issue filing requires the reviewed intake flow')
         tool_argv(action['tool'],action['arguments'])
-        signature=json.dumps(action,sort_keys=True)
-        if signature in seen: raise ValueError('Duplicate action in plan')
-        seen.add(signature)
-    if any(a['tool']=='run_skill' for a in plan['actions']) and len(plan['actions'])!=1:
-        raise ValueError('A complete recipe cannot be combined with other actions')
-    if not plan['actions'] and FALSE_ACTION_CLAIM_RE.match(plan['reply'].strip()):
-        plan['reply'] = "I don't have a way to do that yet, so nothing happened — try rephrasing, or ask for something more specific."
+    if not plan['actions']:
+        plan['reply'] = empty_plan_reply(plan['reply'])
     return plan
 
 # Backlog/handoff tools file GitHub issues or write local files; they don't touch
@@ -245,7 +247,8 @@ def commit_plan(run_id, plan, target):
     execute_plan's own contract."""
     log(run_id, 'plan', json.dumps(plan))
     if not plan['actions']:
-        reply = plan['reply'][:1000]
+        reply = empty_plan_reply(plan['reply'])
+        plan = {**plan, 'reply': reply}
         try:
             announce(run_id, reply)
         finally:
@@ -285,6 +288,8 @@ def calls_to_actions(calls):
     for call in calls:
         name = call['function']['name']; args = call['function'].get('arguments', {})
         if isinstance(args, str): args = json.loads(args)
+        if name in LLM_EXCLUDED_TOOLS:
+            raise ValueError('Issue filing requires the reviewed intake flow')
         tool_argv(name, args)  # validate before showing the plan to the user
         actions.append({'tool': name, 'arguments': args})
     return actions
@@ -298,9 +303,7 @@ def plan_tools_run(run_id, prompt, target):
         messages.append(msg)
         calls = msg.get('tool_calls') or []
         if not calls:
-            reply = msg.get('content', '').strip() or 'Done.'
-            if FALSE_ACTION_CLAIM_RE.match(reply):  # A-012: same false-success guard as json_plan
-                reply = "I don't have a way to do that yet, so nothing happened — try rephrasing, or ask for something more specific."
+            reply = empty_plan_reply(msg.get('content', ''))
             try:
                 announce(run_id, reply[:250])
             finally:
@@ -327,38 +330,36 @@ def execute_tools_plan(run_id, target, messages):
         restore_target(target)
         seen = set(); total = 0
         pending_calls = messages[-1].get('tool_calls') or []
-        for _ in range(6):
-            for call in pending_calls:
-                name = call['function']['name']; args = call['function'].get('arguments', {})
-                if isinstance(args, str): args = json.loads(args)
-                argv = tool_argv(name, args)
-                signature = json.dumps([name,args],sort_keys=True)
-                if signature in seen: raise ValueError('Model repeated a completed action; stopped to prevent duplicate work')
-                seen.add(signature); total += 1
-                if total > 10: raise ValueError('Action limit reached')
-                label = action_label(name, args)
-                step = {'tool': name, 'arguments': args, 'label': label, 'status': 'running'}
-                with STATE_LOCK: RUNS[run_id]['steps'].append(step)
-                log(run_id, 'tool-call', json.dumps({'name':name,'arguments':args}))
-                announce(run_id, 'Running ' + label + '…')
-                result = subprocess.run(argv, capture_output=True, text=True, timeout=160)
-                log(run_id, 'stdout', result.stdout)
-                if result.stderr: log(run_id, 'stderr', result.stderr)
-                if result.returncode:
-                    with STATE_LOCK: step.update(status='error', summary=result.stdout.strip()[:300])
-                    raise RuntimeError('Action failed: ' + result.stdout.strip())
-                with STATE_LOCK: step.update(status='done', summary=result.stdout.strip()[:300])
-                messages.append({'role':'tool','tool_name':name,'content':result.stdout[:16000]})
-            msg = ollama_chat({'model':MODEL,'messages':messages,'tools':TOOLS_FOR_MODEL,'stream':False,'options':{'temperature':0,'num_ctx':8192}})
-            msg = {k:v for k,v in msg.items() if k in ('role','content','tool_calls')}
-            messages.append(msg)
-            pending_calls = msg.get('tool_calls') or []
-            if not pending_calls:
-                reply = msg.get('content', '').strip() or 'Done.'
-                announce(run_id, reply[:250])
-                with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
-                return
-        raise RuntimeError('Model exceeded the six-turn limit')
+        for call in pending_calls:
+            name = call['function']['name']; args = call['function'].get('arguments', {})
+            if isinstance(args, str): args = json.loads(args)
+            argv = tool_argv(name, args)
+            signature = json.dumps([name,args],sort_keys=True)
+            if signature in seen: raise ValueError('Model repeated a completed action; stopped to prevent duplicate work')
+            seen.add(signature); total += 1
+            if total > 10: raise ValueError('Action limit reached')
+            label = action_label(name, args)
+            step = {'tool': name, 'arguments': args, 'label': label, 'status': 'running'}
+            with STATE_LOCK: RUNS[run_id]['steps'].append(step)
+            log(run_id, 'tool-call', json.dumps({'name':name,'arguments':args}))
+            announce(run_id, 'Running ' + label + '…')
+            result = subprocess.run(argv, capture_output=True, text=True, timeout=160)
+            log(run_id, 'stdout', result.stdout)
+            if result.stderr: log(run_id, 'stderr', result.stderr)
+            if result.returncode:
+                with STATE_LOCK: step.update(status='error', summary=result.stdout.strip()[:300])
+                raise RuntimeError('Action failed: ' + result.stdout.strip())
+            with STATE_LOCK: step.update(status='done', summary=result.stdout.strip()[:300])
+            messages.append({'role':'tool','tool_name':name,'content':result.stdout[:16000]})
+        msg = ollama_chat({'model':MODEL,'messages':messages,'tools':TOOLS_FOR_MODEL,'stream':False,'options':{'temperature':0,'num_ctx':8192}})
+        msg = {k:v for k,v in msg.items() if k in ('role','content','tool_calls')}
+        messages.append(msg)
+        pending_calls = msg.get('tool_calls') or []
+        if pending_calls:
+            raise ValueError('Additional model actions were not approved; submit a new request to review them')
+        reply = 'Completed: ' + ', '.join(step['label'] for step in RUNS[run_id]['steps']) + '.'
+        announce(run_id, reply[:250])
+        with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
     except Exception as e:
         reply = redact(str(e)); announce(run_id, 'Stopped: ' + reply[:200])
         with STATE_LOCK: RUNS[run_id].update(status='error', reply=reply)

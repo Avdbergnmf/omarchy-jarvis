@@ -1,4 +1,3 @@
-import importlib.util
 import json
 from pathlib import Path
 import shutil
@@ -34,6 +33,12 @@ class ActionsTest(unittest.TestCase):
   # assignment asked for regardless of whether a local .desktop shortcut exists.
   self.assertIn('YouTube',core.APPS)
   self.assertEqual(core.APPS['YouTube'],'https://www.youtube.com/')
+ def test_youtube_launch_requires_observed_window(self):
+  with tempfile.TemporaryDirectory() as tmp,patch.object(core,'LOGS',Path(tmp)),patch.object(core,'hypr',return_value=[]),patch.object(core.subprocess,'Popen') as launch,patch.object(core.time,'monotonic',side_effect=[0,31]),patch.object(core,'dispatch') as dispatch:
+   with self.assertRaisesRegex(RuntimeError,'window was not found'):
+    core.open_app('YouTube')
+  self.assertEqual(launch.call_args.args[0],['omarchy-launch-webapp','https://www.youtube.com/','--class=jarvis-youtube'])
+  dispatch.assert_not_called()
  def test_is_overlay_matches_known_and_unseen_chromium_variants(self):
   # A-010: Chromium has derived classes ADR-013 didn't anticipate before; the match
   # must survive a variant we haven't hardcoded, without matching unrelated windows.
@@ -138,7 +143,39 @@ class JsonPlanTest(unittest.TestCase):
    result=server.json_plan('open youtube')
   self.assertEqual(result['actions'],[])
   self.assertNotIn('Opening YouTube',result['reply'])
-  self.assertIn("don't have a way",result['reply'])
+  self.assertIn("No actions were run",result['reply'])
+ def test_empty_plan_claim_variants_and_blank_replies(self):
+  for reply in ('', '  ', 'Done.', 'Completed!', "I've opened Spotify.", 'Sure, opening YouTube.', 'I will launch Spotify.', 'Moved the window.'):
+   with self.subTest(reply=reply):
+    self.assertIn('No actions were run',server.empty_plan_reply(reply))
+  for reply in ('Hello!', "I cannot open that app.", 'You can open Spotify yourself.'):
+   self.assertEqual(server.empty_plan_reply(reply),reply)
+ def test_tools_completion_uses_executed_labels(self):
+  rid='tools-summary-unit'; server.RUNS[rid]={'steps':[]}; server.BUSY.acquire()
+  messages=[{'role':'assistant','tool_calls':[{'function':{'name':'scratch_toggle','arguments':{}}}]}]
+  with patch.object(server,'restore_target'),patch.object(server,'announce'),patch.object(server,'log'),patch.object(server.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'{"ok":true}','')),patch.object(server,'ollama_chat',return_value={'content':'I opened Spotify and YouTube.'}):
+   server.execute_tools_plan(rid,None,messages)
+  self.assertEqual(server.RUNS[rid]['reply'],'Completed: scratch toggle.')
+ def test_tools_followup_cannot_execute_unreviewed_actions(self):
+  rid='tools-followup-unit'; server.RUNS[rid]={'steps':[]}; server.BUSY.acquire()
+  messages=[{'role':'assistant','tool_calls':[{'function':{'name':'scratch_toggle','arguments':{}}}]}]
+  followup={'tool_calls':[{'function':{'name':'workspace_switch','arguments':{'workspace':2}}}]}
+  with patch.object(server,'restore_target'),patch.object(server,'announce'),patch.object(server,'log'),patch.object(server.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'{"ok":true}','')) as run,patch.object(server,'ollama_chat',return_value=followup):
+   server.execute_tools_plan(rid,None,messages)
+  self.assertEqual(run.call_count,1)
+  self.assertEqual(server.RUNS[rid]['status'],'error')
+  self.assertIn('not approved',server.RUNS[rid]['reply'])
+  self.assertEqual(server.RUNS[rid]['steps'][0]['status'],'done')
+  self.assertFalse(server.BUSY.locked())
+ def test_both_planners_reject_model_generated_issue_filing(self):
+  for name in ('report_bug','report_feature'):
+   args={'title':'Test','body':'Test body','difficulty':'S'}
+   with self.subTest(name=name):
+    plan={'actions':[{'tool':name,'arguments':args}],'reply':'Filing issue.'}
+    with patch.object(server,'ollama_chat',return_value={'content':json.dumps(plan)}),self.assertRaisesRegex(ValueError,'intake flow'):
+     server.json_plan('file issue')
+    with self.assertRaisesRegex(ValueError,'intake flow'):
+     server.calls_to_actions([{'function':{'name':name,'arguments':args}}])
  def test_honest_empty_reply_is_left_alone(self):
   plan={'actions':[],'reply':'Hello! How can I help?'}
   with patch.object(server,'urlopen',return_value=self.response(plan)):
@@ -180,6 +217,18 @@ class ApprovalFlowTest(unittest.TestCase):
   self.assertIn(rid,server.PENDING)
   self.assertTrue(server.BUSY.locked())
   server.handle_deny(rid)  # release the busy lock this test acquired
+ def test_app_open_plans_are_reviewed_before_any_launch(self):
+  for tool,name in [('open_app_by_name','Spotify'),('open_webapp','YouTube')]:
+   with self.subTest(tool=tool):
+    rid='review-'+tool; server.RUNS[rid]={'steps':[]}; server.BUSY.acquire()
+    plan={'actions':[{'tool':tool,'arguments':{'name':name}}],'reply':'Opening '+name+'.'}
+    with patch.object(server,'ollama_chat',return_value={'content':json.dumps(plan)}),patch.object(server.subprocess,'run') as launch,patch.object(server,'restore_target') as restore,patch.object(server,'announce'),patch.object(server,'log'):
+     server.plan_and_maybe_run(rid,'open '+name,None)
+     self.assertEqual(server.RUNS[rid]['status'],'awaiting_approval')
+     self.assertEqual(server.RUNS[rid]['plan'],plan)
+     launch.assert_not_called(); restore.assert_not_called()
+     server.handle_deny(rid)
+    self.assertFalse(server.BUSY.locked())
  def test_deny_runs_nothing_and_releases_busy(self):
   rid='deny-unit'; server.RUNS[rid]={'status':'awaiting_approval','steps':[]}
   server.PENDING[rid]={'target':None,'planner':'json'}; server.BUSY.acquire()

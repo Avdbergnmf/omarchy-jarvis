@@ -18,4 +18,4 @@ last_human_run: null    # ISO date when validated/failed
 notes: ""
 ```
 
-Training mode loads `status: unvalidated` (and optionally `failed`) into the human test queue.
+A-008/A-009 plan to load `status: unvalidated` (and optionally `failed`) into a human test queue; that UI is not shipped in this branch.

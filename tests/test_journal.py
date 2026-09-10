@@ -34,6 +34,23 @@ class JournalTest(unittest.TestCase):
             self.assertEqual((logs / 'runs/old.log').read_bytes(), old)
             self.assertEqual((logs / 'journal/CURRENT.jsonl').stat().st_mode & 0o777, 0o600)
 
+    def test_damaged_header_is_archived_without_losing_evidence(self):
+        for header in ('{"jarvis_version":', '{}', '[]', '{"jarvis_version":null}'):
+            with self.subTest(header=header), tempfile.TemporaryDirectory() as tmp:
+                logs = Path(tmp)
+                current = logs / 'journal/CURRENT.jsonl'
+                current.parent.mkdir()
+                original = (header + '\nold evidence\n').encode()
+                current.write_bytes(original)
+                Journal(logs, '2', 'abc').write('recovery', 'prompt', prompt='hi')
+                self.assertEqual(next((current.parent / 'archive').iterdir()).read_bytes(), original)
+                self.assertEqual(json.loads(current.read_text())['run_id'], 'recovery')
+
+    def test_http_access_logging_is_quiet(self):
+        with patch('sys.stderr') as stderr:
+            server.Handler.log_message(None, 'GET /v1/runs/%s', 'test')
+        stderr.write.assert_not_called()
+
     def test_prune_keeps_newest_and_deletes_oldest(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory = Path(tmp)

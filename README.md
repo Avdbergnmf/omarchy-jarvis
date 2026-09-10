@@ -2,7 +2,7 @@
 
 Local assistant for **Omarchy** (Hyprland). Press **Super+Shift+J**, type what you want, press Enter.
 
-You always see a **plan** before anything changes your desktop. **Run** to do it, **Cancel** / **Esc** to abort. The overlay stays open through execution so you can watch it happen — dismiss it with **Esc** or by pressing the hotkey again. There is always exactly **one** Jarvis: pressing the hotkey again either brings the existing overlay to you or dismisses it, never opens a second one. Closing it and reopening it (even later) picks up right where you left off — same reply, same feedback controls — not a blank box. **Open console** (always on the overlay) tails the live log for this or the last run. Once a run finishes, rate it **👍 / 🤔 / 👎** next to the prompt it applies to — good is just logged, 🤔 goes on a local "review later" list (no GitHub issue), and 👎 jumps straight into the bug-report questions with this run's own context already attached.
+With the default `approval_mode = "always"`, you see a **plan** before anything changes your desktop. **Run** to do it, **Cancel** / **Esc** to abort. The overlay stays open through execution so you can watch it happen — dismiss it with **Esc** or by pressing the hotkey again. There is always exactly **one** Jarvis: pressing the hotkey again either brings the existing overlay to you or dismisses it, never opens a second one. Closing it and reopening it (even later) picks up right where you left off — same reply, same feedback controls — not a blank box. **Open console** (always on the overlay) tails the live log for this or the last run. Once a run finishes, rate it **👍 / 🤔 / 👎** next to the prompt it applies to — good is just logged, 🤔 goes on a local "review later" list (no GitHub issue), and 👎 jumps straight into the bug-report questions with this run's own context already attached.
 
 ## Everyday use
 
@@ -53,8 +53,8 @@ show_notifications = true
 | Decisions / progress | [`docs/DECISIONS.md`](docs/DECISIONS.md) · [`docs/PROGRESS.md`](docs/PROGRESS.md) |
 | How runs are logged | [`docs/LOGGING.md`](docs/LOGGING.md) |
 
-`logs/` is never committed and self-trims automatically (oldest run logs/journal
-archives drop off past a cap); run `./scripts/clean-temp-logs.sh` any time — before
+`logs/` is never committed. Old run/debug files and journal archives self-trim by file
+count; CURRENT and the human feedback list have no byte cap (see [logging](docs/LOGGING.md)). run `./scripts/clean-temp-logs.sh` any time — before
 a commit, say — to also clear one-off scratch files (`--profile` additionally clears
 the overlay's Chromium cache, skipped automatically if the overlay is currently open).
 

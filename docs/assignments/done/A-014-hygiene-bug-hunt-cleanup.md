@@ -1,6 +1,6 @@
 # A-014 — Hygiene: bug hunt, tests, lean cleanup
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:docs (also light `area:brain`, `area:actions`, `tests/` as needed)
 - **parallel-ok:** YES
 - **Allowed paths:** `docs/` (except stealing overlay assignment bodies for A-007–A-009), `scripts/`, `tests/`, `brain/` (dead code, honesty, journal/logging hygiene), `actions/` (dead/duplicate helpers), `README.md`, `START.md`, `AGENTS.md`, `VERSION` (patch only if behavior changes), root config that is clearly unused
@@ -23,17 +23,20 @@ Improve Jarvis reliability and lean-ness in **small commits** until Codex sessio
 After each chunk: update checklist, PROGRESS one line, SESSION Next action, commit+push branch. On token pressure: stop, leave tree clean, summarize chunks shipped.
 
 ## Checklist
-- [ ] Chunk 1 bookkeeping
-- [ ] Chunk 2 tests
-- [ ] Chunk 3 dead code
-- [ ] Chunk 4 honesty
-- [ ] Chunk 5 logging
-- [ ] Chunk 6 docs drift
-- [ ] Chunk 7 micro-fixes (optional)
-- [ ] QUEUE → done when chunks exhausted or tokens die mid-flight (leave partial checklist honest)
+- [x] Chunk 1 bookkeeping
+- [x] Chunk 2 tests
+- [x] Chunk 3 dead code
+- [x] Chunk 4 honesty
+- [x] Chunk 5 logging
+- [x] Chunk 6 docs drift
+- [x] Chunk 7 micro-fixes (optional)
+- [x] QUEUE → done; all chunks completed, assignment moved to done/
 
 ## Out of scope
 Overlay Training mode / slash autocomplete (Astra). New big features. Refactors “while we’re here” that touch half the tree.
 
 ## Notes
 Alex enabled **batch until session token limit**. Default one-assignment stop does **not** apply — keep going through chunks until tokens or checklist done.
+
+## Completion evidence (2026-09-10)
+93 Python tests and CI-equivalent checks pass. Host doctor has one scoped-out skill failure on a missing logs/runs directory; see SESSION/PROGRESS. VERSION 0.4.2 is committed but not deployed; shared-service restart belongs to merge handoff.
