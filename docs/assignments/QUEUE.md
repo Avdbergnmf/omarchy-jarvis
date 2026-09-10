@@ -4,7 +4,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| A-039 | Cross-worktree claim visibility (stop double-claiming) | queued | area:docs | YES | [active/A-039-cross-worktree-claim-visibility.md](active/A-039-cross-worktree-claim-visibility.md) |
+| A-039 | Cross-worktree claim visibility (stop double-claiming) | in_progress | area:docs | YES | [active/A-039-cross-worktree-claim-visibility.md](active/A-039-cross-worktree-claim-visibility.md) |
 | A-036 | Agent monitor usability (depth, delivery, live work) | in_progress | area:overlay | YES | [active/A-036-agent-monitor-usability.md](active/A-036-agent-monitor-usability.md) |
 | A-037 | Release gates + claimability visibility | queued | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
