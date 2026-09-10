@@ -111,6 +111,9 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
 
  await handlers.submit({preventDefault(){}});
  assert.equal(JSON.parse(requests.find(r=>r.path==='/v1/run').options.body).prompt,typedPrompt);
+ assert.equal(typeof JSON.parse(requests.find(r=>r.path==='/v1/run').options.body).client_submit_ms,'number','submit must stamp client_submit_ms for A-033');
+ assert(requests.some(r=>r.path==='/v1/runs/test-run/latency'&&JSON.parse(r.options.body).mark==='ack'),'Thinking… paint must POST an ack latency mark');
+ assert(requests.some(r=>r.path==='/v1/runs/test-run/latency'&&JSON.parse(r.options.body).mark==='meaningful'),'first non-placeholder render must POST a meaningful latency mark');
  assert.equal(elements['#prompt'].value,'','the input must be cleared once the prompt is sent (A-010)');
  // A-019: the model's reply no longer duplicates as a separate below-bubble text dump —
  // it now lives inside the proposed-action bubble itself (asserted below).
@@ -260,6 +263,7 @@ function testRestoreOnLoad(){
  // give its awaited chain (session -> get -> render) real wall-clock time to settle.
  return new Promise(resolve=>setTimeout(resolve,50)).then(()=>{
   assert(restoreRequests.some(r=>r.path==='/v1/runs/restored-run'),'page load must fetch the last known run, not start blank');
+  assert(!restoreRequests.some(r=>r.path.includes('/latency')),'restore-on-load must not emit latency marks');
   assert.equal(restoreElements['#status'].textContent,'Completed: scratch toggle.','the last reply must be restored, not "Ready"');
   assert.equal(restoreElements['#feedback'].hidden,false,'feedback controls must be restored for an unrated terminal run');
   assert.equal(restoreElements['#feedback-prompt'].textContent,'toggle scratchpad','the rated prompt must be shown next to the feedback controls');
