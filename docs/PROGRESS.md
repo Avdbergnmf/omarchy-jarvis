@@ -379,3 +379,8 @@ validation remains pending because the browser connector exposes no browser on t
 - Passed 112 Python tests, all UI smoke scenarios, all JS syntax, ShellCheck, Doctor syntax, and isolated HTTP assets/authenticated save/assignment confirm/delete using disposable data on port 17421. Fixed test fixture dependence on real human-validation history without changing Alex's evidence.
 - Host Doctor passes except the previously documented missing-logs/runs report-last-failure dry-run defect (skills outside scope). Hyprland clients/workspaces read successfully; no Jarvis windows were open. Browser connector provides no browser, so visual QA and real window launch remain unvalidated in feat-train. No shared-service restart during isolated work.
 - VERSION 0.5.4, ADR-030, README and human guide updated. A-017 then A-018 are next; no second assignment claimed. Alex requested merge/cleanup of all finished branches after this assignment.
+
+### A-015/A-016 integration — 2026-09-10
+- Integrated a015-plan-detail into a016-training-window with ordinary merge ancestry. Product code and validation catalog merged automatically; reconciled VERSION to 0.5.4, retained ADR-029/030 and both progress records, archived A-015, and preserved queued A-017/A-018.
+- Combined verification: 116 Python tests and all UI smoke scenarios pass. Existing A-013, A-014 and training-track commits are already ancestors of main. Final branch cleanup will preserve ignored runtime data in a local archive before removing clean, finished trees.
+- Shared-service restart requires coordination under the worktree instructions; asked Alex after preparing and testing the concrete merged result.
