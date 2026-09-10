@@ -3,8 +3,8 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- **A-041** in_progress — Codex @ `a041-agent-monitor-auto-queue` / `~/Work/omarchy-jarvis-a041-agent-monitor-auto-queue` (parallel area:overlay; ADR-043 reserved)
-- **A-033** done — latency profiler foundation (ADR-052); landing via rebase of PR #27
+- **A-041** in_progress — Codex @ `a041-agent-monitor-auto-queue` / `/tmp/omarchy-jarvis-a041-agent-monitor-auto-queue` (parallel area:overlay; ADR-043 reserved)
+- **A-033** done — latency profiler foundation (ADR-052); merged PR #27
 - **A-031** done — merged PR #25 / ADR-051
 
 ## Checklist

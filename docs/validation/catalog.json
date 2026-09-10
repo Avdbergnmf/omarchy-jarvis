@@ -221,22 +221,24 @@
     },
     {
       "id": "feat-agent-monitor",
-      "title": "Agent monitor: visible handoff, depth and active work",
+      "title": "Agent manager: visible agents and personal auto-queues",
       "area": "overlay",
-      "jarvis_version_shipped": "0.5.10",
+      "jarvis_version_shipped": "0.5.11",
       "status": "unvalidated",
       "jarvis_version": null,
       "last_run": null,
       "steps": [
-        "Open Training and choose Agent monitor. Confirm the Now working section remains visible and lists each in-progress assignment with its local slot and busy/idle state, or says when no local slot is assigned.",
+        "Open Training and choose Agent manager. Confirm horizontally stacked, color-coded agent tiles appear at the top with idle / working / waiting / blocked / error labels and each tile's ordered personal queue directly underneath.",
         "Select a Cursor / Codex slot. Confirm its effective reasoning depth and source are shown. Choose Low, Medium, High or Ultra (xhigh), preview a handoff and confirm it; verify the selected depth remains on that slot after refresh.",
         "Read the reasoning-depth help. Confirm it says the choice applies only when a new Codex window starts and that focusing an existing session cannot change its depth. Confirm Claude Code and Human slots say this launcher does not control their depth.",
-        "Choose Open visible window now and read its help. Confirm a handoff for an idle non-human slot; verify a real visible terminal opens or focuses and the exact prompt remains available to copy and paste.",
-        "Choose Save in local queue for later and read its help. Confirm it only records local queued work and does not open a window or promise an automatic later send.",
+        "In Available work, select a claimable assignment and an existing tile, or choose + New agent. Confirm the normal flow automatically chooses cold-start versus continue; manual template choice appears only in Advanced prompt override.",
+        "Choose Start visibly now, confirm a handoff for an idle non-human slot, and verify a real visible terminal opens or focuses while the exact prompt remains available for you to paste.",
+        "Add at least two future assignments to one agent's queue. Confirm their ids, titles and ready-next / blocked-waiting states appear under that tile in FIFO order.",
+        "After the current assignment becomes done on origin/main, leave Agent manager open for one refresh interval. Confirm the next claimable personal item becomes current and a visible window opens/focuses with its prompt displayed, but the prompt is not pasted or submitted.",
         "Use Mark slot busy or Mark slot idle; review and confirm. Verify the copy says this is local metadata and does not claim to detect, start or stop a Codex or Claude process.",
         "Inspect the Queue board. Confirm it lists assignment id/status/area/parallel policy, identifies blocked rows as waiting, and names the current worker when a slot holds that assignment."
       ],
-      "expected": "Agent monitor makes active work, local slot state, delivery behavior and Codex launch depth explicit. Immediate delivery opens or focuses a visible window with a paste-ready prompt; queued delivery stays local and inert. Status labels never claim process detection, and an existing Codex session never claims to change depth mid-flight."
+      "expected": "Agent tiles make status and per-agent FIFO work visible at a glance. Available work reuses canonical claimability. Confirmed queues auto-advance only by preparing the next handoff and opening/focusing a visible window; Jarvis never pastes, submits, or silently spends agent credits."
     }
   ]
 }

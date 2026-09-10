@@ -11,7 +11,7 @@
 <button id="train-nav-problems" type="button" aria-pressed="true">Problems</button>
 <button id="train-nav-validate" type="button" aria-pressed="false">Validate features</button>
 <button id="train-nav-work" type="button" aria-pressed="false">Assignments</button>
-<button id="train-nav-agents" type="button" aria-pressed="false">Agent monitor</button>
+<button id="train-nav-agents" type="button" aria-pressed="false">Agent manager</button>
 </nav>
 <section id="train-panel-problems">
 <div class="training-header"><h2>Problems to review</h2><button id="train-new" type="button">New observation</button></div>
@@ -65,14 +65,9 @@
 <details><summary>Current full brief and original context</summary><pre id="assign-body"></pre></details>
 </form></section></div></section>
 <section id="train-panel-agents" hidden>
-<h2>Agent monitor</h2><p class="muted">Local slots describe intended work and open a real, visible window — never a hidden background job.</p>
-<div class="assignment-layout"><aside>
-<h3>Now working</h3><div id="agent-active" class="active-work" aria-live="polite"></div>
-<h3>Agent slots</h3>
-<div id="train-agents" class="training-list"></div>
-<h3>Queue board</h3><p class="muted">Live disk QUEUE, not a separate claim.</p><div id="agent-board" class="training-list"></div>
-</aside>
-<section>
+<h2>Agent manager</h2><p class="muted">Every agent stays visible. Queued work may open/focus its window and prepare a handoff, but Jarvis never pastes or submits it.</p>
+<h3>Agents</h3><div id="train-agents" class="agent-tiles" aria-live="polite"></div>
+<div class="agent-manager-grid"><section>
 <p id="agent-hint" class="muted">Select an agent slot to inspect it, or prepare one below.</p>
 <div id="agent-detail" hidden>
 <h3 id="agent-heading"></h3>
@@ -85,19 +80,21 @@
 <button id="agent-toggle-status" type="button">Mark slot idle</button>
 <p id="agent-status-note" class="muted"></p>
 </div>
+<h3>Available work</h3><p class="muted">Computed from Blocked-by, area, parallel policy and live assignment status.</p>
+<div id="agent-available" class="training-list"></div>
 <div class="training-fields">
-<label for="train-slot">Prepare for</label><select id="train-slot"><option value="new">New agent slot</option></select>
+<label for="train-slot">Assign to</label><select id="train-slot"><option value="new">+ New agent</option></select>
 <label for="train-agent-label">New slot name</label><input id="train-agent-label" maxlength="60" value="My coding agent">
 <label for="train-kind">New slot type</label><select id="train-kind"><option value="claude-code">Claude Code</option><option value="cursor">Cursor / Codex</option><option value="human">Human</option></select>
 <label for="train-effort">Codex reasoning depth</label><select id="train-effort" disabled><option value="">Use Codex config</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="xhigh">Ultra (xhigh)</option></select>
 <span></span><p id="agent-effort-help" class="muted field-help">This launcher does not control reasoning depth for this slot type.</p>
-<label for="train-mode">Delivery</label><select id="train-mode"><option value="now">Open visible window now</option><option value="queue">Save in local queue for later</option></select>
+<label for="train-mode">When</label><select id="train-mode"><option value="now">Start visibly now</option><option value="queue">Add to this agent's queue</option></select>
 <span></span><p id="agent-delivery-help" class="muted field-help"></p>
 </div>
 <form id="work-form"><label for="train-assignment">Work on assignment</label><select id="train-assignment"></select>
-<label for="train-template">Prompt</label><select id="train-template"><option value="NEW_AGENT">New agent — cold start</option><option value="CONTINUE">Continue an existing chat</option></select>
-<button type="submit">Preview handoff</button></form>
-</section></div>
+<details class="agent-advanced"><summary>Advanced prompt override</summary><label for="train-template">Prompt mode</label><select id="train-template"><option value="AUTO">Automatic (recommended)</option><option value="NEW_AGENT">New agent — cold start</option><option value="CONTINUE">Continue an existing chat</option></select></details>
+<button type="submit">Preview assignment</button></form>
+</section><aside><h3>Now working</h3><div id="agent-active" class="active-work"></div><h3>Live queue</h3><div id="agent-board" class="training-list"></div></aside></div>
 </section>
 <section id="train-preview" hidden><h2>Review changes</h2><p id="train-preview-message"></p><pre id="train-preview-files" tabindex="0"></pre><button id="train-confirm" type="button">Confirm — write these files</button><button id="train-cancel" type="button">Cancel</button></section>
 <section id="train-result" hidden><h2>Prepared locally</h2><p id="train-result-message"></p><textarea id="train-handoff" readonly aria-label="Paste-ready handoff"></textarea><button id="train-copy" type="button">Copy handoff</button><pre id="train-paths"></pre></section>

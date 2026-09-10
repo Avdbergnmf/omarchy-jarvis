@@ -2,10 +2,10 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 function element(){return {value:'',hidden:true,disabled:false,className:'',textContent:'',children:[],handlers:{},
  set innerHTML(value){this.children=[];},addEventListener(event,fn){this.handlers[event]=fn;},appendChild(child){this.children.push(child);},setAttribute(name,value){this[name]=value;},focus(){this.focused=true;},select(){}};}
 const els={},requests=[];const $=id=>els[id]||(els[id]=element());
-const claudeSlot={id:'slot-a1',label:'My coding agent',kind:'claude-code',status:'idle',current_assignment:null,queued_assignment_ids:[],busy:false,last_handoff:null,effective_reasoning_effort:null,reasoning_effort_source:null};
+const claudeSlot={id:'slot-a1',label:'My coding agent',kind:'claude-code',status:'idle',computed_status:'waiting',current_assignment:null,queued_assignment_ids:['A-021'],personal_queue:[{id:'A-021',title:'Other',queue_status:'ready-next'}],busy:false,last_handoff:null,effective_reasoning_effort:null,reasoning_effort_source:null};
 const codexSlot={id:'slot-c1',label:'Codex deep',kind:'cursor',status:'idle',current_assignment:null,queued_assignment_ids:[],busy:false,last_handoff:null,reasoning_effort:'xhigh',effective_reasoning_effort:'xhigh',reasoning_effort_source:'slot launch setting'};
 const humanSlot={id:'slot-h1',label:'Alex himself',kind:'human',status:'idle',current_assignment:'A-020',queued_assignment_ids:[],busy:true,last_handoff:'docs/backlog/handoffs/active/x.md'};
-const data={agents:[claudeSlot,codexSlot,humanSlot],assignments:[{id:'A-020',title:'Fix focus',status:'in_progress',area:'overlay',parallel:'NO'},{id:'A-021',title:'Other',status:'queued',area:'skills',parallel:'NO'},{id:'A-022',title:'Waiting',status:'blocked',area:'docs',parallel:'NO'}]};
+const data={agents:[claudeSlot,codexSlot,humanSlot],available_assignments:[{id:'A-021',title:'Other',status:'queued',area:'skills'}],assignments:[{id:'A-020',title:'Fix focus',status:'in_progress',area:'overlay',parallel:'NO'},{id:'A-021',title:'Other',status:'queued',area:'skills',parallel:'YES'},{id:'A-022',title:'Waiting',status:'blocked',area:'docs',parallel:'NO'}]};
 const ctx={document:{querySelector:$,createElement:element},trainingData:data,trainEl:id=>$('#train-'+id),
  trainMessage(text){$('#message').textContent=text;},
  trainingLine(parent,text){const p=element();p.textContent=text;parent.children.push(p);return p;},
@@ -16,8 +16,11 @@ vm.runInNewContext(fs.readFileSync('overlay/agents.js','utf8'),ctx);
 (async()=>{
  ctx.renderAgents(data);
  assert.equal($('#train-agents').children.length,3,'one tile per slot');
- assert.match($('#train-agents').children[0].textContent,/My coding agent.*claude-code.*idle/);
+ assert.equal($('#train-agents').children[0].className,'agent-tile status-waiting');
+ assert.match($('#train-agents').children[0].children.map(c=>c.textContent).join(' '),/My coding agent.*waiting.*A-021.*ready-next/);
  assert.equal($('#train-slot').children.length,4,'new + three known slots');
+ assert.match($('#agent-available').children[0].textContent,/A-021[\s\S]*Other[\s\S]*ready/);
+ $('#agent-available').children[0].handlers.click();assert.equal($('#train-assignment').value,'A-021');
 
  ctx.selectAgent('slot-a1');
  assert.equal($('#agent-detail').hidden,false);assert.equal($('#agent-hint').hidden,true);
@@ -54,7 +57,7 @@ vm.runInNewContext(fs.readFileSync('overlay/agents.js','utf8'),ctx);
  assert.match(board,/A-022.*blocked.*waiting/,'blocked assignments have a simple waiting hint');
 
  $('#train-mode').value='queue';$('#train-mode').handlers.change();
- assert.match($('#agent-delivery-help').textContent,/will not open a window or send it/);
+ assert.match($('#agent-delivery-help').textContent,/ordered queue.*never.*paste|ordered queue/);
 
  console.log('PASS: agent depth, clear delivery/status controls, visible window launch, active-work strip, queue board');
 })().catch(error=>{console.error(error);process.exitCode=1;});

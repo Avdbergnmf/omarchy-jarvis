@@ -40,14 +40,23 @@ def short(value, name, limit=600, empty=False):
     return clean(value.strip())
 
 
-def assignments(root):
+def git_read(root, ref, path):
+    result = subprocess.run(['git', 'show', f'{ref}:{path}'], cwd=root, capture_output=True,
+        text=True, timeout=5)
+    if result.returncode:
+        raise RuntimeError(f'{ref} is unavailable; fetch before auto-advancing agent queues')
+    return result.stdout
+
+
+def assignments(root, ref=None):
+    source = (lambda path: git_read(root, ref, path)) if ref else (lambda path: read(root, path))
     result = []
-    for line in read(root, QUEUE).splitlines():
+    for line in source(QUEUE).splitlines():
         cols = [c.strip() for c in line.split('|')]
         if len(cols) >= 7 and re.fullmatch(r'A-\d{3,}', cols[1]):
             match = re.search(r'\]\((active/A-\d{3,}-[a-zA-Z0-9_-]+\.md)\)', line)
             path = 'docs/assignments/'+match.group(1) if match else None
-            body = read(root, path) if path else ''
+            body = source(path) if path else ''
             priority = metadata(body, 'Priority').split(' ')[0] if path else ''
             # A-037: Blocked-by/Gate are optional structured metadata (not new QUEUE columns) —
             # assignment-status.sh and this board compute claimability by cross-referencing ids.
@@ -266,9 +275,17 @@ def slots(root):
         queued = slot.get('queued_assignment_ids')
         if not isinstance(queued, list) or len(queued)>200 or any(not isinstance(a,str) or not re.fullmatch(r'A-\d{3,}',a) for a in queued):
             raise ValueError('Invalid agent assignment queue')
+        handoffs = slot.get('queued_handoffs', {})
+        if not isinstance(handoffs, dict) or any(
+            key not in queued or not isinstance(value, str) or not value.startswith('docs/backlog/handoffs/active/')
+            for key, value in handoffs.items()
+        ):
+            raise ValueError('Invalid queued handoff map')
         current = slot.get('current_assignment')
         if current is not None and (not isinstance(current,str) or not re.fullmatch(r'A-\d{3,}',current)):
             raise ValueError('Invalid current assignment')
+        if slot.get('last_error') is not None:
+            short(slot['last_error'], 'Agent error', 500)
     return data
 
 
@@ -284,6 +301,99 @@ def codex_default_reasoning_effort(path=None):
 
 def busy(slot, queue):
     return slot.get('status') == 'busy' or any(a['id'] == slot.get('current_assignment') and a['status'] == 'in_progress' for a in queue)
+
+
+def claimable(item, queue):
+    """Use Training's parsed Blocked-by/area/parallel data; never invent a UI-only model."""
+    if item.get('status') != 'queued' or item.get('unmet_blocked_by'):
+        return False
+    active = [candidate for candidate in queue if candidate.get('status') == 'in_progress']
+    if not active:
+        return True
+    return item.get('parallel') == 'YES' and all(candidate.get('area') != item.get('area') for candidate in active)
+
+
+def decorate_slot(slot, queue):
+    by_id = {item['id']: item for item in queue}
+    personal = []
+    for aid in slot['queued_assignment_ids']:
+        item = by_id.get(aid)
+        if item is None:
+            personal.append(dict(id=aid, title='Assignment no longer in live queue', queue_status='error'))
+        else:
+            personal.append(dict(id=aid, title=item['title'],
+                queue_status='ready-next' if claimable(item, queue) else 'blocked-waiting'))
+    slot['personal_queue'] = personal
+    slot['computed_status'] = ('error' if slot.get('last_error') or any(item['queue_status'] == 'error' for item in personal)
+        else 'working' if busy(slot, queue)
+        else 'waiting' if any(item['queue_status'] == 'ready-next' for item in personal)
+        else 'blocked' if personal else 'idle')
+    return slot
+
+
+def write_slots(root, registry):
+    target = root / SLOTS
+    read(root, SLOTS)  # reject a symlink before creating/replacing anything
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temp = target.with_name(target.name + '.' + secrets.token_hex(4) + '.tmp')
+    try:
+        with temp.open('x') as out:
+            os.chmod(temp, 0o600)
+            out.write(json.dumps(registry, indent=2) + '\n')
+        temp.replace(target)
+    finally:
+        temp.unlink(missing_ok=True)
+
+
+def record_slot_error(root, slot_id, message):
+    with LOCK:
+        registry = slots(root)
+        slot = next((item for item in registry['agents'] if item['id'] == slot_id), None)
+        if slot is None:
+            return
+        slot['last_error'] = clean(str(message))[:500]
+        slot['status'] = 'idle'
+        write_slots(root, registry)
+
+
+def advance_slots(root):
+    """Advance explicitly queued work. This prepares/focuses; it never submits a prompt."""
+    with LOCK:
+        queue = assignments(root, 'origin/main')
+        by_id = {item['id']: item for item in queue}
+        registry = slots(root)
+        advanced = []
+        changed = False
+        reserved = {slot.get('current_assignment') for slot in registry['agents']
+            if slot.get('current_assignment') in by_id}
+        for slot in registry['agents']:
+            current = slot.get('current_assignment')
+            if current and current in by_id:
+                continue
+            if current:
+                slot['current_assignment'] = None
+                slot['status'] = 'idle'
+                slot['last_completed_assignment'] = current
+                changed = True
+            ready = next((aid for aid in slot['queued_assignment_ids']
+                if aid not in reserved and aid in by_id and claimable(by_id[aid], queue)), None)
+            if not ready:
+                continue
+            slot['queued_assignment_ids'].remove(ready)
+            slot['current_assignment'] = ready
+            slot['status'] = 'busy'
+            handoff = slot.setdefault('queued_handoffs', {}).pop(ready, None)
+            if handoff:
+                slot['last_handoff'] = handoff
+            slot['auto_advanced_at'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            reserved.add(ready)
+            slot.pop('last_error', None)
+            advanced.append(dict(slot_id=slot['id'], assignment_id=ready, kind=slot['kind'],
+                handoff=handoff, handoff_text=read(root, handoff) if handoff else ''))
+            changed = True
+        if changed:
+            write_slots(root, registry)
+        return advanced
 
 
 def find_slot(root, slot_id):
@@ -434,8 +544,10 @@ def dashboard(root, version, revision):
         else:
             slot['effective_reasoning_effort'] = None
             slot['reasoning_effort_source'] = None
+        decorate_slot(slot, queue)
+    available = [item for item in queue if claimable(item, queue)]
     return dict(version=version, revision=revision, metrics=metrics, sampled=sampled, period='Today UTC, current journal only', problems=problems,
-                assignments=queue, agents=registry['agents'], warnings=warnings, validations=validations,
+                assignments=queue, available_assignments=available, agents=registry['agents'], warnings=warnings, validations=validations,
                 context=['START.md','docs/SESSION.md',QUEUE,'docs/DECISIONS.md','docs/LOGGING.md'], session=read(root, 'docs/SESSION.md')[:5000])
 
 
@@ -555,12 +667,14 @@ Unrelated queue work, unreviewed skills, silent cloud spending.
                     raise ValueError('Select an open assignment')
             if mode == 'queue':
                 if aid not in slot['queued_assignment_ids']: slot['queued_assignment_ids'].append(aid)
-                message = f'{aid} saved in {slot["label"]}\'s local queue. Jarvis will not open a window or send it automatically later.'
+                message = f'{aid} added to {slot["label"]}\'s personal queue. When it becomes claimable Jarvis may open or focus the visible window and prepare this prompt; it never pastes or submits it.'
             else:
                 slot['queued_assignment_ids'] = [a for a in slot['queued_assignment_ids'] if a != aid]
                 slot['current_assignment'] = aid
                 message = f'Visible handoff prepared for {slot["label"]}. After confirmation Jarvis opens or focuses its window; the exact prompt remains ready to copy and paste.'
-            template = data.get('template', 'NEW_AGENT')
+            template = data.get('template')
+            if template in (None, '', 'AUTO'):
+                template = 'CONTINUE' if slot.get('last_handoff') else 'NEW_AGENT'
             if template not in ('NEW_AGENT','CONTINUE'): raise ValueError('Unknown prompt template')
             prompt = read(root, f'docs/assignments/prompts/{template}.txt')
             handoff = f'# Prepared handoff — {aid} → {slot["label"]}\n\n{message}\n\nRead START.md first. Work on **{aid} only** after checking QUEUE/SESSION ownership. Never override an in-progress owner.\n\n{prompt}\n'
@@ -569,6 +683,10 @@ Unrelated queue work, unreviewed skills, silent cloud spending.
             hi = 'docs/backlog/handoffs/INDEX.md'
             changes[hi] = read(root, hi).rstrip()+f'\n- [{aid} → {slot["label"]}](active/{Path(hp).name}) — active\n'
             slot['last_handoff'] = hp
+            if mode == 'queue':
+                slot.setdefault('queued_handoffs', {})[aid] = hp
+            else:
+                slot.setdefault('queued_handoffs', {}).pop(aid, None)
         changes[SLOTS] = json.dumps(registry, indent=2)+'\n'
         for path in changes: before.setdefault(path, read(root, path))
         return store_preview(root, before, changes, message, handoff)
