@@ -32,7 +32,7 @@
 | A-028 | Deterministic candidate-eval foundation | done | area:docs | NO | [done/A-028-eval-harness-v0.md](done/A-028-eval-harness-v0.md) |
 | A-029 | Preference memory v0 (provenance, precedence, revoke) | done | area:actions | NO | [done/A-029-memory-v0-provenance-prefs.md](done/A-029-memory-v0-provenance-prefs.md) |
 | A-030 | Protect safety/eval/control-plane paths | done | area:docs | NO | [done/A-030-protect-control-plane-paths.md](done/A-030-protect-control-plane-paths.md) |
-| A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | in_progress | area:docs | NO | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
+| A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | done | area:docs | NO | [done/A-031-stochastic-evals-v0.md](done/A-031-stochastic-evals-v0.md) |
 | A-032 | ChatGPT deep review: plan vs codebase (plan perfection) | done | area:docs | NO | [done/A-032-chatgpt-plan-codebase-review.md](done/A-032-chatgpt-plan-codebase-review.md) |
 | A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | YES | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |

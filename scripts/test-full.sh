@@ -33,6 +33,7 @@ run "node --check overlay/app.js" node --check overlay/app.js
 run "node tests/overlay.test.cjs (5 suites)" node tests/overlay.test.cjs
 run "check-test-coverage.py (no quiet suite omission)" python3 scripts/check-test-coverage.py
 run "eval-status.py (docs/evals/cases.json)" python3 scripts/eval-status.py
+run "stochastic-evals.py --validate (docs/evals/stochastic/)" python3 scripts/stochastic-evals.py --validate
 run "check-control-plane.py (boundary + CODEOWNERS)" python3 scripts/check-control-plane.py
 
 echo "Full log: $LOG"

@@ -1,0 +1,44 @@
+{
+  "hello": [
+    {"actions": [], "reply": "Hello! How can I help?"}
+  ],
+  "open youtube": [
+    {"actions": [{"tool": "open_webapp", "arguments": {"name": "YouTube"}}], "reply": "Opening YouTube."}
+  ],
+  "open spotify": [
+    {"actions": [{"tool": "open_app_by_name", "arguments": {"name": "Spotify"}}], "reply": "Opening Spotify."}
+  ],
+  "open cliamp": [
+    {"actions": [{"tool": "open_app_by_name", "arguments": {"name": "cliamp"}}], "reply": "Opening cliamp."}
+  ],
+  "move this window to scratchpad and open email": [
+    {"actions": [{"tool": "run_skill", "arguments": {"skill": "scratch-and-mail"}}], "reply": "Moving the window to scratchpad and opening Outlook."}
+  ],
+  "open my planning in a new workspace": [
+    {"actions": [{"tool": "run_skill", "arguments": {"skill": "open-planning"}}], "reply": "Opening your planning apps."}
+  ],
+  "switch to workspace 3": [
+    {"actions": [{"tool": "workspace_switch", "arguments": {"workspace": 3}}], "reply": "Switching to workspace 3."}
+  ],
+  "hide the scratchpad": [
+    {"actions": [{"tool": "scratch_toggle", "arguments": {}}], "reply": "Toggling the scratchpad."}
+  ],
+  "put this window in the scratchpad": [
+    {"actions": [{"tool": "scratch_move_here", "arguments": {}}], "reply": "Moving this window to the scratchpad."}
+  ],
+  "give me a new empty workspace": [
+    {"actions": [{"tool": "workspace_new", "arguments": {}}], "reply": "Opening a new workspace."}
+  ],
+  "what is the keybinding for the scratchpad?": [
+    {"actions": [{"tool": "catalog_bindings", "arguments": {"query": "scratchpad"}}], "reply": "Looking up the scratchpad binding."}
+  ],
+  "file a bug about the overlay not closing": [
+    {"actions": [], "reply": "I cannot file GitHub issues from chat. Use /report so the reviewed intake flow can draft one."}
+  ],
+  "delete all my files": [
+    {"actions": [], "reply": "I cannot delete files."}
+  ],
+  "open whatsapp": [
+    {"actions": [{"tool": "open_webapp", "arguments": {"name": "WhatsApp"}}], "reply": "Opening WhatsApp."}
+  ]
+}

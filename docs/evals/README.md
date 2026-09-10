@@ -16,7 +16,7 @@ prevent (A-032's review found no clean separation before this).
 | **CI / unit** | Does the code do what its test says, right now, deterministically? | `tests/*.py` (204 cases), `tests/*.test.cjs` (5 suites, all reachable — see below) | Every push/PR, `./scripts/test-full.sh` before landing |
 | **Runtime anomaly journal** | Did *this one real run* look consistent with what was approved? | `brain/journal.py::evaluate()`, `logs/journal/CURRENT.jsonl` | Every terminal run, live, no model/subprocess call |
 | **Human validation** | Did a person actually watch the desktop do the right thing? | `docs/validation/catalog.json` (12 features today), Training's Validate panel | On demand, human-triggered only |
-| **Candidate evals** (this doc) | Does a *specific, named* capability or regression hold, on a *pinned* code/model fingerprint, so two revisions are actually comparable? | `docs/evals/cases.json` | On demand (v0: no runner yet — A-031 builds one) |
+| **Candidate evals** (this doc) | Does a *specific, named* capability or regression hold, on a *pinned* code/model fingerprint, so two revisions are actually comparable? | `docs/evals/cases.json` (deterministic `EVAL-*`) and [`stochastic/`](stochastic/README.md) (`SEVAL-*`, A-031) | On demand. Deterministic cases are "run that unit test". Stochastic planner cases are `scripts/stochastic-evals.py` (planner-only, never executes). |
 
 None of these four "auto-graduates" into another. A journal `flag: null` is not a passing eval.
 A Training Verify does not promote a `candidate-capability` case to `protected-regression`
@@ -51,13 +51,12 @@ other one" correction capabilities (`candidate-capability`, linked from the Impr
 A case's *execution result* is not a new format: it's an [A-038](../evidence/README.md) evidence
 bundle with `fingerprint.case_id`/`fingerprint.case_version` populated (those fields already
 exist in `brain/evidence.py::fingerprint()` — v0 just wires an eval's id/version into them),
-plus two additions a future runner (A-031) must produce:
+plus two additions A-031's runner produces:
 
-- **`counts`** — e.g. `{"total": 1, "passed": 1, "failed": 0}` for a unit-test-reference case (trivially `1/1` today; A-031's stochastic runner will report real N-of-M).
-- **`artifact_hash`** — the content-addressed `id` of the evidence bundle `scripts/export-evidence.py` (or a future eval-specific exporter reusing the same `brain/evidence.py` primitives) wrote for that execution.
+- **`counts`** — e.g. `{"total": 1, "passed": 1, "failed": 0}` for a unit-test-reference case (trivially `1/1`); stochastic cases report real N-of-M plus `errored`.
+- **`artifact_hash`** — the content-addressed `id` of the evidence bundle. Deterministic cases still use `scripts/export-evidence.py` against a journaled run; stochastic cases write a `kind: eval` bundle via `brain/evidence.py::build_eval_envelope` (same fingerprint, no raw model text).
 
-No runner is built here — v0 only pins down what a result *must contain* so A-031 doesn't
-invent an incompatible shape.
+See [`stochastic/README.md`](stochastic/README.md) for the planner-only N-run runner. Those results do not auto-graduate into `protected-regression` or a promotion gate.
 
 ## Promotion is a Control Plane change
 
@@ -88,6 +87,6 @@ See `START.md`'s Safety and session done section.
 
 ## Out of scope (v0)
 
-Changing human validation semantics; stochastic N-runs (A-031); desktop execution from an eval
-runner; VM end-to-end; LLM-as-judge; promotional pass-rate thresholds; treating a runtime
-journal `flag` as a grade.
+Changing human validation semantics; desktop execution from an eval runner; VM end-to-end;
+LLM-as-judge; promotional pass-rate thresholds; treating a runtime journal `flag` as a grade.
+Stochastic N-runs live in [`stochastic/`](stochastic/README.md) (A-031) and stay diagnostic.

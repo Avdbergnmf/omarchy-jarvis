@@ -4,14 +4,13 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
-| A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | in_progress | area:docs | NO | high | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
 | A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | YES | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | YES | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
 | A-042 | Parallel claimability tooling migration (default YES + status hints) | queued | area:docs | NO | medium | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |
 
-Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
+Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-030, A-031, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
 
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
@@ -58,12 +57,12 @@ outrank any amount of `inferred` repetition), inspect/revoke/restore, byte-ident
 migration with one-time backup, quarantine for unreadable/unknown-version files, `fcntl.flock`
 cross-process locking, and bounded growth (oldest revoked pruned first). IMP-001 updated.
 
-**Next up:** A-031 (area:docs, depth high) is unblocked now that A-030 is complete. A-033
-(area:brain) and A-041 (area:overlay, `Gate: training-dispatch`) remain queued alternatives.
+**Next up:** A-033 (area:brain, depth high, parallel-ok YES) or A-041 (area:overlay, depth high,
+`Gate: training-dispatch`). A-042 remains `parallel-ok: NO` (control-plane tooling).
 
 **A-027 / branch protection (ADR-049):** repo is **public**; `main` ruleset requires PR + `test` check, blocks force-push/deletion. ADR-046's "no protection" stance is superseded. Unattended Forge stays parked ([FUTURE.md](../FUTURE.md)). Parallel claimability: **ADR-048** (`parallel-ok` defaults YES).
 
-**Revised Wave 0:** A-030 is in_progress (control-plane ownership map; GitHub ruleset now enforces PR+`test` on `main`). A-031 still waits on A-030. See the [roadmap](../SELF_IMPROVE_ROADMAP.md)
+**Revised Wave 0:** A-030 and A-031 are done. See the [roadmap](../SELF_IMPROVE_ROADMAP.md)
 and [A-032 review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md).
 
 **Wave 1 (after Wave 0):** A-033 → A-034 → A-035 text latency profiler. Brief: [chatgpt-latency-profiler-brief](../audits/chatgpt-latency-profiler-brief-2026-09-10.md).
