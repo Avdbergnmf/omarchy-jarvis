@@ -143,7 +143,8 @@ for row in "${ROWS[@]+"${ROWS[@]}"}"; do
   mapfile -t IDS < <(grep -oE 'A-[0-9]+' <<<"$BLOCKED_BY_CLEAN" | awk '!seen[$0]++' || true)
   UNMET=()
   for bid in "${IDS[@]+"${IDS[@]}"}"; do
-    [[ "${STATUS_BY_ID[$bid]:-}" == "done" ]] || UNMET+=("$bid")
+    st="${STATUS_BY_ID[$bid]:-}"
+    [[ "$st" == "done" || "$st" == "cancelled" ]] || UNMET+=("$bid")
   done
   GATE_NOTE=""
   [[ -n "$GATE_RAW" && "$GATE_RAW" != "none" ]] && GATE_NOTE=" gate:$GATE_RAW"

@@ -792,3 +792,11 @@ validation remains pending because the browser connector exposes no browser on t
   file made the mismatch fail loudly. `python3 -m unittest discover -s tests` — 204/204 pass
   (190 + 14 new); `./scripts/doctor.sh --syntax`, `node tests/overlay.test.cjs`,
   `check-test-coverage.py` and `eval-status.py` all green via `./scripts/test-full.sh`.
+
+## 2026-09-10 — A-027 cancelled: no GitHub Pro / no public (ADR-046)
+- Alex: will not make the repo public and will not buy GitHub Pro for now.
+- Private Free cannot enable branch protection/rulesets (prior API 403). Nothing to “fix.”
+- A-027 moved to `done/` as **cancelled**; removed from live QUEUE.
+- A-030 unblocked (`Blocked-by: none`, status queued); checklist no longer requires fake A-027 API proof.
+- Unattended Forge / auto-merge / auto-deploy stay off. Agents must not block on A-027.
+

@@ -5,6 +5,7 @@
 ## Active goal
 - **A-029** in_progress — Claude @ `a029-memory-v0-provenance-prefs` / `~/Work/omarchy-jarvis-a029-memory-v0-provenance-prefs` (claim committed to main first, per ADR-038)
 - **A-028** done — see [done/A-028-eval-harness-v0.md](assignments/done/A-028-eval-harness-v0.md) / ADR-045
+- **A-027 cancelled** — no GitHub Pro / no public; ADR-046; do not wait on branch protection
 - **A-041** filed — Agent Monitor tiles + per-agent auto-queue redesign (queued, area:overlay, depth high, gate training-dispatch)
 
 ## Checklist
@@ -15,6 +16,8 @@
 - [x] A-038 Evidence identity + durable operational bundles v0 — done, merged to main, worktree/branch removed
 - [x] A-026 Improvement Ledger v0 — done, merged to main, worktree/branch removed
 - [x] A-028 Deterministic candidate-eval foundation — done, merged to main, worktree/branch removed
+- [x] A-027 Protected promotion — cancelled (ADR-046)
+- [ ] A-030 Protect control-plane paths — queued (unblocked; no enforceable GitHub gate)
 - [ ] A-041 Agent Monitor redesign — queued (filed; not started)
 - [ ] A-029 Preference memory v0 — in_progress, worktree opened
 

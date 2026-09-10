@@ -61,37 +61,25 @@ remain queued ahead of self-improve implementation. They make Training dispatch 
 reasons usable; they do not replace the dependency graph or authorize later work. A-037 must
 represent sequencing with `blocked-by` and gate labels, not a second numeric stage system.
 
-## Current hard blocker: protected promotion
+## Branch protection: unavailable for now (A-027 cancelled)
 
-The repository is currently private. On 2026-09-10, GitHub returned HTTP 403 for both the
-rulesets and classic branch-protection APIs, requiring GitHub Pro or public visibility.
-**A-027 is blocked** until Alex chooses one of:
+The repository stays **private** on GitHub Free. Ruleset/branch-protection APIs return HTTP 403
+without Pro or public visibility. On 2026-09-10 Alex decided: **no Pro, no public** for now
+([ADR-046](DECISIONS.md#adr-046--no-github-branch-protection-for-now-a-027-cancelled-2026-09-10)).
 
-1. keep the repository private and enable a plan/host with enforceable protection;
-2. deliberately make it public and use Free protection; or
-3. move the authoritative remote to another host with equivalent enforcement.
-
-No agent may change visibility or hosting as a fallback. A local hook, CODEOWNERS without a
-required-review rule, or a written “PR only” convention is an interim human policy, not the
-hard gate. Until A-027 is API-verified, no unattended Forge credential, merge, or deploy is
-allowed. Work below may proceed only under the current human-reviewed branch/merge workflow.
+**Agents and humans must not** wait on A-027, change visibility/billing, or pretend CODEOWNERS /
+hooks are enforcement. Unattended Forge / auto-merge / auto-deploy stay **off**. Merges are
+human-reviewed under the normal workflow. A future hosting/plan change gets a **new** assignment.
 
 ## Revised Wave 0 dependency order
 
 ### External promotion track
 
-**A-027 — Protected promotion path** *(blocked on Alex's external choice)*
+**A-027 — Protected promotion path** *(cancelled — ADR-046)*
 
-- establish a non-bypass Forge actor separate from Alex's approval;
-- require PR, unique `checks / test`, conversation/review policy, no force-push/deletion and
-  no admin/app bypass that defeats the gate;
-- verify settings through the API, not screenshots or policy prose;
-- define canonical deploy revision, version/tag, system-affecting classification, stop,
-  health and rollback in `docs/PROMOTION.md`.
+Not actionable on this remote right now. Do not reopen; file new work if Pro/another host appears.
 
-This track must complete before A-030 enforcement and any unattended Forge work.
-
-### Evidence and audit track (safe to build manually while A-027 is blocked)
+### Evidence and audit track
 
 1. **A-038 — Evidence identity + durable operational bundles v0**
    Give selected private evidence a stable content hash and XDG-state home; add the exact
@@ -106,10 +94,10 @@ This track must complete before A-030 enforcement and any unattended Forge work.
 
 ### Enforcement and consistency track
 
-4. **A-030 — Protect Control Plane paths** *(after A-027 + A-028)*
-   Inventory and protect real authority-bearing code, trusted recipes, workflows, ledger
-   integrity, eval definitions/oracles and the ownership policy itself. CODEOWNERS becomes
-   meaningful only through A-027's enforced review rule.
+4. **A-030 — Protect Control Plane paths** *(A-028 done; A-027 cancelled)*
+   Inventory authority-bearing surfaces and add CODEOWNERS as an ownership **map**. Without
+   GitHub protection (ADR-046), review remains human policy — document that limit; do not claim
+   an enforceable gate.
 5. **A-031 — Stochastic planner evals v0** *(after A-028 + A-030)*
    Run 10–20 critical planner-only behaviors repeatedly under A-038's pinned envelope.
    Never approve/execute desktop actions. Report successes/trials and all-trials consistency;
@@ -125,7 +113,7 @@ all named prerequisites are accepted; queue order alone is not dependency enforc
 
 Wave 0 is complete only when:
 
-- A-027's hard gate is verified on the authoritative remote with non-bypass actors;
+- Accepted: no API-verified GitHub protection on this private Free remote (ADR-046); unattended Forge stays off;
 - deterministic CI covers every current suite and its check is required;
 - selected operational evidence has durable private identity, while raw prompts stay private;
 - ledger records distinguish observations, assignments, evidence, Alex decisions and outcomes;
