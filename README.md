@@ -12,6 +12,7 @@ With the default `approval_mode = "always"`, you see a **plan** before anything 
 | `move this to scratchpad and open email` | Current window → scratchpad, then Outlook (**Super+S** shows scratchpad) |
 | `switch to workspace 1` / `open Outlook` | Single workspace / app actions |
 | `open spotify` | Opens (or focuses, if already running) any installed app by name |
+| `no, the other bitwarden` | After a recent open: closes that window if still owned, opens the next match, and remembers the preference |
 | `open youtube` | Opens the YouTube webapp — works even without a local YouTube app installed |
 | `hello` | Chat only — no plan, no desktop change |
 | `you messed up…` or `/report …` | Bug report flow (questions optional; **skip** allowed) |
@@ -56,6 +57,8 @@ approval_mode = "always"   # or "skills_trusted" / "off" (debug only)
 log_level = "info"         # "debug" for module noise
 show_notifications = true
 ```
+
+App-open preference weights (which Bitwarden to prefer after “the other one”) live in `~/.config/jarvis/app-preferences.json`, created on first correction. Not repo-tracked.
 
 ## Where things live (for you)
 

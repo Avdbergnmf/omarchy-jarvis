@@ -226,5 +226,23 @@
         "additionalProperties": false
       }
     }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "correct_app_open",
+      "description": "After a recent open_app_by_name, close that window if still owned and open the next matching app, updating preference weights. Placed only by deterministic correction routing, never by the model.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 60
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      }
+    }
   }
 ]

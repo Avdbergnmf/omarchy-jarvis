@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT / 'brain'))
 from journal import Journal, evaluate, clean
 import training
 import validation
-from core import catalog, dispatch, hypr, notify, is_overlay, redact, fill_template, slugify
+from core import catalog, dispatch, hypr, notify, is_overlay, redact, fill_template, slugify, preview_correction
 LOGS = ROOT / 'logs'
 MODEL = os.environ.get('JARVIS_MODEL', 'qwen2.5:3b')
 TOOLS = json.loads((ROOT / 'brain/tools.json').read_text())
@@ -140,6 +140,8 @@ def tool_argv(name, args):
     elif name in ('report_bug', 'report_feature'): argv += ['--title', args['title'], '--body', args['body'], '--difficulty', args['difficulty']]
     elif name == 'prepare_handoff': argv += ['--issue', str(args['issue']), '--agent', args['agent']]
     elif name == 'open_app_by_name': argv += ['--name', args['name']]
+    elif name == 'correct_app_open':
+        if args.get('query'): argv += ['--query', args['query']]
     return argv
 
 def skill_description(skill):
@@ -157,6 +159,8 @@ def action_label(name, args):
         skill = args.get('skill')
         description = skill_description(skill)
         return str(skill) + (' — ' + description if description else '')
+    if name == 'correct_app_open':
+        return 'the other matching app'
     label = args.get('title') or (name == 'prepare_handoff' and 'issue #' + str(args.get('issue'))) or (name == 'open_app_by_name' and args.get('name')) or name
     return str(label).replace('_', ' ')
 
@@ -176,8 +180,9 @@ def restore_target(target):
 # report_bug/report_feature are only ever placed in a plan by the deterministic
 # intake flow (start_intake/finalize_intake), never guessed by the model from raw
 # chat text — a 3B model drafting an issue body directly proved unreliable in
-# earlier passes (ADR-009), so they're excluded from both planner surfaces below.
-LLM_EXCLUDED_TOOLS = {'report_bug', 'report_feature'}
+# earlier passes (ADR-009). correct_app_open is likewise planner-excluded (ADR-036):
+# only the "the other one" regex router may place it.
+LLM_EXCLUDED_TOOLS = {'report_bug', 'report_feature', 'correct_app_open'}
 PLAN_SCHEMA = {'type':'object','properties':{
     'actions':{'type':'array','maxItems':1,'items':{'anyOf':[
         {'type':'object','properties':{'tool':{'const':name},'arguments':schema},
@@ -458,6 +463,15 @@ BUG_NL = re.compile(r"\b(you messed up|that was wrong|that'?s wrong|you broke|do
 FEATURE_NL = re.compile(r"\b(i wish it could|add a feature|feature request|it would be nice if|please add|can you add)\b", re.I)
 BACKLOG_SLASH = re.compile(r'^/backlog\b', re.I)
 DISPATCH_SLASH = re.compile(r'^/dispatch\s+#?(\d+)\s+to\s+(claude-code|cursor|human)\s*$', re.I)
+# "no, the other bitwarden" / "the other one" / "not that one" — A-025. Conservative
+# whole-prompt match so it cannot steal "open the other workspace" style requests.
+APP_CORRECTION_RE = re.compile(
+    r'^\s*(?:no[,.]?\s+)?'
+    r'(?:the\s+other(?:\s+one)?(?:\s+(?P<name>[\w.+-][\w .+-]{0,39}))?'
+    r'|not\s+(?:that|this)(?:\s+one)?'
+    r'|wrong\s+one)'
+    r'\s*[.!]?\s*$',
+    re.I)
 
 BUG_QUESTIONS = ['What did you expect to happen?', 'What actually happened instead?', 'Any steps to reproduce, or was this a one-off?']
 FEATURE_QUESTIONS = ['What should this feature do, in one or two sentences?', 'Why do you want it — what problem does it solve?', 'Any constraints or examples of how it should look/behave?']
@@ -470,6 +484,33 @@ def detect_intake(prompt):
     if BUG_NL.search(prompt): return 'bug', prompt
     if FEATURE_NL.search(prompt): return 'feature', prompt
     return None, None
+
+def detect_app_correction(prompt):
+    m = APP_CORRECTION_RE.match(prompt or '')
+    if not m:
+        return None
+    name = (m.group('name') or '').strip() or None
+    if name and name.lower() in ('one', 'app', 'please'):
+        name = None
+    return {'query': name}
+
+def start_correction_plan(run_id, correction, target):
+    try:
+        announce(run_id, 'Preparing…')
+        preview = preview_correction(correction.get('query'))
+        prev, nxt = preview['previous'], preview['next']
+        if prev['name'] == nxt['name']:
+            reply = 'Closing ' + prev['name'] + ' (' + prev['stem'] + ') and opening ' + nxt['name'] + ' (' + nxt['stem'] + ').'
+        else:
+            reply = 'Closing ' + prev['name'] + ' and opening the other match (' + nxt['name'] + ').'
+        args = {}
+        if correction.get('query'):
+            args['query'] = correction['query']
+        commit_plan(run_id, {'actions': [{'tool': 'correct_app_open', 'arguments': args}], 'reply': reply}, target)
+    except ValueError as e:
+        commit_plan(run_id, {'actions': [], 'reply': str(e)}, target)
+    except Exception as e:
+        fail_run(run_id, e)
 
 def tail_log(run_id, lines=12):
     path = LOGS / 'runs' / (run_id + '.log')
@@ -843,9 +884,12 @@ class Handler(BaseHTTPRequestHandler):
                 BUSY_RUN_ID = run_id
             journal_event(run_id, 'prompt', prompt=prompt)
             prompt = prompt.strip()
+            correction = detect_app_correction(prompt)
             kind, seed = detect_intake(prompt)
             dispatch_match = DISPATCH_SLASH.match(prompt)
-            if kind:
+            if correction is not None:
+                thread_target, thread_args = start_correction_plan, (run_id, correction, target)
+            elif kind:
                 thread_target, thread_args = start_intake, (run_id, kind, seed, target)
             elif BACKLOG_SLASH.match(prompt):
                 thread_target, thread_args = start_fixed_plan, (run_id, {'actions':[{'tool':'list_backlog','arguments':{}}],'reply':'Listing open backlog items.'}, target)

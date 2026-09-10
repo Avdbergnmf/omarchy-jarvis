@@ -26,4 +26,4 @@
 | A-022 | Fix open cliamp plan/tooling (issue #15) | done | area:brain | NO | [done/A-022-training.md](done/A-022-training.md) |
 | A-023 | Simplify assignment scope (area + worktree, soft paths) | done | area:docs | YES | [done/A-023-simplify-assignment-path-scope.md](done/A-023-simplify-assignment-path-scope.md) |
 | A-024 | Ambiguous open_app_by_name → top match (Bitwarden #16) | done | area:actions | YES | [done/A-024-open-ambiguous-app-top-match.md](done/A-024-open-ambiguous-app-top-match.md) |
-| A-025 | App-open preferences + “the other one” correction (#16) | queued | area:brain | NO | [active/A-025-app-open-preferences-and-correction.md](active/A-025-app-open-preferences-and-correction.md) |
+| A-025 | App-open preferences + “the other one” correction (#16) | done | area:brain | NO | [done/A-025-app-open-preferences-and-correction.md](done/A-025-app-open-preferences-and-correction.md) |

@@ -22,6 +22,9 @@ HANDOFF_AGENTS = ('claude-code', 'cursor', 'human')
 DESKTOP_DIRS = (Path.home() / '.local/share/applications', Path('/usr/share/applications'),
                 Path('/var/lib/flatpak/exports/share/applications'), Path.home() / '.local/share/flatpak/exports/share/applications')
 FIELD_CODE_RE = re.compile(r'%[fFuUdDnNickvm]')
+# Per-user, not repo-tracked — same XDG convention as config.toml (ADR-015). Overridable for tests.
+APP_PREFS_PATH = Path(os.environ.get('JARVIS_APP_PREFS', str(Path.home() / '.config/jarvis/app-preferences.json')))
+LAST_OPEN_TTL = 900  # seconds a "the other one" correction may still target the last open
 
 def redact(value):
     text = str(value)
@@ -231,13 +234,90 @@ def desktop_entries():
             entries.append({'name': name, 'exec': exec_line, 'stem': f.stem, 'wmclass': fields.get('StartupWMClass') or f.stem})
     return entries
 
-def resolve_app(name, entries=None):
-    """Exact match wins outright; otherwise the best prefix/substring match; otherwise
-    the single closest fuzzy match. A tier with several candidates (e.g. duplicate
-    .desktop entries with the same display Name under different stems — A-024/#16)
-    opens its top-ranked one rather than hard-failing: desktop_entries() already orders
-    entries most-local-directory-first then alphabetically, so that ranking, not a
-    guess, decides. The reply still names the actual app opened, so the choice is honest."""
+def _empty_app_prefs():
+    return {'version': 1, 'queries': {}, 'last_open': None}
+
+def load_app_prefs(path=None):
+    path = Path(path) if path is not None else APP_PREFS_PATH
+    if not path.is_file():
+        return _empty_app_prefs()
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        return _empty_app_prefs()
+    if not isinstance(data, dict):
+        return _empty_app_prefs()
+    queries = data.get('queries') if isinstance(data.get('queries'), dict) else {}
+    last = data.get('last_open') if isinstance(data.get('last_open'), dict) else None
+    return {'version': 1, 'queries': queries, 'last_open': last}
+
+def save_app_prefs(data, path=None):
+    path = Path(path) if path is not None else APP_PREFS_PATH
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    payload = json.dumps({'version': 1, 'queries': data.get('queries') or {}, 'last_open': data.get('last_open')}, indent=2) + '\n'
+    tmp = path.with_name(path.name + '.tmp')
+    tmp.write_text(payload)
+    tmp.chmod(0o600)
+    tmp.replace(path)
+
+def query_weights(query, prefs=None):
+    prefs = prefs if prefs is not None else load_app_prefs()
+    bucket = (prefs.get('queries') or {}).get((query or '').strip().lower()) or {}
+    raw = bucket.get('weights') if isinstance(bucket, dict) else None
+    if not isinstance(raw, dict):
+        return {}
+    weights = {}
+    for stem, value in raw.items():
+        try:
+            weights[str(stem)] = int(value)
+        except (TypeError, ValueError):
+            continue
+    return weights
+
+def bump_app_weight(query, stem, amount=1, path=None):
+    prefs = load_app_prefs(path)
+    key = (query or '').strip().lower()
+    bucket = prefs.setdefault('queries', {}).setdefault(key, {})
+    weights = bucket.setdefault('weights', {})
+    if not isinstance(weights, dict):
+        weights = {}; bucket['weights'] = weights
+    try:
+        current = int(weights.get(stem, 0) or 0)
+    except (TypeError, ValueError):
+        current = 0
+    weights[stem] = current + int(amount)
+    save_app_prefs(prefs, path)
+    return weights[stem]
+
+def record_last_open(query, entry, address=None, path=None):
+    prefs = load_app_prefs(path)
+    prefs['last_open'] = {
+        'query': (query or '').strip().lower(),
+        'stem': entry['stem'],
+        'name': entry['name'],
+        'wmclass': entry.get('wmclass') or entry['stem'],
+        'address': address,
+        'ts': time.time(),
+    }
+    save_app_prefs(prefs, path)
+    return prefs['last_open']
+
+def recent_last_open(prefs=None, now=None):
+    prefs = prefs if prefs is not None else load_app_prefs()
+    last = prefs.get('last_open') if isinstance(prefs.get('last_open'), dict) else None
+    if not last or not last.get('query') or not last.get('stem'):
+        return None
+    try:
+        ts = float(last.get('ts') or 0)
+    except (TypeError, ValueError):
+        return None
+    if (now if now is not None else time.time()) - ts > LAST_OPEN_TTL:
+        return None
+    return last
+
+def ranked_apps(name, entries=None, prefs=None):
+    """Same tiers as A-024 (exact > prefix > substring > fuzzy), then preference
+    weights within the winning tier, then desktop_entries() order as the tie-break."""
     query = (name or '').strip().lower()
     if not query:
         raise ValueError('App name required')
@@ -246,11 +326,29 @@ def resolve_app(name, entries=None):
     starts = [e for e in entries if e['name'].lower().startswith(query)]
     contains = [e for e in entries if query in e['name'].lower()]
     ranked = exact or starts or contains
-    if ranked: return ranked[0]
-    close = difflib.get_close_matches(query, [e['name'].lower() for e in entries], n=1, cutoff=0.6)
-    if close:
-        return next(e for e in entries if e['name'].lower() == close[0])
-    raise ValueError('No installed app matches ' + repr(name))
+    if not ranked:
+        close = difflib.get_close_matches(query, [e['name'].lower() for e in entries], n=8, cutoff=0.6)
+        seen = set()
+        ranked = []
+        for matched in close:
+            for e in entries:
+                if e['name'].lower() == matched and e['stem'] not in seen:
+                    ranked.append(e); seen.add(e['stem']); break
+    if not ranked:
+        raise ValueError('No installed app matches ' + repr(name))
+    weights = query_weights(query, prefs)
+    order = {id(e): i for i, e in enumerate(ranked)}
+    return sorted(ranked, key=lambda e: (-weights.get(e['stem'], 0), order[id(e)]))
+
+def resolve_app(name, entries=None, prefs=None):
+    """Exact match wins outright; otherwise the best prefix/substring match; otherwise
+    the single closest fuzzy match. A tier with several candidates (e.g. duplicate
+    .desktop entries with the same display Name under different stems — A-024/#16)
+    opens its top-ranked one rather than hard-failing: desktop_entries() already orders
+    entries most-local-directory-first then alphabetically, so that ranking, not a
+    guess, decides — unless a stored preference weight for this query ranks another
+    stem first (A-025). The reply still names the actual app opened, so the choice is honest."""
+    return ranked_apps(name, entries, prefs)[0]
 
 def launch_command_for(entry):
     # .desktop field codes (%u/%f/...) are for file-manager-style invocation; a bare
@@ -265,15 +363,14 @@ def launch_command_for(entry):
         raise ValueError('Empty Exec line for ' + entry['name'])
     return ' '.join(shlex.quote(p) for p in parts)
 
-def open_by_name(name, dry=False):
-    entry = resolve_app(name)
+def launch_entry(entry, dry=False):
     pattern = entry['wmclass']
     # omarchy-launch-or-focus focuses a matching window if one exists, else launches
     # (via `eval exec setsid …`, which *replaces* its own process — never wait on it
     # synchronously the way command() does, or a real launch blocks until the app exits).
     argv = ['omarchy-launch-or-focus', pattern, 'uwsm-app -- ' + launch_command_for(entry)]
     if dry:
-        return {'argv': argv, 'name': entry['name'], 'dry_run': True}
+        return {'argv': argv, 'name': entry['name'], 'stem': entry['stem'], 'dry_run': True}
     LOGS.mkdir(exist_ok=True, mode=0o700)
     with (LOGS / 'webapps.log').open('a') as out:
         subprocess.Popen(argv, stdout=out, stderr=out, start_new_session=True)
@@ -287,7 +384,73 @@ def open_by_name(name, dry=False):
         time.sleep(.3)
     if client is None:
         raise RuntimeError(entry['name'] + ' launched but no matching window appeared within 20s')
-    return {'name': entry['name'], 'address': client['address'], 'workspace': client['workspace']['id'], 'class': client['class']}
+    return {'name': entry['name'], 'stem': entry['stem'], 'address': client['address'], 'workspace': client['workspace']['id'], 'class': client['class']}
+
+def open_by_name(name, dry=False):
+    entry = resolve_app(name)
+    result = launch_entry(entry, dry)
+    if not dry:
+        try:
+            record_last_open(name, entry, result.get('address'))
+        except OSError:
+            pass
+    return result
+
+def owned_window(entry, address):
+    """The exact window we opened, if it still exists and still matches that entry.
+    Never hunt a lookalike — closing the wrong Bitwarden would be worse than leaving it."""
+    if not address:
+        return None
+    pattern = (entry.get('wmclass') or entry.get('stem') or '').casefold()
+    name = (entry.get('name') or '').casefold()
+    for client in hypr('clients'):
+        if client.get('address') != address or is_overlay(client):
+            continue
+        cls = (client.get('class') or '').casefold()
+        title = (client.get('title') or '').casefold()
+        if pattern and (pattern in cls or pattern in title):
+            return client
+        if name and name in title:
+            return client
+    return None
+
+def preview_correction(query=None, entries=None, prefs=None, now=None):
+    last = recent_last_open(prefs, now)
+    if not last:
+        raise ValueError('No recent app open to correct — open an app first, then say "the other one".')
+    last_query = last['query']
+    asked = (query or '').strip().lower()
+    if asked and asked not in ('one', 'app') and asked != last_query and asked not in last_query and last_query not in asked:
+        raise ValueError('Last opened app was ' + last_query + ', not ' + asked + '.')
+    ranked = ranked_apps(last_query, entries, prefs)
+    if len(ranked) < 2:
+        raise ValueError('No other installed app matches ' + repr(last_query))
+    current = next((i for i, e in enumerate(ranked) if e['stem'] == last['stem']), None)
+    nxt = ranked[0] if current is None else ranked[(current + 1) % len(ranked)]
+    prev = next((e for e in ranked if e['stem'] == last['stem']), ranked[0])
+    if nxt['stem'] == prev['stem']:
+        raise ValueError('No other installed app matches ' + repr(last_query))
+    return {'query': last_query, 'previous': prev, 'next': nxt, 'last': last}
+
+def correct_open(dry=False, query=None, entries=None):
+    preview = preview_correction(query, entries)
+    prev, nxt, last = preview['previous'], preview['next'], preview['last']
+    if dry:
+        return {'dry_run': True, 'query': preview['query'], 'closed_stem': prev['stem'],
+                'opened_name': nxt['name'], 'opened_stem': nxt['stem'], 'address': last.get('address')}
+    closed = None
+    window = owned_window(prev, last.get('address'))
+    if window:
+        try:
+            dispatch('closewindow', 'address:' + window['address'])
+            closed = window['address']
+        except RuntimeError:
+            closed = None
+    result = launch_entry(nxt, dry=False)
+    bump_app_weight(preview['query'], nxt['stem'])
+    record_last_open(preview['query'], nxt, result.get('address'))
+    return {'query': preview['query'], 'closed': closed, 'name': result['name'], 'stem': result['stem'],
+            'address': result['address'], 'workspace': result['workspace'], 'class': result['class']}
 
 def notify(run_id, message, dry=False):
     if not re.fullmatch(r'[a-zA-Z0-9][a-zA-Z0-9_-]{0,79}', run_id):
@@ -436,6 +599,8 @@ def main():
         p.add_argument('--issue', required=True, type=int); p.add_argument('--agent', required=True, choices=list(HANDOFF_AGENTS))
     elif name == 'open_app_by_name':
         p.add_argument('--name', required=True)
+    elif name == 'correct_app_open':
+        p.add_argument('--query', default='')
     a = p.parse_args()
     try:
         if name == 'catalog_bindings': result = catalog(a.refresh, a.query)
@@ -454,6 +619,7 @@ def main():
         elif name == 'list_backlog': result = list_backlog(a.dry_run)
         elif name == 'prepare_handoff': result = prepare_handoff(a.issue, a.agent, a.dry_run)
         elif name == 'open_app_by_name': result = open_by_name(a.name, a.dry_run)
+        elif name == 'correct_app_open': result = correct_open(a.dry_run, a.query or None)
         else: raise ValueError('Unknown action')
         print(json.dumps({'ok': True, **result}))
     except (ValueError, RuntimeError, OSError, subprocess.SubprocessError, StopIteration) as e:

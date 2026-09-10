@@ -534,3 +534,24 @@ validation remains pending because the browser connector exposes no browser on t
   precedent that a small model's reliability gap can be reduced, not eliminated, by a clearer
   instruction. Alex should retry "open cliamp" for real once this restarts and confirm it now
   either opens CLI Amp or gives an honest "not installed" instead of an apology.
+
+## 2026-09-10 — A-025 app-open preferences + “the other one” correction (#16)
+- After A-024, `open bitwarden` launched the top match but there was no way to say the other
+  one was meant, close the wrong window, or remember that choice.
+- Fix: `~/.config/jarvis/app-preferences.json` (XDG, not repo-tracked) stores per-query stem
+  weights and a 15-minute `last_open`. `ranked_apps()` applies weights inside A-024's existing
+  exact > prefix > substring > fuzzy tiers. Phrases like “no, the other bitwarden” /
+  “the other one” / “not that one” are intercepted before intake and the JSON planner and
+  become one reviewed `correct_app_open` action: close the recorded address only if that
+  window still matches the opened entry, launch the next-ranked stem, bump its weight.
+  No recent open (or a named mismatch) is honest empty-plan chitchat, not a doomed Run.
+  See ADR-036.
+- Evidence: 153 Python tests pass (9 new: rank-by-weight, next-stem preview, stale/solo
+  rejection, close+open+bump, dry-run non-mutation, skip-close when gone, phrase detection,
+  planner exclusion, awaiting-approval vs empty plan); all six `tests/*.cjs` suites pass;
+  `doctor.sh --syntax` passes. VERSION 0.5.8 → 0.5.9; `feat-open-by-name` guide extended
+  and left unvalidated.
+- Limitation: no live two-Bitwarden Hyprland round-trip in this sandbox. Alex should
+  `./scripts/restart.sh` and run feat-open-by-name's new correction steps on 0.5.9.
+- GH #16 closed (A-024 + A-025). Queue empty.
+

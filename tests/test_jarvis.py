@@ -391,6 +391,44 @@ class SelfImproveServerTest(unittest.TestCase):
   kind,_=server.detect_intake('I wish it could remember my last workspace')
   self.assertEqual(kind,'feature')
   self.assertEqual(server.detect_intake('hello there'),(None,None))
+ def test_detect_app_correction_phrases(self):
+  self.assertEqual(server.detect_app_correction('no, the other bitwarden'),{'query':'bitwarden'})
+  self.assertEqual(server.detect_app_correction('the other one'),{'query':None})
+  self.assertEqual(server.detect_app_correction('not that one'),{'query':None})
+  self.assertEqual(server.detect_app_correction('No, the other Bitwarden!'),{'query':'Bitwarden'})
+  self.assertIsNone(server.detect_app_correction('open the other workspace'))
+  self.assertIsNone(server.detect_app_correction('hello'))
+  # Correction is more specific than bug intake and must win for these phrases.
+  self.assertEqual(server.detect_intake('no, the other bitwarden'),(None,None))
+ def test_correct_app_open_excluded_from_model_facing_planner(self):
+  names={t['function']['name'] for t in server.TOOLS_FOR_MODEL}
+  self.assertNotIn('correct_app_open',names)
+  self.assertNotIn('correct_app_open',json.dumps(server.PLAN_SCHEMA))
+  self.assertIn('open_app_by_name',names)
+ def test_start_correction_plan_awaits_approval(self):
+  rid='correct-unit'
+  server.RUNS[rid]={'run_id':rid,'status':'planning','reply':'Thinking…','plan':None,'steps':[]}
+  server.BUSY.acquire()
+  native={'name':'Bitwarden','exec':'bitwarden','stem':'bitwarden','wmclass':'bitwarden'}
+  other={'name':'Bitwarden','exec':'flatpak','stem':'com.bitwarden.desktop','wmclass':'com.bitwarden.desktop'}
+  preview={'query':'bitwarden','previous':native,'next':other,'last':{'stem':'bitwarden'}}
+  with patch.object(server,'announce'),patch.object(server,'log'),patch.object(server,'preview_correction',return_value=preview):
+   server.start_correction_plan(rid,{'query':'bitwarden'},None)
+  run=server.RUNS[rid]
+  self.assertEqual(run['status'],'awaiting_approval')
+  self.assertEqual(run['plan']['actions'][0]['tool'],'correct_app_open')
+  self.assertIn('com.bitwarden.desktop',run['plan']['reply'])
+  server.handle_deny(rid)
+ def test_start_correction_plan_without_a_recent_open_is_honest_chitchat(self):
+  rid='correct-empty-unit'
+  server.RUNS[rid]={'run_id':rid,'status':'planning','reply':'Thinking…','plan':None,'steps':[]}
+  server.BUSY.acquire()
+  with patch.object(server,'announce'),patch.object(server,'log'),patch.object(server,'preview_correction',side_effect=ValueError('No recent app open to correct — open an app first, then say "the other one".')):
+   server.start_correction_plan(rid,{'query':None},None)
+  run=server.RUNS[rid]
+  self.assertEqual(run['status'],'done')
+  self.assertEqual(run['plan']['actions'],[])
+  self.assertIn('No recent app open',run['reply'])
  def test_report_tools_excluded_from_model_facing_planner(self):
   names={t['function']['name'] for t in server.TOOLS_FOR_MODEL}
   self.assertNotIn('report_bug',names); self.assertNotIn('report_feature',names)
@@ -502,6 +540,14 @@ def write_desktop(path,name,exec_line,extra=''):
  path.write_text('[Desktop Entry]\nType=Application\nName='+name+'\nExec='+exec_line+'\n'+extra)
 
 class OpenByNameTest(unittest.TestCase):
+ def setUp(self):
+  self._prefs_dir=tempfile.TemporaryDirectory()
+  self._prefs_path=Path(self._prefs_dir.name)/'app-preferences.json'
+  self._prefs_patch=patch.object(core,'APP_PREFS_PATH',self._prefs_path)
+  self._prefs_patch.start()
+ def tearDown(self):
+  self._prefs_patch.stop()
+  self._prefs_dir.cleanup()
  def test_desktop_entries_skips_nodisplay_and_non_application(self):
   with tempfile.TemporaryDirectory() as tmp:
    d=Path(tmp)
@@ -562,7 +608,8 @@ class OpenByNameTest(unittest.TestCase):
   with patch.object(core,'desktop_entries',return_value=entries),patch.object(core,'hypr',return_value=clients),patch.object(core.subprocess,'Popen') as popen:
    result=core.open_by_name('spotify')
   popen.assert_called_once()
-  self.assertEqual(result,{'name':'Spotify','address':'0xabc','workspace':3,'class':'Spotify'})
+  self.assertEqual(result,{'name':'Spotify','stem':'spotify','address':'0xabc','workspace':3,'class':'Spotify'})
+  self.assertEqual(json.loads(self._prefs_path.read_text())['last_open']['stem'],'spotify')
  def test_open_by_name_times_out_if_no_window_appears(self):
   entries=[{'name':'Ghost','exec':'ghost-app','stem':'ghost-app','wmclass':'ghost-app'}]
   with patch.object(core,'desktop_entries',return_value=entries),patch.object(core,'hypr',return_value=[]),patch.object(core.subprocess,'Popen'),patch.object(core.time,'monotonic',side_effect=[0,100]):
@@ -572,5 +619,56 @@ class OpenByNameTest(unittest.TestCase):
   argv=server.tool_argv('open_app_by_name',{'name':'Spotify'})
   self.assertEqual(argv[-2:],['--name','Spotify'])
   self.assertEqual(server.action_label('open_app_by_name',{'name':'Spotify'}),'Spotify')
+ def test_preference_weight_outranks_desktop_order_within_a_tier(self):
+  entries=[{'name':'Bitwarden','exec':'bitwarden','stem':'bitwarden','wmclass':'bitwarden'},
+           {'name':'Bitwarden','exec':'flatpak run com.bitwarden.desktop','stem':'com.bitwarden.desktop','wmclass':'com.bitwarden.desktop'}]
+  self.assertEqual(core.resolve_app('bitwarden',entries)['stem'],'bitwarden')
+  prefs={'queries':{'bitwarden':{'weights':{'com.bitwarden.desktop':1}}},'last_open':None}
+  self.assertEqual(core.resolve_app('bitwarden',entries,prefs)['stem'],'com.bitwarden.desktop')
+ def test_preview_correction_picks_the_next_stem_and_rejects_stale_or_solo(self):
+  entries=[{'name':'Bitwarden','exec':'bitwarden','stem':'bitwarden','wmclass':'bitwarden'},
+           {'name':'Bitwarden','exec':'flatpak run com.bitwarden.desktop','stem':'com.bitwarden.desktop','wmclass':'com.bitwarden.desktop'}]
+  now=1_000_000.0
+  prefs={'queries':{},'last_open':{'query':'bitwarden','stem':'bitwarden','name':'Bitwarden','wmclass':'bitwarden','address':'0xold','ts':now}}
+  preview=core.preview_correction('bitwarden',entries,prefs,now)
+  self.assertEqual(preview['next']['stem'],'com.bitwarden.desktop')
+  with self.assertRaisesRegex(ValueError,'Last opened app was bitwarden'):
+   core.preview_correction('firefox',entries,prefs,now)
+  stale={'queries':{},'last_open':dict(prefs['last_open'],ts=now-core.LAST_OPEN_TTL-1)}
+  with self.assertRaisesRegex(ValueError,'No recent app open'):
+   core.preview_correction(None,entries,stale,now)
+  solo=[{'name':'Spotify','exec':'spotify','stem':'spotify','wmclass':'spotify'}]
+  solo_prefs={'queries':{},'last_open':{'query':'spotify','stem':'spotify','name':'Spotify','wmclass':'spotify','address':'0x1','ts':now}}
+  with self.assertRaisesRegex(ValueError,'No other installed app'):
+   core.preview_correction(None,solo,solo_prefs,now)
+ def test_correct_open_closes_owned_window_opens_next_and_bumps_weight(self):
+  entries=[{'name':'Bitwarden','exec':'bitwarden','stem':'bitwarden','wmclass':'bitwarden'},
+           {'name':'Bitwarden','exec':'flatpak run com.bitwarden.desktop','stem':'com.bitwarden.desktop','wmclass':'com.bitwarden.desktop'}]
+  core.record_last_open('bitwarden',entries[0],'0xold')
+  window={'address':'0xold','class':'bitwarden','title':'Bitwarden'}
+  launched={'name':'Bitwarden','stem':'com.bitwarden.desktop','address':'0xnew','workspace':2,'class':'Bitwarden'}
+  with patch.object(core,'hypr',return_value=[window]),patch.object(core,'dispatch') as dsp,patch.object(core,'launch_entry',return_value=launched) as launch:
+   result=core.correct_open(query='bitwarden',entries=entries)
+  dsp.assert_called_once_with('closewindow','address:0xold')
+  self.assertEqual(launch.call_args.args[0]['stem'],'com.bitwarden.desktop')
+  self.assertEqual(result['stem'],'com.bitwarden.desktop')
+  self.assertEqual(core.resolve_app('bitwarden',entries)['stem'],'com.bitwarden.desktop')
+ def test_correct_open_skips_close_when_owned_window_is_gone_and_dry_run_does_not_mutate(self):
+  entries=[{'name':'Bitwarden','exec':'bitwarden','stem':'bitwarden','wmclass':'bitwarden'},
+           {'name':'Bitwarden','exec':'flatpak run com.bitwarden.desktop','stem':'com.bitwarden.desktop','wmclass':'com.bitwarden.desktop'}]
+  core.record_last_open('bitwarden',entries[0],'0xold')
+  dry=core.correct_open(dry=True,query='bitwarden',entries=entries)
+  self.assertTrue(dry['dry_run'])
+  self.assertEqual(dry['opened_stem'],'com.bitwarden.desktop')
+  self.assertEqual(core.resolve_app('bitwarden',entries)['stem'],'bitwarden','dry-run must not bump weights')
+  launched={'name':'Bitwarden','stem':'com.bitwarden.desktop','address':'0xnew','workspace':2,'class':'Bitwarden'}
+  with patch.object(core,'hypr',return_value=[]),patch.object(core,'dispatch') as dsp,patch.object(core,'launch_entry',return_value=launched):
+   result=core.correct_open(query='bitwarden',entries=entries)
+  dsp.assert_not_called()
+  self.assertIsNone(result['closed'])
+ def test_tool_argv_and_label_for_correct_app_open(self):
+  self.assertEqual(server.tool_argv('correct_app_open',{}),[str(ROOT/'actions'/'correct_app_open')])
+  self.assertEqual(server.tool_argv('correct_app_open',{'query':'bitwarden'})[-2:],['--query','bitwarden'])
+  self.assertEqual(server.action_label('correct_app_open',{}),'the other matching app')
 
 if __name__=='__main__': unittest.main()

@@ -186,7 +186,7 @@
       "title": "Open any installed app by name",
       "area": "actions",
       "status": "unvalidated",
-      "jarvis_version_shipped": "0.5.1",
+      "jarvis_version_shipped": "0.5.9",
       "jarvis_version": null,
       "last_run": null,
       "steps": [
@@ -194,9 +194,10 @@
         "Type: open spotify. Inspect the plan and approve with Run.",
         "Confirm Spotify opens or focuses if already running.",
         "Repeat the request and confirm the same Spotify window is focused, without a duplicate.",
-        "Optionally repeat with another installed app, such as Discord."
+        "If two apps share a name (e.g. Bitwarden native + Flatpak): type open bitwarden, approve, then type no, the other bitwarden. Inspect the close+open plan, approve with Run.",
+        "Confirm the first window closed and the other match opened. Type open bitwarden again and confirm the corrected match is now the default."
       ],
-      "expected": "An installed app is resolved by name, opened or focused. A repeated request focuses the existing window."
+      "expected": "An installed app is resolved by name, opened or focused. A repeated request focuses the existing window. After 'the other one', the previous owned window closes, the next match opens, and future opens prefer that match."
     },
     {
       "id": "feat-training-assignments",

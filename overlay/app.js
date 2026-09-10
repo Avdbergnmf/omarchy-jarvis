@@ -107,6 +107,7 @@ const ACTION_TITLES={
  catalog_bindings:a=>'Look up keybindings'+(a.query?': '+a.query:''),
  open_webapp:a=>'Open '+a.name,
  open_app_by_name:a=>'Open '+a.name,
+ correct_app_open:a=>'Open the other matching app'+(a.query?': '+a.query:''),
  run_skill:a=>'Run skill: '+a.skill,
  report_bug:a=>'File a bug report: '+a.title,
  report_feature:a=>'File a feature request: '+a.title,
@@ -114,7 +115,7 @@ const ACTION_TITLES={
 };
 const TITLE_ARGS={
  workspace_switch:['workspace'],run_binding:['binding'],catalog_bindings:['query'],
- open_webapp:['name'],open_app_by_name:['name'],run_skill:['skill'],
+ open_webapp:['name'],open_app_by_name:['name'],correct_app_open:['query'],run_skill:['skill'],
  report_bug:['title'],report_feature:['title'],prepare_handoff:['issue','agent'],
 };
 function actionTitle(action){
