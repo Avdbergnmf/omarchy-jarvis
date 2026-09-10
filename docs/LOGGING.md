@@ -82,6 +82,12 @@ keep local archives if old run evidence is needed. Per-run console projections s
 record also rotates CURRENT to a `vunknown-<timestamp>.jsonl` archive, preserving its
 bytes so later runs can log again; ordinary I/O failures still report to service stderr.
 
+## Latency traces (A-033)
+
+How long a turn *felt* is a different plane from this journal. See [LATENCY.md](LATENCY.md):
+in-memory spans, SQLite under `$XDG_STATE_HOME/jarvis/latency/`, timings only (no prompts).
+GET polls do not write traces. The product metric is `meaningful_response_latency`, not TTFT.
+
 ## Retention and temp cleanup (A-006)
 
 All of `logs/` is gitignored — nothing here is ever tracked or pushed (`git ls-files logs/`

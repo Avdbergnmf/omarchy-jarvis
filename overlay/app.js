@@ -25,6 +25,24 @@ const session=fetch('/v1/session').then(r=>r.json());
 let currentRunId=null;
 let pollHandle=null;
 let lastRenderKey=null;
+let latencySubmitMs=null;
+let latencyMeaningfulSent=false;
+
+function isPlaceholderReply(text){
+ if(!text||!String(text).trim())return true;
+ const value=String(text).trim();
+ return value==='Thinking…'||value==='Thinking...'||value.startsWith('Planning your request')||value.startsWith('Preparing');
+}
+function isMeaningfulResult(result){
+ if(!result)return false;
+ if(result.status==='awaiting_approval'||result.status==='awaiting_answer')return true;
+ if((result.status==='done'||result.status==='error'||result.status==='denied')&&!isPlaceholderReply(result.reply))return true;
+ return false;
+}
+function noteLatency(runId,mark,clientMs){
+ if(!runId||latencySubmitMs==null)return;
+ post('/v1/runs/'+runId+'/latency',{mark:mark,client_ms:clientMs}).catch(()=>{});
+}
 
 const commandList=document.querySelector('#command-list');
 let commandMatches=[],commandIndex=0;
@@ -227,6 +245,10 @@ async function poll(runId){
   try{result=await get('/v1/runs/'+runId);}
   catch(error){status.textContent=error.message;status.className='error';input.disabled=false;return;}
   render(result);
+  if(isMeaningfulResult(result)&&!latencyMeaningfulSent&&currentRunId){
+   latencyMeaningfulSent=true;
+   noteLatency(currentRunId,'meaningful',Date.now());
+  }
   if(result.status==='planning'||result.status==='awaiting_approval'||result.status==='awaiting_answer'||result.status==='running'){
    pollHandle=setTimeout(step,700);
   }else{
@@ -242,9 +264,12 @@ document.querySelector('#prompt-form').addEventListener('submit',async event=>{
  if(prompt.toLowerCase()==='/train'){input.value='';enterTraining();return;}
  input.disabled=true;input.value='';status.className='';status.textContent='Thinking…';
  planSection.hidden=true;stepsSection.hidden=true;qaSection.hidden=true;feedbackSection.hidden=true;
+ latencySubmitMs=Date.now();latencyMeaningfulSent=false;
  try{
-  const {run_id}=await post('/v1/run',{prompt});
+  const {run_id}=await post('/v1/run',{prompt,client_submit_ms:latencySubmitMs});
   setConsoleTarget(run_id);
+  noteLatency(run_id,'submit',latencySubmitMs);
+  noteLatency(run_id,'ack',Date.now());
   await poll(run_id);
  }catch(error){
   status.textContent=error.message;status.className='error';input.disabled=false;input.value=prompt;input.focus();

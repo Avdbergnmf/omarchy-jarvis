@@ -870,3 +870,20 @@ validation remains pending because the browser connector exposes no browser on t
 - `--gate` refuses until Alex approves `baseline.json`. CI runs `--validate` only (no model).
 - Evidence: router 6/6; stub-planner 14/14 (runner-health, not a qwen measurement). Summaries:
   `docs/evals/stochastic/summaries/`. Live Ollama planner N-runs not spent from this agent.
+
+## 2026-09-10 — A-033 Latency profiler foundation (ADR-052)
+- Added `brain/latency.py`: InteractionTrace + hierarchical spans (`parent_id`, parallel OK,
+  `monotonic_ns`) and a bounded SQLite store (`$XDG_STATE_HOME/jarvis/latency/`, 200 traces,
+  0600/0700). Product metric is `meaningful_response_latency` (submit → first visible
+  non-placeholder content), not TTFT. Placeholders: Thinking… / Planning your request… /
+  Preparing…. Attr keys matching prompt/reply/token/arguments/secrets are dropped.
+- Instrumented `brain/server.py` (route, plan, model.chat, execute, tool, persist.journal)
+  and overlay Enter (`client_submit_ms` + POST `/v1/runs/<id>/latency` ack/meaningful).
+  GET polls do not write traces. `latency_profiler = false` is a no-op. Fast-chitchat late
+  client marks rewrite the store via a 32-entry in-memory window.
+- GET `/v1/latency/traces` (token-gated) is the A-034 read API. No Training UI, no FEATURES
+  catalog entry, no `IMP-*` allocated. Blind spots (no `await_approval` span; tools_run
+  follow-up `model.chat` parents to root) are in `docs/LATENCY.md`.
+- Tests: `tests/test_latency.py` (nested/parallel, MRL vs TTFT, client clock, late marks,
+  incomplete/error, privacy, off, prune, thread-local, announce, config) + overlay submit/
+  ack/meaningful and restore-on-load silence.
