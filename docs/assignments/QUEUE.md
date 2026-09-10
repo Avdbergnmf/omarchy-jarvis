@@ -10,5 +10,5 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 Recently completed: A-001 … A-016 (see [done/](done/)).
 
 **Training track (serial overlay):** A-016 Problems complete → A-017 Assignments → A-018 Agent monitor.
-**A-015:** Completed on a015-plan-detail; reconciled into the A-016 integration branch for main.
+**A-015:** Completed and merged into main together with A-016.
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).

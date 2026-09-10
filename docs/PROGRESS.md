@@ -384,3 +384,8 @@ validation remains pending because the browser connector exposes no browser on t
 - Integrated a015-plan-detail into a016-training-window with ordinary merge ancestry. Product code and validation catalog merged automatically; reconciled VERSION to 0.5.4, retained ADR-029/030 and both progress records, archived A-015, and preserved queued A-017/A-018.
 - Combined verification: 116 Python tests and all UI smoke scenarios pass. Existing A-013, A-014 and training-track commits are already ancestors of main. Final branch cleanup will preserve ignored runtime data in a local archive before removing clean, finished trees.
 - Shared-service restart requires coordination under the worktree instructions; asked Alex after preparing and testing the concrete merged result.
+
+### Final branch cleanup — 2026-09-10
+- Pushed integrated main at 11d4037. All five non-main branches are merged: a013-parallel-worktrees, a014-hygiene, codex/training-track, a015-plan-detail, a016-training-window. Removed their clean finished worktrees without force, deleted local branches with branch -d, and deleted corresponding remote branches after the main push succeeded.
+- Preserved ignored runtime directories before removal in `/home/omarchy/Work/omarchy-jarvis-worktree-archives-20260910/` (one restricted-permission tar.gz per removed tree). Canonical runtime data was not changed. Stopped the isolated temporary HTTP test server.
+- Remaining checkout/branch: `/home/omarchy/Work/omarchy-jarvis` on main. Batch 1 complete. A-017 is next, then A-018. Shared-service restart awaits Alex's coordination response; no live deployment or human validation claimed.
