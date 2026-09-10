@@ -61,7 +61,23 @@
 <div class="problem-actions"><button id="assign-reload" type="button">Discard edits / reload</button><button id="assign-handoff" type="button" disabled>Hand off to agent</button></div>
 <details><summary>Current full brief and original context</summary><pre id="assign-body"></pre></details>
 </form></section></div></section>
-<section id="train-panel-agents" hidden><h2>Agent monitor</h2><p class="muted">Local slots describe intended work. They do not detect live chats or send messages.</p><div id="train-agents" class="training-list"></div>
+<section id="train-panel-agents" hidden>
+<h2>Agent monitor</h2><p class="muted">Local slots describe intended work and open a real, visible window — never a hidden background job.</p>
+<div class="assignment-layout"><aside>
+<div id="train-agents" class="training-list"></div>
+<h3>Queue board</h3><p class="muted">Live disk QUEUE, not a separate claim.</p><div id="agent-board" class="training-list"></div>
+</aside>
+<section>
+<p id="agent-hint" class="muted">Select an agent slot to inspect it, or prepare one below.</p>
+<div id="agent-detail" hidden>
+<h3 id="agent-heading"></h3>
+<p id="agent-status" class="muted"></p>
+<p id="agent-current"></p>
+<p id="agent-queued"></p>
+<p id="agent-handoff" class="muted"></p>
+<button id="agent-open-window" type="button">Open agent window</button>
+<button id="agent-toggle-status" type="button">Preview marking idle</button>
+</div>
 <div class="training-fields">
 <label for="train-slot">Prepare for</label><select id="train-slot"><option value="new">New agent slot</option></select>
 <label for="train-agent-label">New slot name</label><input id="train-agent-label" maxlength="60" value="My coding agent">
@@ -70,7 +86,9 @@
 </div>
 <form id="work-form"><label for="train-assignment">Work on assignment</label><select id="train-assignment"></select>
 <label for="train-template">Prompt</label><select id="train-template"><option value="NEW_AGENT">New agent — cold start</option><option value="CONTINUE">Continue an existing chat</option></select>
-<button type="submit">Preview work handoff</button></form></section>
+<button type="submit">Preview work handoff</button></form>
+</section></div>
+</section>
 <section id="train-preview" hidden><h2>Review changes</h2><p id="train-preview-message"></p><pre id="train-preview-files" tabindex="0"></pre><button id="train-confirm" type="button">Confirm — write these files</button><button id="train-cancel" type="button">Cancel</button></section>
 <section id="train-result" hidden><h2>Prepared locally</h2><p id="train-result-message"></p><textarea id="train-handoff" readonly aria-label="Paste-ready handoff"></textarea><button id="train-copy" type="button">Copy handoff</button><pre id="train-paths"></pre></section>
 <section id="train-panel-validate" hidden><section id="validation-root" aria-label="Validate features">
@@ -86,4 +104,4 @@
 </section></section>
 </section>
 </section>
-</main><script src="/training-api.js"></script><script src="/training.js"></script><script src="/assignments.js"></script><script src="/validation.js"></script></body></html>
+</main><script src="/training-api.js"></script><script src="/training.js"></script><script src="/assignments.js"></script><script src="/agents.js"></script><script src="/validation.js"></script></body></html>

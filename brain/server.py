@@ -713,7 +713,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.host_ok(): return self.reply(403, {'error':'Invalid host'})
         if self.path == '/health': return self.reply(200, {'service':'omarchy-jarvis','model':MODEL,'ollama':ollama_health(),'approval_mode':CONFIG['approval_mode']})
-        training_assets = {'/assignments.js': ('assignments.js', 'text/javascript'), '/jarvis-training': ('training.html', 'text/html'),
+        training_assets = {'/assignments.js': ('assignments.js', 'text/javascript'), '/agents.js': ('agents.js', 'text/javascript'), '/jarvis-training': ('training.html', 'text/html'),
                            '/training.css': ('training.css', 'text/css'),
                            '/training-api.js': ('training-api.js', 'text/javascript'),
                            '/training-launch.js': ('training-launch.js', 'text/javascript')}
@@ -738,7 +738,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.host_ok() or self.headers.get('Origin') not in (None,'http://127.0.0.1:7421') or self.headers.get('X-Jarvis-Token') != TOKEN:
             return self.reply(403, {'error':'Invalid origin or token'})
-        if self.path in ('/v1/training/preview', '/v1/training/confirm', '/v1/training/report', '/v1/training/problem', '/v1/training/open', '/v1/training/assignment', '/v1/training/generate'):
+        if self.path in ('/v1/training/preview', '/v1/training/confirm', '/v1/training/report', '/v1/training/problem', '/v1/training/open', '/v1/training/assignment', '/v1/training/generate', '/v1/training/agent-window'):
             try:
                 length = int(self.headers.get('Content-Length', '0'))
                 if not 0 < length <= 16384: raise ValueError('Invalid request size')
@@ -749,6 +749,12 @@ class Handler(BaseHTTPRequestHandler):
                     launch = subprocess.run([sys.executable, str(ROOT/'scripts/open-training.py')],
                                             capture_output=True, text=True, timeout=15)
                     if launch.returncode: raise RuntimeError(launch.stderr.strip() or 'Training window could not open')
+                    result = {'ok': True}
+                elif self.path.endswith('/agent-window'):
+                    slot = training.find_slot(ROOT, body.get('slot_id'))
+                    launch = subprocess.run([sys.executable, str(ROOT/'scripts/open-agent.py'), '--slot-id', slot['id'], '--kind', slot['kind']],
+                                            capture_output=True, text=True, timeout=15)
+                    if launch.returncode: raise RuntimeError(launch.stderr.strip() or 'Agent window could not open')
                     result = {'ok': True}
                 elif self.path.endswith('/assignment'):
                     result = training.assignment_detail(ROOT, body.get('assignment_id'))

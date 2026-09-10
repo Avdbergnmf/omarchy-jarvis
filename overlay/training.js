@@ -1,5 +1,5 @@
 const trainEl=id=>document.querySelector('#train-'+id);
-let trainingData=null,trainingPreview=null;
+let trainingData=null,trainingPreview=null,lastPreviewPayload=null;
 let previewLoad=0,trainingLoad=0,activeProblem=null,problemDirty=false;
 function trainMessage(text,error=false){trainEl('message').textContent=text;trainEl('message').className=error?'error':'';}
 function trainingPanel(name){
@@ -37,22 +37,13 @@ function renderTraining(data){
   if(['queued','in_progress','blocked'].includes(item.status))trainingOption(selection,item.id,item.id+' — '+item.title);
  }
  if(data.assignments.some(a=>a.id===previousAssignment))selection.value=previousAssignment;
- const agentList=trainEl('agents');agentList.innerHTML='';const picker=trainEl('slot');const previous=picker.value;picker.innerHTML='';trainingOption(picker,'new','New agent slot');
- for(const slot of data.agents){
-  trainingOption(picker,slot.id,slot.label+' ('+(slot.busy?'busy':'idle')+')');
-  const row=document.createElement('div');trainingLine(row,slot.label+' · '+(slot.busy?'busy':'idle')+' · current: '+(slot.current_assignment||'none')+' · queued: '+(slot.queued_assignment_ids.join(', ')||'none'));
-  if(slot.last_handoff)trainingLine(row,'Last handoff: '+slot.last_handoff);
-  const button=document.createElement('button');button.type='button';button.textContent='Preview marking '+(slot.status==='busy'?'idle':'busy');
-  button.addEventListener('click',()=>previewTraining({operation:'slot',slot_id:slot.id,status:slot.status==='busy'?'idle':'busy'}));row.appendChild(button);agentList.appendChild(row);
- }
- if(!data.agents.length)trainingLine(agentList,'No local slots yet. Preparing a handoff can create one.');
- picker.value=data.agents.some(s=>s.id===previous)?previous:'new';
+ if(typeof renderAgents==='function')renderAgents(data);
  if(typeof renderValidations==='function')renderValidations(data.validations||[]);
 }
 function trainingTarget(){return {slot_id:trainEl('slot').value,label:trainEl('agent-label').value,kind:trainEl('kind').value,mode:trainEl('mode').value,template:trainEl('template').value};}
 async function previewTraining(payload){
  const load=++previewLoad;
- trainingPreview=null;trainEl('preview').hidden=true;trainEl('result').hidden=true;
+ trainingPreview=null;lastPreviewPayload=payload;trainEl('preview').hidden=true;trainEl('result').hidden=true;
  try{
   const result=await post('/v1/training/preview',payload);if(load!==previewLoad)return;trainingPreview=result.preview_id;
   trainEl('preview-message').textContent=result.message;
@@ -79,6 +70,14 @@ trainEl('confirm').addEventListener('click',async()=>{
   await refreshTraining();
   if(result.assignment&&typeof assignmentSaved==='function')await assignmentSaved(result.assignment);
   if(result.validation&&typeof validationSaved==='function')validationSaved(result.validation);
+  // A-018: a confirmed "prepare now" handoff always yields a visible window, not a
+  // hidden background job — the slot id may be freshly minted, so look it up by the
+  // assignment it now holds rather than trusting a client-side "new" placeholder.
+  if(lastPreviewPayload&&lastPreviewPayload.operation==='work'&&lastPreviewPayload.mode==='now'&&typeof openAgentWindow==='function'){
+   const slot=trainingData.agents.find(s=>s.current_assignment===lastPreviewPayload.assignment_id);
+   if(slot&&slot.kind!=='human')await openAgentWindow(slot.id);
+  }
+  lastPreviewPayload=null;
  }catch(error){trainMessage(error.message,true);}
  finally{trainEl('confirm').disabled=false;}
 });

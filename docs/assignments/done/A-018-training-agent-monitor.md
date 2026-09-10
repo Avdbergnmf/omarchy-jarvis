@@ -1,6 +1,6 @@
 # A-018 — Training Agent monitor (tiles, visible agent windows, queue board)
 
-- **Status:** in_progress
+- **Status:** done
 - **Area:** area:overlay (+ light `area:brain` / `scripts` for launch + window focus)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/` (Agent monitor panel), `brain/training.py`, `brain/server.py` (agent slot / launch endpoints), `scripts/` (launch Claude/Codex/etc. into real Hyprland windows), Hyprland helpers as needed, `tests/`, `docs/assignments/`, `docs/SESSION.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `docs/FEATURES.md`, `docs/HOST.md`, `README.md`, `START.md`, `VERSION`
@@ -19,14 +19,14 @@ Agent monitor is where Alex **sees and steers local coding agents without them l
 Done means Alex can monitor and drive agents from Training without digging for hidden terminals.
 
 ## Checklist
-- [ ] Agent monitor panel in Training nav (post A-016/A-017)
-- [ ] Tile grid for agent slots; click → detail overview
-- [ ] **Open / focus Hyprland window** for that agent’s live session (launch if needed); document window rules/classes
-- [ ] Left assignment list; preselect from A-017 handoff deep-link
-- [ ] Actions: assign existing idle agent **or** create/launch new slot with settings (kind, label, prompt template CONTINUE/NEW_AGENT/PARALLEL)
-- [ ] Launch path always yields a **visible** window + paste-ready or auto-pasted prompt (confirm before spend if cloud)
-- [ ] Interactive queue board: status, area, parallel-ok, current worker; reflects disk QUEUE/SESSION without lying
-- [ ] ADR (visible agents over hidden); tests where feasible; PROGRESS; HOST note for hotkeys/window rules; SESSION; QUEUE/INDEX → done
+- [x] Agent monitor panel in Training nav (post A-016/A-017)
+- [x] Tile grid for agent slots; click → detail overview
+- [x] **Open / focus Hyprland window** for that agent’s live session (launch if needed); document window rules/classes
+- [x] Left assignment list; preselect from A-017 handoff deep-link
+- [x] Actions: assign existing idle agent **or** create/launch new slot with settings (kind, label, prompt template CONTINUE/NEW_AGENT/PARALLEL)
+- [x] Launch path always yields a **visible** window + paste-ready or auto-pasted prompt (confirm before spend if cloud)
+- [x] Interactive queue board: status, area, parallel-ok, current worker; reflects disk QUEUE/SESSION without lying
+- [x] ADR (visible agents over hidden); tests where feasible; PROGRESS; HOST note for hotkeys/window rules; SESSION; QUEUE/INDEX → done
 
 ## Out of scope
 - Fully detecting arbitrary third-party chats with perfect fidelity if the tool exposes no handle — be honest; prefer launch-under-Training so the window is known
@@ -38,3 +38,10 @@ Done means Alex can monitor and drive agents from Training without digging for h
 - Prefer `hyprctl` clients + known app_id/class for Claude/Codex/foot; reuse Omarchy launch patterns.
 - Slot metadata alone is not enough — Alex explicitly rejected background/hidden as the main UX.
 - Token discipline: read A-016/A-017 results + current training agent UI once; then diffs.
+
+## Resolution (2026-09-10)
+`scripts/open-agent.py` + `POST /v1/training/agent-window` open/focus a real per-slot
+terminal via `omarchy-launch-or-focus-tui`; tile grid + detail overview + queue board added
+to `overlay/agents.js`/`training.html`. No auto-typed prompt (out of scope decision, see
+ADR-032) — Copy handoff remains the paste step, but the window is now always visible.
+138 Python tests + all 5 JS suites pass. See ADR-032 and `docs/PROGRESS.md` for full detail.

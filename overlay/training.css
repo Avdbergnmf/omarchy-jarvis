@@ -11,7 +11,7 @@ main{max-width:1500px;margin:auto;padding:24px 30px}
 .training-nav button[aria-pressed=true]{background:#22523f;border-color:#5b9d83}
 #training-view h2{font-size:13px;margin:0 0 12px;letter-spacing:.7px}
 #training-view h3{font-size:12px;color:#9dd9d2}
-#train-panel-problems,#train-panel-work,#train-panel-validate{padding:18px}
+#train-panel-problems,#train-panel-work,#train-panel-agents,#train-panel-validate{padding:18px}
 #train-filter{width:220px;margin-top:6px}
 .problem-layout,.work-layout{display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,1.25fr);gap:18px;margin-top:14px;align-items:start}
 #train-problems{max-height:580px;gap:10px;padding:3px}
@@ -55,3 +55,6 @@ a{color:#9dd9d2}
 #assign-save{background:#22523f}
 #assign-body{max-height:320px!important;line-height:1.5}
 @media(max-width:850px){.assignment-layout{grid-template-columns:1fr}.assignment-layout aside{position:static}.assignment-layout #train-assignments{max-height:260px}}
+.assignment-layout #agent-board{max-height:220px;font-size:12px;color:#b7c5d6}
+#agent-detail{border:1px solid #3b4b60;border-radius:6px;padding:12px;margin-bottom:14px}
+#agent-open-window{background:#22523f}

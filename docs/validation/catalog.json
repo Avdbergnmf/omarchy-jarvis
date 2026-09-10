@@ -10,7 +10,7 @@
         "Type: hello. Confirm a reply appears without a Run button.",
         "Type: switch to workspace 1. Inspect the proposed plan before approving.",
         "Choose Cancel and confirm the desktop was not changed.",
-        "Type: open my planning in a new workspace. Inspect the plan preview before approving \u2014 the reply should describe what the skill actually does (which apps, on a new workspace), not just name the skill."
+        "Type: open my planning in a new workspace. Inspect the plan preview before approving — the reply should describe what the skill actually does (which apps, on a new workspace), not just name the skill."
       ],
       "expected": "Chat replies immediately. Actions wait for approval and Cancel performs no action.",
       "status": "validated",
@@ -188,11 +188,30 @@
         "Only for an edit you want, preview again and Confirm. Reload the assignment and confirm the brief, queue and index agree. Verify original context and ownership notes remain.",
         "If an assignment is in progress, select it and confirm its editor is read-only.",
         "Choose New assignment (discard prior edits if needed). Link an optional problem and confirm its title, area, notes and priority are inherited.",
-        "Enter an expected outcome and choose Local Ollama \u2192 Generate draft. Confirm a draft fills the form without writing files. Review and edit it; if the model is unavailable, confirm the error leaves the form usable.",
-        "Choose On-machine coding agent \u2192 Prepare agent prompt. Confirm Jarvis only shows a prompt to copy, and does not launch an agent. If desired, paste it into your chosen agent and import its JSON draft.",
+        "Enter an expected outcome and choose Local Ollama → Generate draft. Confirm a draft fills the form without writing files. Review and edit it; if the model is unavailable, confirm the error leaves the form usable.",
+        "Choose On-machine coding agent → Prepare agent prompt. Confirm Jarvis only shows a prompt to copy, and does not launch an agent. If desired, paste it into your chosen agent and import its JSON draft.",
         "For a real wanted draft, preview Save / Add and Confirm. Choose Hand off to agent; confirm Agent monitor opens with that assignment selected. Preview the handoff and Cancel unless you intend to save it."
       ],
       "expected": "Only confirmed saves update real assignment files and metadata. Owned work cannot be edited; drafts preserve linked evidence and selected scope. Local generation and manual prompt preparation write nothing. Handoff preselects the saved assignment and never auto-dispatches an agent."
+    },
+    {
+      "id": "feat-agent-monitor",
+      "title": "Agent monitor: tiles, open window, queue board",
+      "area": "overlay",
+      "jarvis_version_shipped": "0.5.6",
+      "status": "unvalidated",
+      "jarvis_version": null,
+      "last_run": null,
+      "steps": [
+        "Open Training and choose Agent monitor. Confirm each local agent slot shows as a tile with kind, idle/busy and its current assignment.",
+        "Select a tile. Confirm the detail overview shows status, current/queued assignments, last handoff, and (for a Claude Code or Cursor/Codex slot) an Open agent window button; confirm a Human slot has no such button.",
+        "Click Open agent window for an idle Claude Code or Codex slot. Confirm a real, visible terminal window opens running that CLI — not a hidden background process.",
+        "Click Open agent window again for the same slot. Confirm it focuses the existing window instead of opening a second one.",
+        "Select an open assignment, choose Prepare now for an idle slot, and confirm the work handoff. Confirm the agent's window opens automatically and the paste-ready handoff is still available via Copy handoff.",
+        "Use the idle/busy toggle on a slot's detail overview; preview and confirm. Confirm the tile and Prepare for picker reflect the new status.",
+        "Inspect the Queue board. Confirm it lists assignment id/status/area/parallel policy and names the current worker for any assignment a slot holds, matching docs/assignments/QUEUE.md."
+      ],
+      "expected": "Agent monitor shows real slot state and a live queue board without duplicating Assignments' editor. Opening an agent always yields a visible, individually focusable terminal window per slot (never hidden), and a second open focuses rather than relaunches. Human slots never get an automated launch."
     }
   ]
 }

@@ -114,10 +114,17 @@ Copy/paste the handoff into the target chat yourself. Cancelling a handoff creat
 it does not undo an earlier problem or assignment Save.
 
 The agent monitor combines QUEUE/SESSION with local slots; it cannot detect live chats.
-Mark a slot busy/idle through a confirmation preview. Prepare now rejects busy slots;
-Queue until free records intent locally and does not send automatically. Once free,
-select the queued assignment and prepare its handoff. New slots are created with their
-first confirmed handoff. No connector sends messages or spends credits.
+Each slot is a tile — click one for its overview (status, current/queued assignments,
+last handoff) and, for a Claude Code or Cursor/Codex slot, **Open agent window**: a real,
+individually focusable terminal window running that agent's own CLI, never a hidden
+background job. A second click focuses the same window instead of opening another one.
+Human slots have no automated window — those are worked in your own terminal. Mark a slot
+busy/idle through a confirmation preview. Prepare now rejects busy slots and, once
+confirmed, opens the agent's window automatically; Queue until free records intent locally
+and does not send or launch anything automatically. Once free, select the queued assignment
+and prepare its handoff. New slots are created with their first confirmed handoff. The
+queue board lists every assignment's status/area/parallel policy and current worker,
+reflecting disk QUEUE/SESSION directly. No connector sends messages or spends credits.
 
 ### Validate features
 In Training, **Validate features** lists unvalidated and failed guides. Select one, perform
