@@ -10,7 +10,7 @@ Alex babysitting every step — “agents improve Jarvis in the background,” w
 gated (eventually by real branch protection + budgets + kill switch).
 
 **Why parked**
-- No GitHub Pro / repo stays private → no enforceable branch protection (ADR-046 / cancelled A-027).
+- Branch protection on public `main` now exists (ADR-049), but spend/credits for an unattended loop still do not.
 - Alex does not have the credits/budget for an unattended coding loop right now.
 - Cool architecture to keep on paper; wrong time to build.
 

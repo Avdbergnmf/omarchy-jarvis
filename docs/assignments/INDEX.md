@@ -34,12 +34,13 @@
 | A-030 | Protect safety/eval/control-plane paths | in_progress | area:docs | NO | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
 | A-032 | ChatGPT deep review: plan vs codebase (plan perfection) | done | area:docs | NO | [done/A-032-chatgpt-plan-codebase-review.md](done/A-032-chatgpt-plan-codebase-review.md) |
-| A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | NO | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
-| A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
-| A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
+| A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | YES | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
+| A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
+| A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-036 | Agent monitor usability (depth, delivery, live work) | done | area:overlay | YES | [done/A-036-agent-monitor-usability.md](done/A-036-agent-monitor-usability.md) |
 | A-037 | Release gates + claimability visibility | done | area:docs | NO | [done/A-037-assignment-stages.md](done/A-037-assignment-stages.md) |
 | A-038 | Evidence identity + durable operational bundles v0 | done | area:brain | NO | [done/A-038-evidence-identity-durable-bundles-v0.md](done/A-038-evidence-identity-durable-bundles-v0.md) |
 | A-039 | Cross-worktree claim visibility (stop double-claiming) | done | area:docs | YES | [done/A-039-cross-worktree-claim-visibility.md](done/A-039-cross-worktree-claim-visibility.md) |
 | A-040 | Test suite optimization (token cost + redundancy) | done | area:docs | NO | [done/A-040-test-suite-token-optimization.md](done/A-040-test-suite-token-optimization.md) |
-| A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | NO | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
+| A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | YES | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
+| A-042 | Parallel claimability tooling migration (default YES + status hints) | queued | area:docs | NO | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |

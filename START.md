@@ -69,15 +69,15 @@ path and jarvis_version. Do not silently expand a pass into unrelated open issue
 
 ## GitHub branch protection (read this)
 
-This private Free repo **cannot** enable GitHub branch protection/rulesets unless it becomes
-public or the account gets Pro. Alex decided (2026-09-10, ADR-046 / cancelled A-027): **neither
-for now**. Do not block assignments on A-027, do not change visibility/billing, do not invent a
-fake hard gate. Unattended Forge/auto-merge stay off; use human-reviewed merges. Unattended Forge is a parked future idea — see docs/FUTURE.md — not current work.
+Repo is **public**. An active ruleset on `main` requires a **PR**, requires the **`test`**
+check, and blocks force-push/deletion (ADR-049; supersedes ADR-046). Land work via PR — do not
+expect direct pushes to `main` to work. Unattended Forge stays parked — see docs/FUTURE.md.
+
 
 ## Parallel work
 
 Areas are `area:overlay`, `area:brain`, `area:actions`, `area:skills`, `area:docs`.
-Use one agent ↔ one issue ↔ one area where possible. Parallel work requires `parallel-ok`
+Use one agent ↔ one issue ↔ one area where possible. Parallel work: `parallel-ok` defaults to **YES** (ADR-048); `NO` needs a reason (`control-plane`/`single-writer`/`human-serial`). Parallel work still requires `parallel-ok`
 and a **different `area:`** from every in-progress issue/assignment, plus the mandatory
 separate worktree/branch below — that's the isolation, not a path allowlist. `Allowed
 paths:`/`Forbidden paths:` entries are optional soft hints for context, never a gate; same

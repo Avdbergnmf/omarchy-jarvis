@@ -2,7 +2,7 @@
 
 - **Status:** queued
 - **Area:** area:overlay
-- **parallel-ok:** NO
+- **parallel-ok:** YES
 - **Recommended depth:** high
 - **Allowed paths (optional soft hint):** `overlay/agents.js`, `overlay/training.html`, `overlay/training.css`, `brain/training.py`, `brain/server.py` (slot registry / queue advancement), `logs/training/agents.json`, `tests/`
 - **Forbidden paths (optional soft hint):** none

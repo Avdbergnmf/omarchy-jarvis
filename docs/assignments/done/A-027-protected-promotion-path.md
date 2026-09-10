@@ -37,3 +37,9 @@ rules). Blocked on hosting/plan choice; that choice is now “neither Pro nor pu
 
 ## Out of scope
 Making the repository public; buying GitHub Pro; inventing fake local “protection.”
+
+## Follow-up (2026-09-10)
+
+Alex made the repo public and enabled a `main` ruleset (PR + `test`, no force-push/deletion).
+See **ADR-049**. This cancelled brief stays closed; do not reopen it — file new work only if
+PROMOTION.md / Forge-actor split is still desired beyond the live ruleset.

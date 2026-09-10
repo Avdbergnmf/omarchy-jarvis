@@ -2,7 +2,7 @@
 
 - **Status:** queued
 - **Area:** area:brain (+ light `docs/`)
-- **parallel-ok:** NO
+- **parallel-ok:** YES
 - **Recommended depth:** high
 - **Blocked-by:** none
 - **Gate:** latency

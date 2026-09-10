@@ -2,7 +2,7 @@
 
 - **Status:** blocked
 - **Area:** area:docs (+ light tests/scripts)
-- **parallel-ok:** NO (protected evaluator/runner work is serial)
+- **parallel-ok:** NO (control-plane: protected evaluator/runner — ADR-048)
 - **Recommended depth:** high
 - **Soft path hints:** `tests/`, `scripts/`, `docs/evals/`
 - **Blocked-by:** A-028, A-030
