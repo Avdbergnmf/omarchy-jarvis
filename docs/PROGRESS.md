@@ -513,3 +513,24 @@ validation remains pending because the browser connector exposes no browser on t
   fixture matching the actual #16 shape); `doctor.sh --syntax` passes.
 - Out of scope here (left for A-025): learning/preference store, correction utterances,
   closing the wrong window after a correction.
+
+## 2026-09-10 — A-022 fix open cliamp plan/tooling (issue #15)
+- Reproduced from #15's captured log: prompt "open cliamp" got `{"actions": [], "reply": "I
+  couldn't find 'cliamp' as an available app..."}` — an honest empty plan (not a false-success
+  claim), but wrong: the model declined instead of calling `open_app_by_name`, which does its
+  own installed-app lookup (exact/prefix/substring/fuzzy, A-024) and would have either found
+  it or reported "not installed" honestly. `brain/system_prompt.md` told the model to call
+  `open_app_by_name` for "any other installed app by name" but never said what to do about a
+  name it doesn't personally recognize — for an unfamiliar or obscure app, the 3B model
+  apparently defaults to declining rather than trying.
+- Fix: `system_prompt.md` now explicitly says to call `open_app_by_name` even for a name you
+  don't recognize, and never to decline/apologize on that basis alone — the tool's own result
+  is the source of truth on whether it's installed. Brain-only change (no actions/ or overlay/
+  touched), per the assignment's scope.
+- Evidence: 144 Python tests pass (1 new, guarding the instruction text itself since the
+  actual model behavior can't be exercised without a live Ollama in this sandbox);
+  `python3 -m compileall` clean.
+- Limitation: this is a prompt-engineering nudge, not a guarantee — matches ADR-024's own
+  precedent that a small model's reliability gap can be reduced, not eliminated, by a clearer
+  instruction. Alex should retry "open cliamp" for real once this restarts and confirm it now
+  either opens CLI Amp or gives an honest "not installed" instead of an apology.

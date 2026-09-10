@@ -80,6 +80,13 @@ class ActionsTest(unittest.TestCase):
   self.assertNotEqual(p.returncode,0)
 
 class BrainTest(unittest.TestCase):
+ def test_system_prompt_never_lets_the_model_decline_an_unrecognized_app_name(self):
+  # A-022/#15 ("open cliamp"): the model, not recognizing an unfamiliar app name,
+  # replied with an apology and zero actions instead of calling open_app_by_name (which
+  # does its own installed-app lookup and would have honestly reported "not installed").
+  text = (ROOT/'brain/system_prompt.md').read_text()
+  self.assertIn('open_app_by_name', text)
+  self.assertRegex(text, r"[Nn]ever decline or apologize because you don'?t (personally )?recognize the name")
  def test_tool_validation(self):
   for name,args in [('exec',{}),('workspace_switch',{'workspace':True}),('workspace_switch',{'workspace':0}),('run_skill',{'skill':'../../evil'}),('open_webapp',{'name':'Outlook','url':'https://evil.example'})]:
    with self.subTest(name=name,args=args),self.assertRaises(ValueError): server.tool_argv(name,args)

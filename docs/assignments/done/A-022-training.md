@@ -5,18 +5,26 @@
 - **Priority:** P2
 - **Area:** area:brain
 
-- **Status:** queued
+- **Status:** done
 - **parallel-ok:** NO
 
 ## Goal
 Alex reports Bug: open cliamp (GitHub issue #15, priority P2). When he asks Jarvis to open CLI Amp / cliamp, the brain should produce a correct, approvable plan that opens or focuses that app—not an empty plan, a false success reply, or the wrong target. Stay in allowed paths (brain/, tests/, assignment bookkeeping docs). Preserve plan → approve → execute: planning only proposes; desktop launch happens only after explicit Run/approve. Done when a prompt like “open cliamp” yields a truthful plan with the right tool/args, unit coverage guards the regression, and issue #15 evidence is addressed in PROGRESS.
 
 ## Checklist
-- [ ] Reproduce from issue #15: prompt “open cliamp” (and close variants); record actual plan JSON, reply, and whether approval was skipped
-- [ ] Identify brain gap (system prompt / tools.json / planner examples / action_label or app-resolution wiring in brain only—not actions/)
-- [ ] Fix brain so cliamp resolves to a real open/focus action with honest reply; never claim success with zero actions
-- [ ] Add/adjust tests under tests/ for the cliamp (or generic amp) open path and empty-plan honesty
-- [ ] Note outcome in docs/PROGRESS.md; leave plan→approve→execute unchanged
+- [x] Reproduce from issue #15: prompt “open cliamp” (and close variants); record actual plan JSON, reply, and whether approval was skipped
+- [x] Identify brain gap (system prompt / tools.json / planner examples / action_label or app-resolution wiring in brain only—not actions/)
+- [x] Fix brain so cliamp resolves to a real open/focus action with honest reply; never claim success with zero actions
+- [x] Add/adjust tests under tests/ for the cliamp (or generic amp) open path and empty-plan honesty
+- [x] Note outcome in docs/PROGRESS.md; leave plan→approve→execute unchanged
+
+## Resolution (2026-09-10)
+Issue #15's captured log already showed an *honest* empty plan (no false-success claim) —
+the real gap was `system_prompt.md` never telling the model to still call `open_app_by_name`
+for a name it doesn't personally recognize, so it declined instead of trying the tool (which
+does its own lookup, A-024). Strengthened that one instruction; brain-only, no actions/
+touched. See `docs/PROGRESS.md` for full detail and its stated limitation (prompt nudge, not
+a guarantee, for a 3B model).
 
 ## Human comments / evidence
 
