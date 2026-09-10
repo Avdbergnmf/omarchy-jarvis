@@ -33,7 +33,7 @@ isolation; A-030 owns the first enforceable boundary inventory.
 | Ledger vs QUEUE | **Wrap/evolve** QUEUE. Ledger is durable improvement audit (`improvement_id`); QUEUE is operational work (`assignment_id`). One improvement may spawn multiple assignments. |
 | Gitignored journals? | **Three tiers:** ephemeral scratch may be ignored; selected operational evidence must have a durable private home and identity; decisions, accepted improvements, eval definitions and behavioral rules are versioned in git. Raw private prompts do not belong in git. |
 | Eval investment | Deterministic tests and human acceptance first; planner consistency next; targeted disposable-VM E2E only for dangerous Omarchy/system boundaries. |
-| Unattended PRs? | Yes, after hard promotion protection, non-bypass Forge credentials, protected evaluators and resource limits. The hard gate is merge/promotion. |
+| Unattended PRs? | **Parked** ([FUTURE.md](FUTURE.md)) — cool idea; no credits/budget and no branch protection for now. Prerequisites live under Wave 2; do not build the loop yet. |
 | Memory now? | A narrow preference-memory schema with provenance and explicit-over-inferred authority. No generic episodic/vector platform yet. |
 | Safety/eval in feature PRs? | Ordinary feature tests may ride with a feature. Existing protected regression oracles, authorization, trusted-skill, ledger-integrity and promotion policy changes require separate/explicit Alex review enforced by repository rules. |
 | Omarchy snapshots? | Snapshot before system-affecting deployment only. Repo-only `/home` changes use git rollback; a root snapshot is never described as `/home` backup. |
@@ -136,9 +136,14 @@ broker or agent-spending loop.
 
 Brief: `docs/audits/chatgpt-latency-profiler-brief-2026-09-10.md`.
 
-## Wave 2 — bounded autonomy prerequisites
+## Wave 2 — bounded autonomy prerequisites (parked / not funded)
 
-Prioritize the prerequisites for bounded unattended candidates:
+Unattended Forge itself is a **future idea**, not an active goal — see [FUTURE.md](FUTURE.md).
+Alex parked it (2026-09-10): interesting to write down, no credits for an unattended loop now,
+and no branch protection on this remote (ADR-046). Do **not** start Wave 2 work unless Alex
+explicitly reopens it.
+
+If/when revisited, prerequisites would include:
 
 1. secrets/privileged-operation broker and non-bypass Forge credential delivery;
 2. resource/time/spend budgets and an external kill switch;
@@ -148,7 +153,7 @@ Prioritize the prerequisites for bounded unattended candidates:
 6. rejection memory and friction metrics;
 7. dependency locking where external application dependencies actually appear.
 
-Later: episodic-memory consolidation, heavier maintainability gates, shadow deployment, and
+Later still: episodic-memory consolidation, heavier maintainability gates, shadow deployment, and
 larger eval matrices.
 
 ## Deprioritized

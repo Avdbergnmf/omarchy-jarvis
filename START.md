@@ -72,7 +72,7 @@ path and jarvis_version. Do not silently expand a pass into unrelated open issue
 This private Free repo **cannot** enable GitHub branch protection/rulesets unless it becomes
 public or the account gets Pro. Alex decided (2026-09-10, ADR-046 / cancelled A-027): **neither
 for now**. Do not block assignments on A-027, do not change visibility/billing, do not invent a
-fake hard gate. Unattended Forge/auto-merge stay off; use human-reviewed merges.
+fake hard gate. Unattended Forge/auto-merge stay off; use human-reviewed merges. Unattended Forge is a parked future idea — see docs/FUTURE.md — not current work.
 
 ## Parallel work
 

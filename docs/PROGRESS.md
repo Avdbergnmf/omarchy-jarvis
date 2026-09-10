@@ -800,3 +800,8 @@ validation remains pending because the browser connector exposes no browser on t
 - A-030 unblocked (`Blocked-by: none`, status queued); checklist no longer requires fake A-027 API proof.
 - Unattended Forge / auto-merge / auto-deploy stay off. Agents must not block on A-027.
 
+## 2026-09-10 — Unattended Forge parked as future idea
+- Alex: cool idea, no credits for it now; write it down, do not build.
+- Added `docs/FUTURE.md`; Wave 2 in SELF_IMPROVE_ROADMAP marked parked/not funded.
+- Remains consistent with ADR-046 (no Pro / no public / no fake protection).
+
