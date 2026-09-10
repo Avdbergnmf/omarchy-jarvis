@@ -3,15 +3,14 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- No assignment in_progress.
+- **A-040** in_progress — Claude @ `a040-test-suite-token-optimization` / `~/Work/omarchy-jarvis-a040-test-suite-token-optimization` (claim committed to main first, per ADR-038)
 - **A-039** done — see [done/A-039-cross-worktree-claim-visibility.md](assignments/done/A-039-cross-worktree-claim-visibility.md) / ADR-038
 - **A-036** done — see [done/A-036-agent-monitor-usability.md](assignments/done/A-036-agent-monitor-usability.md) / ADR-039
-- **A-040** next claimable (area:docs, parallel-ok: NO)
 
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
 - [x] A-036 Agent monitor usability — done; Batch 1 stops after merge
-- [ ] A-040 Test suite token optimization — queued
+- [ ] A-040 Test suite token optimization — in_progress, worktree opened
 - [ ] A-037+ — after
 
 ## Done this session (evidence)
@@ -23,7 +22,7 @@
 - Codex: all five JavaScript suites, ShellCheck, `doctor.sh --syntax`, and diff checks pass; human validation remains pending on the live desktop.
 
 ## Next action (one concrete step)
-- Claim A-040 on `origin/main` before opening its worktree, then follow its checklist.
+- In the `a040-test-suite-token-optimization` worktree: inventory tests, propose keep/merge/drop, add smoke script, update START/prompts, ADR.
 
 ## Parallel agent
 - none
