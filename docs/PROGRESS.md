@@ -807,9 +807,15 @@ validation remains pending because the browser connector exposes no browser on t
   than any flag, and deferred to Alex inside A-042 rather than taken unilaterally.
 - Evidence: docs and flags only, no product code. Full analysis in
   `docs/audits/parallel-claimability-2026-09-10.md`. Verified the corrected queue against a
-  synthetic replay of the claim-hint logic (A-028 `in_progress` `area:docs` → A-029, A-033, A-041
-  offered; A-034/A-035 correctly skipped on unmet `Blocked-by`). `./scripts/test-smoke.sh` is
-  unchanged from its pre-existing state on `638c144`, including one flaky failure recorded but
-  not fixed here: `test_write_prunes_journal_archive_on_rotation` (1 of 3 runs on clean `main`) —
-  `journal.prune` sorts by `st_mtime` and two archives written in the same tick sort arbitrarily.
-  Worth its own `area:brain` row.
+  end-to-end replay: pushed this branch as `main` into a throwaway bare origin, cloned it, and ran
+  the **unmodified** `scripts/assignment-status.sh` — it offers A-029, A-033 and A-041, skips
+  A-034/A-035 on unmet `Blocked-by`, and correctly withholds A-042 (`NO`). The same script against
+  a clone of `638c144` prints "No assignment in queue is possible right now," which is the bug
+  Alex reported. `./scripts/test-full.sh`: `doctor.sh --syntax`, shellcheck, `node --check` and all
+  five `.cjs` suites green; 189/190 Python.
+- Recorded, not fixed: `test_write_prunes_journal_archive_on_rotation` fails 9 of 10 runs on a
+  fresh clean checkout of `638c144` (4 of 10 on this branch, same machine) — `journal.prune`
+  sorts by `p.stat().st_mtime`, a float with ~microsecond usable precision at current epoch
+  values, so two archives written closer together than that tie and the *newest* can be pruned.
+  `st_mtime_ns` looks like the whole fix. Own `area:brain` row, not a drive-by: in-flight A-028
+  is editing `tests/`.

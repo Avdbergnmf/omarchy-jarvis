@@ -291,14 +291,30 @@ Left at `NO`, with reasons now written in:
 Net effect with A-028 in progress: **three claimable rows (A-029, A-033, A-041) instead of zero**,
 using the unmodified `assignment-status.sh` and paste prompts.
 
+Verified end to end rather than by inspection. This branch was pushed as `main` into a throwaway
+bare origin and cloned, so the real script read a real `origin/main`:
+
+```
+Candidate (area:actions differs from every in_progress area):   | A-029 | … | queued | area:actions | YES | …
+Candidate (area:brain differs from every in_progress area):     | A-033 | … | queued | area:brain   | YES | …
+Skipping A-034 (queued but Blocked-by A-033 not done yet)
+Skipping A-035 (queued but Blocked-by A-034 not done yet)
+Candidate (area:overlay differs from every in_progress area):   | A-041 | … | queued | area:overlay | YES | …
+```
+
+A-042 is correctly withheld (`NO`), and the same script against a clone of `638c144` still prints
+`No assignment in queue is possible right now` — the reported bug, reproduced and then fixed by
+flag values alone, with no code on the critical path.
+
 ## Shared bookkeeping: the protocol the flag was standing in for
 
 Adopted alongside the claim rule, because "we will conflict on the shared docs" is the real fear
 behind most `NO`s and it needs its own answer:
 
 1. **Reserve your ADR number in the claim commit.** The same push to `origin/main` that flips your
-   row to `in_progress` appends a one-line reserved stub to `docs/DECISIONS.md`. Prevents the
-   ADR-043/044 collision, which has now happened once and nearly happened twice.
+   row to `in_progress` appends a one-line reserved stub to `docs/DECISIONS.md`. It has already
+   bitten once (A-026 renumbered 043 → 044 at merge time) and would have bitten again here: A-028
+   is in flight and will want the next free number, so this pass had to step around it by hand.
 2. **QUEUE/INDEX: your own row only.** Never reorder rows and never rewrite the prose block under
    the table while in flight; add your narrative line at merge time. Row-per-assignment means git
    merges cleanly on its own.
@@ -321,6 +337,11 @@ which is in flight and will need one.
   display and stale-NO warning, the `scripts/agent-status.py` issue-side rules that still
   contradict ADR-034, and the paste-prompt rewrites are all filed as **A-042**.
 - Observed but not fixed: `tests/test_journal.py::test_write_prunes_journal_archive_on_rotation`
-  is flaky on clean `main` (failed 1 of 3 runs at `638c144`). `journal.prune` sorts by
-  `st_mtime`, and two archives written in the same mtime tick sort arbitrarily, so the wrong one
-  survives. Unrelated to this pass and in `area:brain`; worth its own row.
+  fails roughly half the time on clean `main` — 9 of 10 runs at `638c144` in a fresh checkout,
+  4 of 10 on this branch, same machine and filesystem, so it is a race and not a regression from
+  this pass. `journal.prune` orders candidates by `p.stat().st_mtime`, a Python float whose usable
+  precision at current epoch values is about a microsecond; two archives written closer together
+  than that compare equal and sort arbitrarily, so `prune` can delete the *newest* archive and
+  keep an older one. Switching the sort key to `st_mtime_ns` looks like the whole fix. It is real
+  (bounded retention silently keeping the wrong file), it is `area:brain`, and `tests/` is
+  currently being edited by in-flight A-028 — so it wants its own row, not a drive-by here.
