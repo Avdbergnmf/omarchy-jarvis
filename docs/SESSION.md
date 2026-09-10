@@ -3,8 +3,8 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- **A-031** done — stochastic planner evals v0 (ADR-051), landing via PR
-- **Next:** A-033 (area:brain, depth high, parallel-ok YES) or A-041 (area:overlay, depth high)
+- **A-033** in_progress — latency profiler foundation (claim via PR; ruleset)
+- **A-031** done — merged PR #25 / ADR-051
 
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
@@ -36,7 +36,7 @@
 - Cursor/Grok: implemented A-031 (ADR-051) — planner-only stochastic eval runner. 20 `SEVAL-*` cases (14 `json_plan`, 6 `route_prompt`). Fresh child process per trial with execution tripwires; A-038 `kind: eval` bundles; pass@k not reported; baseline unapproved. Router 6/6 and stub-planner 14/14 in `docs/evals/stochastic/summaries/`. Live Ollama N-runs not spent.
 
 ## Next action (one concrete step)
-- Stop. Next claimable: A-033 (depth high) or A-041 (depth high). Do not batch.
+- Implement A-033 (InteractionTrace + spans + local store + critical-path instrumentation).
 
 ## Parallel agent
 - none

@@ -1,6 +1,6 @@
 # A-033 — Latency profiler foundation (InteractionTrace + spans + storage + core instrumentation)
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:brain (+ light `docs/`)
 - **parallel-ok:** YES
 - **Recommended depth:** high

@@ -34,7 +34,7 @@
 | A-030 | Protect safety/eval/control-plane paths | done | area:docs | NO | [done/A-030-protect-control-plane-paths.md](done/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | done | area:docs | NO | [done/A-031-stochastic-evals-v0.md](done/A-031-stochastic-evals-v0.md) |
 | A-032 | ChatGPT deep review: plan vs codebase (plan perfection) | done | area:docs | NO | [done/A-032-chatgpt-plan-codebase-review.md](done/A-032-chatgpt-plan-codebase-review.md) |
-| A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | YES | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
+| A-033 | Latency profiler foundation (traces/spans/store) | in_progress | area:brain | YES | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-036 | Agent monitor usability (depth, delivery, live work) | done | area:overlay | YES | [done/A-036-agent-monitor-usability.md](done/A-036-agent-monitor-usability.md) |
