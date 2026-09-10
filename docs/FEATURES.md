@@ -12,6 +12,6 @@ Agents must update definitions when shipping user-visible behavior. Automated te
 | feat-rlhf | Post-run feedback | overlay | unvalidated | — |
 | feat-follow-along | Follow execution and reopen state | overlay | unvalidated | — |
 | feat-slash | Slash-command autocomplete | overlay | unvalidated | — |
-| feat-train | Training and confirmed handoffs | overlay | unvalidated | — |
+| feat-train | Training window, problem triage and confirmed handoffs | overlay | unvalidated | — |
 | feat-validate | Guided human validation | overlay | unvalidated | — |
 | feat-open-by-name | Open any installed app by name | actions | unvalidated | — |

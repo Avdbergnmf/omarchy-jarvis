@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Jarvis Training</title><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/training.css"></head><body><main><section id="training-view" aria-label="Training mode">
+<header class="training-header"><h1>Training</h1><span class="muted">LOCAL IMPROVEMENTS</span></header>
+<p class="muted">Review what happened. Prepare the next improvement. You decide what runs.</p>
+<div class="training-header"><span id="train-version"></span><button id="train-refresh" type="button">Refresh</button></div>
+<p id="train-message" role="status" aria-live="polite"></p>
+<div id="train-metrics" class="metric-grid"></div>
+<p id="train-period" class="muted"></p>
+<details><summary>Agent context</summary><div id="train-context"></div><pre id="train-session"></pre></details>
+<nav class="training-nav" aria-label="Training sections">
+<button id="train-nav-problems" type="button" aria-pressed="true">Problems</button>
+<button id="train-nav-validate" type="button" aria-pressed="false">Validate features</button>
+<button id="train-nav-work" type="button" aria-pressed="false">Assignments / Agents</button>
+</nav>
+<section id="train-panel-problems">
+<div class="training-header"><h2>Problems to review</h2><button id="train-new" type="button">New observation</button></div>
+<label for="train-filter">Show</label><select id="train-filter"><option value="open">Open problems</option><option value="done">Done</option><option value="dismissed">Dismissed</option><option value="all">All retained problems</option></select>
+<p id="train-problem-count" class="muted"></p>
+<div class="problem-layout"><div id="train-problems" class="training-list"></div>
+<section id="train-detail"><p id="train-detail-hint" class="muted">Select a problem to see its evidence, or create an observation.</p>
+<form id="problem-form" hidden>
+<h2>Problem details</h2>
+<label for="train-problem-title">Title</label><input id="train-problem-title" maxlength="140" required>
+<div class="problem-fields">
+<label>Priority<select id="train-problem-priority"><option>P0</option><option>P1</option><option selected>P2</option><option>P3</option></select></label>
+<label>Area<select id="train-problem-area"><option>overlay</option><option>brain</option><option>actions</option><option>skills</option><option>docs</option></select></label>
+<label>Status<select id="train-problem-status"><option>open</option><option>done</option><option>dismissed</option></select></label>
+</div>
+<label for="train-problem-notes">Notes / expected outcome</label><textarea id="train-problem-notes" maxlength="1200"></textarea>
+<h3>Original evidence</h3><pre id="train-problem-context"></pre>
+<div class="problem-actions"><button type="submit" id="train-save">Save</button><button type="button" id="train-discard">Discard edits / reload</button><button type="button" id="train-generate">Save &amp; generate agent assignment</button></div>
+</form></section></div>
+</section>
+<section id="train-panel-work" hidden>
+<div class="work-layout"><section>
+<form id="assignment-form">
+<h2>Generate agent assignment</h2><p id="train-selected-source" class="muted">Manual observation</p>
+<label for="train-title">Problem / title</label><input id="train-title" maxlength="140" required placeholder="What should improve?">
+<label for="train-comments">Comments and acceptance</label><textarea id="train-comments" maxlength="1200" placeholder="What did you expect? What should the agent check?"></textarea>
+<label for="train-area">Area</label><select id="train-area"><option>overlay</option><option>brain</option><option>actions</option><option>skills</option><option>docs</option></select>
+<label for="train-priority">Priority (P0 urgent → P3 low)</label><select id="train-priority"><option>P0</option><option>P1</option><option selected>P2</option><option>P3</option></select><button type="submit">Preview assignment &amp; handoff</button>
+</form>
+</section><section><h2>Assignments</h2><div id="train-assignments" class="training-list"></div>
+<form id="work-form"><label for="train-assignment">Work on assignment</label><select id="train-assignment"></select>
+<label for="train-template">Prompt</label><select id="train-template"><option value="NEW_AGENT">New agent — cold start</option><option value="CONTINUE">Continue an existing chat</option></select>
+<button type="submit">Preview work handoff</button></form>
+</section></div><section><h2>Agent monitor</h2><p class="muted">Local slots describe intended work. They do not detect live chats or send messages.</p><div id="train-agents" class="training-list"></div>
+<div class="training-fields">
+<label for="train-slot">Prepare for</label><select id="train-slot"><option value="new">New agent slot</option></select>
+<label for="train-agent-label">New slot name</label><input id="train-agent-label" maxlength="60" value="My coding agent">
+<label for="train-kind">New slot type</label><select id="train-kind"><option value="claude-code">Claude Code</option><option value="cursor">Cursor / Codex</option><option value="human">Human</option></select>
+<label for="train-mode">Delivery</label><select id="train-mode"><option value="now">Prepare now if idle — paste yourself</option><option value="queue">Queue locally until free — no automatic send</option></select>
+</div>
+</section></section>
+<section id="train-preview" hidden><h2>Review changes</h2><p id="train-preview-message"></p><pre id="train-preview-files" tabindex="0"></pre><button id="train-confirm" type="button">Confirm — write these files</button><button id="train-cancel" type="button">Cancel</button></section>
+<section id="train-result" hidden><h2>Prepared locally</h2><p id="train-result-message"></p><textarea id="train-handoff" readonly aria-label="Paste-ready handoff"></textarea><button id="train-copy" type="button">Copy handoff</button><pre id="train-paths"></pre></section>
+<section id="train-panel-validate" hidden><section id="validation-root" aria-label="Validate features">
+<h2>Validate features</h2><p class="muted">Human checks complement automated tests. Follow the steps yourself; no desktop actions run from this panel.</p>
+<label class="validation-toggle"><input id="validation-show-all" type="checkbox"> Include previously validated features</label>
+<p id="validation-count"></p><div id="validation-list" class="training-list"></div>
+<section id="validation-guide" hidden><h2 id="validation-title"></h2><p id="validation-version" class="muted"></p>
+<div id="validation-steps"></div><h3>Expected outcome</h3><p id="validation-expected"></p>
+<label for="validation-notes">What actually happened / notes</label><textarea id="validation-notes" maxlength="1200"></textarea>
+<label for="validation-run">Evidence run id (optional; use the run you tested)</label><input id="validation-run" maxlength="80" placeholder="Run id from Open console">
+<div class="validation-buttons"><button id="validation-verify" type="button" disabled>Verify — preview result</button><button id="validation-fail" type="button">Fail — preview result</button></div>
+<p id="validation-last" class="muted"></p><button id="validation-report" type="button" hidden>Draft bug report in chat</button><a id="validation-open-chat" href="/jarvis-overlay" target="_blank" hidden>Open prepared draft in chat</a>
+</section></section>
+</section>
+</section>
+</main><script src="/training-api.js"></script><script src="/training.js"></script><script src="/validation.js"></script></body></html>

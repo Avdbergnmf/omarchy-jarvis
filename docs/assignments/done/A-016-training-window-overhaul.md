@@ -1,6 +1,6 @@
 # A-016 — Training window overhaul (Hyprland window + Problems-first UX)
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:overlay (+ light `area:brain` for training problem APIs)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/` (esp. training UI; may add dedicated training HTML/JS/CSS), `brain/training.py`, `brain/server.py` (training endpoints only), `brain/validation.py` if shared problem model, `actions/` only if needed for a `jarvis-training` / Hyprland float launch helper, `scripts/` launch/hotkey, `tests/`, `docs/assignments/`, `docs/SESSION.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `docs/FEATURES.md`, `docs/validation/`, `README.md`, `START.md`, `VERSION`
@@ -18,23 +18,23 @@ Done for Alex means: he can open Training as its own window, triage problems cal
 
 ## Checklist
 ### Shell / chrome
-- [ ] Launch Training as its own Hyprland float/window (separate from Super+Shift+J chat overlay); document hotkey or entry from chat (“Open Training”)
-- [ ] Top bar: version/revision, metrics/stats, refresh, period/sample note — stylized, scannable, not colliding with content
-- [ ] Feature nav buttons (Problems | Validate features | Assignments / Agents | …); only one panel active at a time
-- [ ] ADR for “Training = separate window + panel navigation”
+- [x] Launch Training as its own Hyprland float/window (separate from Super+Shift+J chat overlay); document hotkey or entry from chat (“Open Training”)
+- [x] Top bar: version/revision, metrics/stats, refresh, period/sample note — stylized, scannable, not colliding with content
+- [x] Feature nav buttons (Problems | Validate features | Assignments / Agents | …); only one panel active at a time
+- [x] ADR for “Training = separate window + panel navigation”
 
 ### Problems to review (primary)
-- [ ] Problem list: color/badge by source (bad feedback, eval flag, validation fail, backlog, …) and/or area
-- [ ] Row actions: check-off / dismiss / delete (persist; confirm destructive deletes)
-- [ ] Click row → detail panel: full context (run id, version, path/url, notes), editable fields, **priority** (e.g. P0–P3 or high/med/low), **Save**
-- [ ] Detail action: **Generate agent assignment** (or equivalent) → existing confirm-gated prepare/handoff; pass priority + edited fields into the assignment
-- [ ] Empty / loading / error states that are readable
-- [ ] Brain/API: persist problem edits, status (open/done/dismissed), priority; don’t lose evidence on refresh
+- [x] Problem list: color/badge by source (bad feedback, eval flag, validation fail, backlog, …) and/or area
+- [x] Row actions: check-off / dismiss / delete (persist; confirm destructive deletes)
+- [x] Click row → detail panel: full context (run id, version, path/url, notes), editable fields, **priority** (e.g. P0–P3 or high/med/low), **Save**
+- [x] Detail action: **Generate agent assignment** (or equivalent) → existing confirm-gated prepare/handoff; pass priority + edited fields into the assignment
+- [x] Empty / loading / error states that are readable
+- [x] Brain/API: persist problem edits, status (open/done/dismissed), priority; don’t lose evidence on refresh
 
 ### Carry patterns to other panels
-- [ ] Apply the same distinguishability (nav + list/detail or clear sections) to Validate and Assignments/Agents enough that they stop feeling like one scroll dump — full redesign of those can be follow-ups if huge, but minimum: same chrome + clear separation
-- [ ] Tests (overlay/training JS + Python training API); PROGRESS + FEATURES/validation touch if user-visible
-- [ ] Update SESSION Next action as you go; QUEUE/INDEX → done; move this file to `docs/assignments/done/`
+- [x] Apply the same distinguishability (nav + list/detail or clear sections) to Validate and Assignments/Agents enough that they stop feeling like one scroll dump — full redesign of those can be follow-ups if huge, but minimum: same chrome + clear separation
+- [x] Tests (overlay/training JS + Python training API); PROGRESS + FEATURES/validation touch if user-visible
+- [x] Update SESSION Next action as you go; QUEUE/INDEX → done; move this file to `docs/assignments/done/`
 
 ## Out of scope
 - Perfecting chat plan parameter readability (that’s **A-015**)
@@ -48,3 +48,11 @@ Done for Alex means: he can open Training as its own window, triage problems cal
 - Keep plan→approve→execute and confirmed file writes for handoffs.
 - Token discipline: read training.js/training.py/index once; then diffs.
 - Ask Alex only if hotkey binding conflicts; otherwise pick a sensible default (e.g. Super+Shift+T) and document in HOST/customizations note / README.
+
+## Completion evidence — 2026-09-10
+- Separate /jarvis-training app, dedicated Chromium profile/class, authenticated Open Training entry and direct launcher; no new binding or service restart during isolated work.
+- Three navigation panels, problem badges/list/detail, saved priority/notes/status and original evidence, confirmed local delete tombstones, saved-problem assignment previews.
+- 112 Python tests, all UI smoke scenarios, JS syntax, ShellCheck, Doctor syntax and isolated HTTP save/preview/confirm/delete passed.
+- Host Hyprland clients/workspaces read successfully. Browser connector unavailable: actual floating-window launch and visual QA remain human validation steps, not claimed as verified.
+- Live Doctor retains the documented report-last-failure dry-run failure with missing logs/runs; unrelated skill code unchanged.
+- ADR-030; version 0.5.4; feat-train guide updated and unvalidated. A-017/A-018 remain queued.

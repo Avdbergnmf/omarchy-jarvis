@@ -51,45 +51,4 @@
 <span id="meta"></span>
 </footer>
 </div>
-<section id="training-view" hidden aria-label="Training mode">
-<header class="training-header"><h1>Training</h1><button id="train-back" type="button">Back to chat <kbd>Esc</kbd></button></header>
-<p class="muted">Review what happened. Prepare the next improvement. You decide what runs.</p>
-<div class="training-header"><span id="train-version"></span><button id="train-refresh" type="button">Refresh</button></div>
-<p id="train-message" role="status" aria-live="polite"></p>
-<div id="train-metrics" class="metric-grid"></div>
-<p id="train-period" class="muted"></p>
-<details><summary>Agent context</summary><div id="train-context"></div><pre id="train-session"></pre></details>
-<h2>Problems to review</h2><div id="train-problems" class="training-list"></div>
-<form id="assignment-form">
-<h2>Prepare an improvement</h2>
-<label for="train-title">Problem / title</label><input id="train-title" maxlength="140" required placeholder="What should improve?">
-<label for="train-comments">Comments and acceptance</label><textarea id="train-comments" maxlength="1200" placeholder="What did you expect? What should the agent check?"></textarea>
-<label for="train-area">Area</label><select id="train-area"><option>overlay</option><option>brain</option><option>actions</option><option>skills</option><option>docs</option></select>
-<button type="submit">Preview assignment &amp; handoff</button>
-</form>
-<h2>Assignments</h2><div id="train-assignments" class="training-list"></div>
-<form id="work-form"><label for="train-assignment">Work on assignment</label><select id="train-assignment"></select>
-<label for="train-template">Prompt</label><select id="train-template"><option value="NEW_AGENT">New agent — cold start</option><option value="CONTINUE">Continue an existing chat</option></select>
-<button type="submit">Preview work handoff</button></form>
-<h2>Agent monitor</h2><p class="muted">Local slots describe intended work. They do not detect live chats or send messages.</p><div id="train-agents" class="training-list"></div>
-<div class="training-fields">
-<label for="train-slot">Prepare for</label><select id="train-slot"><option value="new">New agent slot</option></select>
-<label for="train-agent-label">New slot name</label><input id="train-agent-label" maxlength="60" value="My coding agent">
-<label for="train-kind">New slot type</label><select id="train-kind"><option value="claude-code">Claude Code</option><option value="cursor">Cursor / Codex</option><option value="human">Human</option></select>
-<label for="train-mode">Delivery</label><select id="train-mode"><option value="now">Prepare now if idle — paste yourself</option><option value="queue">Queue locally until free — no automatic send</option></select>
-</div>
-<section id="train-preview" hidden><h2>Review changes</h2><p id="train-preview-message"></p><pre id="train-preview-files" tabindex="0"></pre><button id="train-confirm" type="button">Confirm — write these files</button><button id="train-cancel" type="button">Cancel</button></section>
-<section id="train-result" hidden><h2>Prepared locally</h2><p id="train-result-message"></p><textarea id="train-handoff" readonly aria-label="Paste-ready handoff"></textarea><button id="train-copy" type="button">Copy handoff</button><pre id="train-paths"></pre></section>
-<section id="validation-root" aria-label="Validate features">
-<h2>Validate features</h2><p class="muted">Human checks complement automated tests. Follow the steps yourself; no desktop actions run from this panel.</p>
-<label class="validation-toggle"><input id="validation-show-all" type="checkbox"> Include previously validated features</label>
-<p id="validation-count"></p><div id="validation-list" class="training-list"></div>
-<section id="validation-guide" hidden><h2 id="validation-title"></h2><p id="validation-version" class="muted"></p>
-<div id="validation-steps"></div><h3>Expected outcome</h3><p id="validation-expected"></p>
-<label for="validation-notes">What actually happened / notes</label><textarea id="validation-notes" maxlength="1200"></textarea>
-<label for="validation-run">Evidence run id (optional; use the run you tested)</label><input id="validation-run" maxlength="80" placeholder="Run id from Open console">
-<div class="validation-buttons"><button id="validation-verify" type="button" disabled>Verify — preview result</button><button id="validation-fail" type="button">Fail — preview result</button></div>
-<p id="validation-last" class="muted"></p><button id="validation-report" type="button" hidden>Draft bug report in chat</button>
-</section></section>
-</section>
-</main><script src="/commands.js"></script><script src="/app.js"></script><script src="/training.js"></script><script src="/validation.js"></script></body></html>
+</main><script src="/commands.js"></script><script src="/app.js"></script><script src="/training-launch.js"></script></body></html>

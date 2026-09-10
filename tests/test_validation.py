@@ -19,6 +19,11 @@ class ValidationTest(unittest.TestCase):
         (self.root/'docs/validation').mkdir(parents=True)
         for path in (validation.CATALOG,validation.FEATURES):
             (self.root/path).write_text((ROOT/path).read_text())
+        # Fixtures must not depend on Alex's real human-validation history.
+        catalog = json.loads((self.root/validation.CATALOG).read_text())
+        for feature in catalog['features']:
+            feature.update(status='unvalidated', last_run=None, jarvis_version=None)
+        (self.root/validation.CATALOG).write_text(json.dumps(catalog))
         self.item=validation.list_features(self.root)[0]
         self.payload=dict(operation='validation',feature_id=self.item['id'],definition_hash=self.item['definition_hash'],outcome='validated',attempted=True,notes='Observed expected behavior',run_id='evidence-run')
 

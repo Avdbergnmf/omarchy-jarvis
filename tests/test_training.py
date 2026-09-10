@@ -108,3 +108,81 @@ class TrainingTest(unittest.TestCase):
             self.assertEqual(handler.do_POST()[0],200)
             preview.assert_called_once()
             confirm.assert_not_called()
+
+
+class ProblemsTest(unittest.TestCase):
+    setUp = TrainingTest.setUp
+    tearDown = TrainingTest.tearDown
+
+    def seed(self):
+        return training.reconcile_problems(self.root, [dict(id='run:one', title='Original problem', source='Journal eval', run_id='one', version='0.5.4', context='Original evidence')])[0]
+
+    def test_edits_survive_refresh_and_lost_source(self):
+        problem = self.seed()
+        saved = training.update_problem(self.root, dict(id=problem['id'], revision=problem['revision'], title='Edited', notes='Expected result', priority='P0', area='overlay', status='dismissed'))
+        self.seed()
+        result = training.reconcile_problems(self.root, [])[0]
+        self.assertEqual(result, saved)
+        self.assertEqual(result['evidence']['title'], 'Original problem')
+        with self.assertRaisesRegex(RuntimeError, 'changed'):
+            training.update_problem(self.root, dict(id=problem['id'], revision=problem['revision'], status='done'))
+        reopened = training.update_problem(self.root, dict(id=saved['id'], revision=saved['revision'], status='open'))
+        self.assertEqual(reopened['status'], 'open')
+
+    def test_delete_confirm_tombstone_and_stale_preview(self):
+        problem = self.seed()
+        payload = dict(operation='problem_delete', id=problem['id'], revision=problem['revision'])
+        proposal = training.preview(self.root, payload)
+        self.assertEqual(len(training.reconcile_problems(self.root, [])), 1)
+        training.update_problem(self.root, dict(payload, priority='P1'))
+        with self.assertRaisesRegex(ValueError, 'changed'):
+            training.confirm(self.root, proposal['preview_id'])
+        current = training.reconcile_problems(self.root, [])[0]
+        proposal = training.preview(self.root, dict(payload, revision=current['revision']))
+        training.confirm(self.root, proposal['preview_id'])
+        self.assertEqual(training.reconcile_problems(self.root, []), [])
+        self.assertEqual(training.reconcile_problems(self.root, [dict(id='run:one', title='Reimport', source='Journal eval')]), [])
+
+    def test_assignment_uses_saved_problem_and_rejects_stale_evidence(self):
+        problem = self.seed()
+        saved = training.update_problem(self.root, dict(id=problem['id'], revision=problem['revision'], title='Edited title', notes='Expected stable focus', area='overlay', priority='P0'))
+        payload = dict(self.payload, problem_id=saved['id'], problem_revision=saved['revision'])
+        proposal = training.preview(self.root, payload)
+        brief = next(f['content'] for f in proposal['files'] if '/assignments/active/' in f['path'])
+        for text in ('Edited title', 'Expected stable focus', '**Priority:** P0', 'Original evidence', 'run:one'):
+            self.assertIn(text, brief)
+        training.update_problem(self.root, dict(id=saved['id'], revision=saved['revision'], priority='P1'))
+        with self.assertRaisesRegex(ValueError, 'changed'):
+            training.confirm(self.root, proposal['preview_id'])
+        with self.assertRaisesRegex(RuntimeError, 'changed'):
+            training.preview(self.root, payload)
+
+    def test_bad_feedback_and_failed_validation_sources(self):
+        target = self.root/'logs/journal/CURRENT.jsonl'
+        target.parent.mkdir(parents=True)
+        ts = training.datetime.datetime.now(training.datetime.timezone.utc).isoformat()
+        target.write_text(json.dumps(dict(ts=ts, phase='feedback', run_id='bad1', jarvis_version='test', feedback=dict(rating='bad', note='Bad focus'))) + '\n')
+        with patch.object(training.subprocess, 'run', side_effect=OSError('offline')), patch.object(training.validation, 'list_features', return_value=[dict(id='feat-x', title='Failed check', status='failed', area='overlay', expected='Focus', last_run=dict(notes='Lost focus'))]):
+            data = training.dashboard(self.root, 'test', 'abc')
+        self.assertEqual(data['metrics']['bad'], 1)
+        self.assertEqual({p['source'] for p in data['problems']}, {'Bad feedback', 'Failed human test'})
+        target.unlink()
+        self.assertEqual(len(training.reconcile_problems(self.root, [])), 2)
+
+    def test_invalid_updates_and_problem_http_auth(self):
+        problem = self.seed()
+        for values in (dict(priority='urgent'), dict(status='deleted'), dict(area='../'), dict(title='')):
+            with self.assertRaises(ValueError):
+                training.update_problem(self.root, dict(id=problem['id'], revision=problem['revision'], **values))
+        handler = object.__new__(server.Handler)
+        handler.path = '/v1/training/problem'
+        handler.headers = {'Host':'127.0.0.1:7421'}
+        handler.reply = lambda status, body: (status, body)
+        with patch.object(training, 'update_problem') as update:
+            self.assertEqual(handler.do_POST()[0], 403)
+            update.assert_not_called()
+        handler.headers.update({'X-Jarvis-Token':server.TOKEN, 'Content-Type':'application/json', 'Content-Length':'2'})
+        handler.rfile = io.BytesIO(b'{}')
+        with patch.object(training, 'update_problem', return_value={'status':'open'}) as update:
+            self.assertEqual(handler.do_POST()[0], 200)
+            update.assert_called_once()

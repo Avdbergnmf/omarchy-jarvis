@@ -73,15 +73,29 @@ Type `/` for command suggestions. Use ↑/↓ to select, Tab/Enter to complete, 
 
 ## Training mode
 
-Choose **Training** or type `/train` to review issues, local backlog, neutral feedback and
-journal flags. Refresh loads evidence on demand; run polling stays unchanged. Metrics cover
-today UTC in the current journal and explicitly identify a bounded sample when needed.
-Back to chat / Esc leaves Training without cancelling the chat run.
+Choose **Open Training** in chat or type `/train` to open a separate, resizable Hyprland
+floating window. Reopening focuses that window; chat and its pending plan remain intact.
+With Jarvis already running, `./scripts/open-training.py` opens the same window directly.
+No new global hotkey is installed. Problems, Validate features, and Assignments / Agents
+have separate navigation panels beneath the version and metric cards.
 
-Select a problem, add comments/acceptance, choose an area and agent slot, then **Preview
-assignment & handoff**. Review the full file contents and choose **Confirm — write these
-files**. Cancel writes nothing. Work on an existing assignment similarly prepares a
-NEW_AGENT or CONTINUE prompt. Copy/paste it into the target chat yourself.
+Refresh imports issues, backlog, bad/neutral feedback, journal flags and failed human tests
+on demand. Metrics cover today UTC in the current journal and label bounded samples;
+retained problems can be older. Original evidence is bounded/redacted and retained locally
+in ignored `logs/training/problems.json`, together with edits, priority and status.
+Select a problem to edit its title, notes, area and P0–P3 priority, then **Save**. **Done** and
+**Dismiss** persist locally; filter those statuses to reopen an item. **Delete…** previews
+a local deletion for confirmation and keeps a tombstone to prevent re-import. It does not
+close GitHub issues or delete source evidence. Refresh keeps unsaved detail edits; use
+**Discard edits / reload** to abandon them or recover from a stale-edit conflict.
+
+**Save & generate agent assignment** saves the problem, then selects its saved fields in
+the Assignments / Agents panel. Choose an agent slot and **Preview assignment & handoff**.
+The brief includes saved priority, expected outcome and original evidence. Review the exact
+file contents and **Confirm — write these files**. Cancelling the preview creates no
+assignment or handoff; it does not undo an earlier problem Save. **New observation** prepares
+a manual assignment. Work on an existing assignment similarly prepares a NEW_AGENT or
+CONTINUE prompt. Copy/paste the handoff into the target chat yourself.
 
 The agent monitor combines QUEUE/SESSION with local slots; it cannot detect live chats.
 Mark a slot busy/idle through a confirmation preview. Prepare now rejects busy slots;

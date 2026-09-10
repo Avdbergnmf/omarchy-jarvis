@@ -1,0 +1,43 @@
+body{background:#10161e}
+main{max-width:1500px;margin:auto;padding:24px 30px}
+.training-header h1{font-size:28px;letter-spacing:-.7px}
+#train-version{color:#9dd9d2;font-size:13px}
+.metric-grid{grid-template-columns:repeat(7,minmax(0,1fr))}
+.metric-card{border:1px solid #2a3543;padding:12px}
+.metric-card meter{display:none}
+#train-message{min-height:20px;font-size:13px}
+.training-nav{display:flex;gap:8px;margin:20px 0 14px;flex-wrap:wrap}
+.training-nav button{padding:11px 18px}
+.training-nav button[aria-pressed=true]{background:#22523f;border-color:#5b9d83}
+#training-view h2{font-size:13px;margin:0 0 12px;letter-spacing:.7px}
+#training-view h3{font-size:12px;color:#9dd9d2}
+#train-panel-problems,#train-panel-work,#train-panel-validate{padding:18px}
+#train-filter{width:220px;margin-top:6px}
+.problem-layout,.work-layout{display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,1.25fr);gap:18px;margin-top:14px;align-items:start}
+#train-problems{max-height:580px;gap:10px;padding:3px}
+.problem-row{background:#141c27;border:1px solid #344253;border-left:3px solid #80aaa1;border-radius:7px;padding:12px}
+.problem-row.selected{outline:2px solid #9dd9d2}
+.problem-row.source-bad,.problem-row.source-validation{border-left-color:#f39a9a}
+.problem-row.source-eval{border-left-color:#eab972}
+.problem-row.source-backlog{border-left-color:#8baaf0}
+.problem-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.problem-badge{font-size:11px;background:#263343;color:#c7d8ed;border-radius:4px;padding:3px 6px}
+.problem-title{border:0;background:transparent;font-size:14px;padding:2px 0;line-height:1.4;width:100%;overflow-wrap:anywhere}
+.problem-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.problem-actions button{font-size:12px;padding:6px 10px}
+.problem-actions .danger{color:#ffb3a8}
+.problem-fields{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.problem-fields label{display:flex;flex-direction:column;gap:7px}
+#train-problem-context{line-height:1.6;color:#b7c5d6;max-height:240px}
+#train-detail{position:sticky;top:14px;min-height:150px}
+#train-save,#train-generate{background:#22523f}
+.work-layout{grid-template-columns:1fr 1fr;margin-bottom:18px}
+#train-assignments{max-height:300px}
+#train-agents{max-height:260px}
+.training-fields{display:grid;grid-template-columns:minmax(120px,1fr) 3fr;align-items:center}
+#train-preview,#train-result{border-color:#6aa891;margin-top:18px}
+#train-preview-files{max-height:400px!important}
+#validation-root{margin-top:0;border:0;padding:0}
+#validation-list{max-height:340px}
+a{color:#9dd9d2}
+@media(max-width:760px){main{padding:16px}.metric-grid{grid-template-columns:repeat(4,1fr)}.problem-layout,.work-layout{grid-template-columns:1fr}#train-detail{position:static}#train-problems{max-height:350px}.training-fields{display:flex}}

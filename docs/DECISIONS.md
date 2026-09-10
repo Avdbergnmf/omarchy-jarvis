@@ -155,3 +155,10 @@ validation, retain tested version/revision/notes, and generate FEATURES from the
 **Consequences:** automated checks never manufacture human validation. Failures remain local
 until the user drafts and approves an issue through existing intake. Source run context is
 explicit, avoiding attribution to an unrelated recent run. Verification auto-closes nothing.
+
+## ADR-030 — Separate Training window and durable problem triage (2026-09-10)
+- **Context:** the inline Training dashboard mixed evidence, validation and work preparation in chat's small window.
+- **Decision:** one brain serves two UIs. Chat's Open Training and /train call an authenticated fixed launcher; a separate Chromium profile/class opens /jarvis-training. The launcher focuses an existing Training window, addresses only its own window when floating/centering, and never starts/restarts shared services. No global hotkey/config edit is needed.
+- **Panels:** Problems is the default list/detail surface; Validate and Assignments / Agents use the same chrome with distinct panels. Assignment and agent redesign beyond this structure remains A-017/A-018.
+- **Persistence:** on-demand evidence imports use ignored logs/training/problems.json with atomic replacement under Training's lock. Stable source ids preserve original bounded/redacted context, edits, P0–P3 priority and open/done/dismissed status across refreshes and journal rotation. Confirmed local deletion leaves a tombstone; original sources are untouched. The dashboard now writes new evidence snapshots when importing, but does no extra run-poll I/O.
+- **Review:** direct Save/Done/Dismiss express local triage intent; revision hashes reject stale updates. Assignment generation reads the saved problem and includes its priority and original evidence, with the existing exact-byte preview and stale-source confirmation checks. Priority never overrides QUEUE/SESSION ownership. Human validation stays unvalidated until Alex performs it.

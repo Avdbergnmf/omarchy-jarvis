@@ -665,6 +665,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.host_ok(): return self.reply(403, {'error':'Invalid host'})
         if self.path == '/health': return self.reply(200, {'service':'omarchy-jarvis','model':MODEL,'ollama':ollama_health(),'approval_mode':CONFIG['approval_mode']})
+        training_assets = {'/jarvis-training': ('training.html', 'text/html'),
+                           '/training.css': ('training.css', 'text/css'),
+                           '/training-api.js': ('training-api.js', 'text/javascript'),
+                           '/training-launch.js': ('training-launch.js', 'text/javascript')}
+        if self.path in training_assets:
+            name, mime = training_assets[self.path]
+            return self.reply(200, (ROOT/'overlay'/name).read_text(), mime)
         if self.path in ('/','/jarvis-overlay','/app.js','/style.css','/commands.js','/training.js','/validation.js'):
             name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css'),'/commands.js':('commands.js','text/javascript'),'/training.js':('training.js','text/javascript'),'/validation.js':('validation.js','text/javascript')}[self.path]
             return self.reply(200,(ROOT/'overlay'/name).read_text(),mime)
@@ -683,14 +690,21 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.host_ok() or self.headers.get('Origin') not in (None,'http://127.0.0.1:7421') or self.headers.get('X-Jarvis-Token') != TOKEN:
             return self.reply(403, {'error':'Invalid origin or token'})
-        if self.path in ('/v1/training/preview', '/v1/training/confirm', '/v1/training/report'):
+        if self.path in ('/v1/training/preview', '/v1/training/confirm', '/v1/training/report', '/v1/training/problem', '/v1/training/open'):
             try:
                 length = int(self.headers.get('Content-Length', '0'))
                 if not 0 < length <= 8192: raise ValueError('Invalid request size')
                 if self.headers.get('Content-Type') != 'application/json': raise ValueError('Expected application/json')
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict): raise ValueError('Expected an object')
-                if self.path.endswith('/report'):
+                if self.path.endswith('/open'):
+                    launch = subprocess.run([sys.executable, str(ROOT/'scripts/open-training.py')],
+                                            capture_output=True, text=True, timeout=15)
+                    if launch.returncode: raise RuntimeError(launch.stderr.strip() or 'Training window could not open')
+                    result = {'ok': True}
+                elif self.path.endswith('/problem'):
+                    result = training.update_problem(ROOT, body)
+                elif self.path.endswith('/report'):
                     result = start_validation_report(body.get('feature_id'), body.get('record_id'))
                 elif self.path.endswith('/preview'):
                     result = training.preview(ROOT, body, VERSION, REVISION)
@@ -699,6 +713,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.reply(200, result)
             except ValueError as error: return self.reply(400, {'error': str(error)})
             except OSError as error: return self.reply(503, {'error': str(error)})
+            except subprocess.TimeoutExpired: return self.reply(503, {'error': 'Training window launch timed out; try again'})
             except RuntimeError as error: return self.reply(409, {'error': str(error)})
         if self.path == '/v1/close':
             try:

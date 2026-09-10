@@ -1,5 +1,6 @@
 """On-demand Training dashboard and explicitly confirmed local work preparation."""
 import datetime
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -19,6 +20,8 @@ AREAS = ('overlay', 'brain', 'actions', 'skills', 'docs')
 QUEUE = 'docs/assignments/QUEUE.md'
 INDEX = 'docs/assignments/INDEX.md'
 SLOTS = 'logs/training/agents.json'
+PROBLEMS = 'logs/training/problems.json'
+PRIORITIES = ('P0', 'P1', 'P2', 'P3')
 
 
 def read(root, path):
@@ -85,6 +88,81 @@ def tail_json(root, path, limit=2_000_000):
     return records, size > limit
 
 
+def problem_store(root):
+    data = json.loads(read(root, PROBLEMS) or '{"version":1,"problems":{}}')
+    if not isinstance(data, dict) or data.get('version') != 1 or not isinstance(data.get('problems'), dict):
+        raise ValueError('Invalid problem registry')
+    for key, item in data['problems'].items():
+        if not isinstance(item, dict) or item.get('id') != key or item.get('status') not in ('open', 'done', 'dismissed', 'deleted') or item.get('priority') not in PRIORITIES or item.get('area') not in AREAS:
+            raise ValueError('Invalid problem record')
+    return data
+
+
+def write_problems(root, data):
+    # Same lock as preview/confirm; atomic replacement keeps refresh/edit coherent.
+    read(root, PROBLEMS)  # reject symlinked paths before creating directories
+    target = root / PROBLEMS
+    target.parent.mkdir(parents=True, exist_ok=True)
+    temp = target.with_name(target.name + '.' + secrets.token_hex(4) + '.tmp')
+    try:
+        with temp.open('x') as out:
+            os.chmod(temp, 0o600)
+            out.write(json.dumps(data, indent=2) + '\n')
+        temp.replace(target)
+    finally:
+        temp.unlink(missing_ok=True)
+
+
+def problem_revision(item):
+    return hashlib.sha256(json.dumps(item, sort_keys=True).encode()).hexdigest()
+
+
+def public_problem(item):
+    return dict(item, revision=problem_revision(item))
+
+
+def checked_problem(root, data):
+    registry = problem_store(root)
+    pid = short(data.get('id'), 'Problem id', 300)
+    item = registry['problems'].get(pid)
+    if not item or item['status'] == 'deleted':
+        raise ValueError('Problem no longer available; refresh')
+    if data.get('revision') != problem_revision(item):
+        raise RuntimeError('Problem changed; refresh before editing or generating an assignment')
+    return registry, item
+
+
+def update_problem(root, data):
+    with LOCK:
+        registry, item = checked_problem(root, data)
+        title = short(data.get('title', item['title']), 'Title', 140).replace('\n', ' ')
+        notes = short(data.get('notes', item['notes']), 'Notes', 1200, empty=True)
+        area = data.get('area', item['area'])
+        priority = data.get('priority', item['priority'])
+        status = data.get('status', item['status'])
+        if area not in AREAS or priority not in PRIORITIES or status not in ('open', 'done', 'dismissed'):
+            raise ValueError('Invalid problem area, priority or status')
+        item.update(title=title, notes=notes, area=area, priority=priority, status=status)
+        write_problems(root, registry)
+        return public_problem(item)
+
+
+def reconcile_problems(root, evidence):
+    with LOCK:
+        registry = problem_store(root)
+        before = json.dumps(registry, sort_keys=True)
+        for record in evidence:
+            record = clean(record)
+            pid = record['id']
+            if pid in registry['problems']:
+                continue  # preserve edits, original context and deletion tombstones
+            registry['problems'][pid] = dict(record, title=record['title'][:140],
+                evidence=dict(record), notes='', area=record.get('area', 'brain'), priority='P2', status='open')
+        if json.dumps(registry, sort_keys=True) != before:
+            write_problems(root, registry)
+        return [public_problem(p) for p in sorted(registry['problems'].values(), key=lambda p: (p['priority'], p['title'])) if p['status'] != 'deleted']
+
+
 def dashboard(root, version, revision):
     # Invoked only when Training opens or Refresh is pressed, never by run polls.
     queue = assignments(root)
@@ -99,6 +177,8 @@ def dashboard(root, version, revision):
         if phase == 'prompt': metrics['runs'] += 1
         if phase == 'feedback' and r.get('feedback', {}).get('rating') in ('good', 'neutral', 'bad'):
             metrics[r['feedback']['rating']] += 1
+            if r['feedback']['rating'] == 'bad':
+                flags.append(dict(id='bad:'+r['run_id'], title=r['feedback'].get('note') or 'Bad feedback: '+r['run_id'], run_id=r['run_id'], version=r.get('jarvis_version'), source='Bad feedback', path='logs/journal/CURRENT.jsonl'))
         if phase == 'eval' and r.get('eval', {}).get('flag'):
             metrics['flags'] += 1
             flags.append(dict(id='run:'+r['run_id'], title=r['eval']['note'], run_id=r['run_id'], version=r.get('jarvis_version'), source='Journal eval'))
@@ -115,13 +195,14 @@ def dashboard(root, version, revision):
         warnings.append('GitHub unavailable; local problems remain available.')
     for folder in ('bugs', 'features'):
         for path in sorted((root / 'docs/backlog' / folder).glob('*.md'))[:100]:
-            problems.append(dict(id='backlog:'+path.stem, title=path.stem, source='Local '+folder, path=str(path.relative_to(root))))
+            problems.append(dict(id='backlog:'+path.stem, title=path.stem, source='Local '+folder, path=str(path.relative_to(root)), context=read(root, str(path.relative_to(root)))[:5000]))
     neutral, _ = tail_json(root, 'logs/feedback/needs-review.jsonl', 200_000)
     for r in neutral[-30:]:
         problems.append(dict(id='neutral:'+r.get('run_id','unknown'), title=r.get('prompt','Review run'), source='Neutral feedback', run_id=r.get('run_id')))
     problems.extend(flags[-30:])
     validations = validation.list_features(root)
-    problems.extend(dict(id='validation:'+v['id'], title=v['title'], source='Failed human test') for v in validations if v['status']=='failed')
+    problems.extend(dict(id='validation:'+v['id'], title=v['title'], source='Failed human test', area=v['area'], version=v.get('jarvis_version'), context=json.dumps(dict(expected=v['expected'], last_run=v.get('last_run')))) for v in validations if v['status']=='failed')
+    problems = reconcile_problems(root, problems)
     for slot in registry['agents']:
         slot['busy'] = busy(slot, queue)
     return dict(version=version, revision=revision, metrics=metrics, sampled=sampled, period='Today UTC, current journal only', problems=problems,
@@ -140,6 +221,12 @@ def append_row(text, row):
 def preview(root, data, version='unknown', revision='unknown'):
     if not isinstance(data, dict): raise ValueError('Expected an object')
     with LOCK:
+        if data.get('operation') == 'problem_delete':
+            registry, item = checked_problem(root, data)
+            before = {PROBLEMS: read(root, PROBLEMS)}
+            item['status'] = 'deleted'
+            return store_preview(root, before, {PROBLEMS: json.dumps(registry, indent=2)+'\n'},
+                'Delete this local problem from Training. A tombstone prevents re-import; source evidence and GitHub issues remain unchanged.')
         if data.get('operation') == 'validation':
             changes, message, result = validation.prepare(root, data, version, revision)
             before = {p:read(root,p) for p in changes}
@@ -178,6 +265,16 @@ def preview(root, data, version='unknown', revision='unknown'):
                 source = short(data.get('source','Manual training observation'), 'Source', 500)
                 area = data.get('area')
                 if area not in AREAS: raise ValueError('Unknown area')
+                priority = data.get('priority', 'P2')
+                if priority not in PRIORITIES: raise ValueError('Invalid priority')
+                evidence = ''
+                if data.get('problem_id'):
+                    _, problem = checked_problem(root, dict(id=data['problem_id'], revision=data.get('problem_revision')))
+                    title, comments, area, priority = (problem[k] for k in ('title', 'notes', 'area', 'priority'))
+                    title = title.replace('|', '/').replace('\n', ' ')
+                    source = problem['id']
+                    evidence = '\n## Original problem context (read-only evidence)\n' + json.dumps(problem['evidence'], indent=2) + '\n'
+                    before[PROBLEMS] = read(root, PROBLEMS)
                 ids = [int(n) for n in re.findall(r'\bA-(\d+)\b', before[INDEX] + before[QUEUE])]
                 aid = f'A-{max(ids, default=0)+1:03d}'
                 path = f'docs/assignments/active/{aid}-training.md'
@@ -187,6 +284,7 @@ def preview(root, data, version='unknown', revision='unknown'):
 
 - **Status:** queued
 - **Area:** area:{area}
+- **Priority:** {priority} (P0 urgent → P3 low; respect QUEUE ownership before claiming)
 - **parallel-ok:** NO
 - **Allowed paths:** {area}/, tests/, docs/assignments/, docs/SESSION.md, docs/PROGRESS.md, docs/DECISIONS.md
 - **Forbidden paths:** {forbidden}; approval bypass; real agent dispatch
@@ -198,7 +296,7 @@ def preview(root, data, version='unknown', revision='unknown'):
 
 ## Human comments / evidence
 {comments or '(No additional comments)'}
-
+{evidence}
 ## Checklist
 - [ ] Read START, SESSION and QUEUE; check ownership before claiming
 - [ ] Reproduce and document expected vs actual behavior from the linked problem

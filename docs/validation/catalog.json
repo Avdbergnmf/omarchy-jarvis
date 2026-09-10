@@ -123,20 +123,22 @@
     },
     {
       "id": "feat-train",
-      "title": "Training and confirmed handoffs",
+      "title": "Training window, problem triage and confirmed handoffs",
       "area": "overlay",
       "steps": [
-        "Open Training using the button or /train.",
-        "Inspect problems, version, metrics and assignment/agent lists.",
-        "Select a problem, add comments, choose a new slot and preview an assignment.",
-        "Inspect exact file contents, then Cancel.",
-        "Preview a work handoff for a real assignment only when wanted; confirm to save it and inspect paste-ready text."
+        "Open Jarvis with Super+Shift+J, then choose Open Training or submit /train. Confirm Training has its own floating window and chat stays available.",
+        "Open Training again from chat. Confirm it focuses the same window. Resize it and inspect version, metrics and the sample/period note.",
+        "Switch between Problems, Validate features and Assignments / Agents. Confirm only the selected panel is shown.",
+        "Select a problem. Inspect original run/version/path context, edit title and expected outcome, set priority P1 and Save. Refresh and confirm those edits persist.",
+        "Mark the problem Done; filter Done and Reopen it. Repeat with Dismiss. Preview Delete and Cancel; confirm it remains.",
+        "Choose Save & generate agent assignment. Choose a slot, preview the handoff, and inspect saved title, priority, notes and original evidence. Cancel to avoid creating an assignment.",
+        "Only for an improvement you want, preview again and confirm. Check the paste-ready handoff and verify no agent was contacted automatically."
       ],
-      "expected": "Preview and Cancel create no files. Confirmation saves a local handoff and never claims an agent was contacted.",
+      "expected": "Training is a separate focusable window with clear panels. Problem triage survives refresh; original evidence is retained. Assignment generation and local deletion require confirmation; priority and edits appear in the brief.",
       "status": "unvalidated",
       "last_run": null,
       "jarvis_version": null,
-      "jarvis_version_shipped": "0.5.0"
+      "jarvis_version_shipped": "0.5.4"
     },
     {
       "id": "feat-validate",

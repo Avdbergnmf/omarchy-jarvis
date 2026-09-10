@@ -338,3 +338,10 @@ validation remains pending because the browser connector exposes no browser on t
 - Agent tiles; click → overview + open visible Hyprland agent window (not hidden background).
 - Left assignment list to spin up/assign; preselect from A-017 handoff; interactive parallel-aware queue board.
 - Filed [A-018](assignments/active/A-018-training-agent-monitor.md); order A-016 → A-017 → A-018 → A-015.
+
+## 2026-09-10 — A-016 Training window and Problems triage
+- Completed one assignment in isolated a016-training-window. Read all other SESSION/QUEUE snapshots: handoffs completed; A-015's queued row on main was stale, its implementation awaits merge.
+- Added separate Training app/profile/class and fixed authenticated launcher, scannable metrics and three navigation panels. Problems retain original bounded/redacted context, saved fields, P0–P3 priority and local status; confirmed local deletes keep tombstones. Saved-problem assignment previews include edits, priority and original evidence with stale-record rejection.
+- Passed 112 Python tests, all UI smoke scenarios, all JS syntax, ShellCheck, Doctor syntax, and isolated HTTP assets/authenticated save/assignment confirm/delete using disposable data on port 17421. Fixed test fixture dependence on real human-validation history without changing Alex's evidence.
+- Host Doctor passes except the previously documented missing-logs/runs report-last-failure dry-run defect (skills outside scope). Hyprland clients/workspaces read successfully; no Jarvis windows were open. Browser connector provides no browser, so visual QA and real window launch remain unvalidated in feat-train. No shared-service restart during isolated work.
+- VERSION 0.5.4, ADR-030, README and human guide updated. A-017 then A-018 are next; no second assignment claimed. Alex requested merge/cleanup of all finished branches after this assignment.

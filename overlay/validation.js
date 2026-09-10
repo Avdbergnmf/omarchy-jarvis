@@ -19,6 +19,7 @@ function renderValidations(items){
  }
 }
 function showLastValidation(item){
+ if(typeof trainingReportReady==='function')validationEl('open-chat').hidden=true;
  const last=item.last_run;
  validationEl('last').textContent=last?'Last human result: '+last.result+' · '+last.ts+' · Jarvis '+last.jarvis_version+' · '+last.notes:'No human result recorded yet.';
  validationReport=item.status==='failed'&&last?{feature_id:item.id,record_id:last.id}:null;
@@ -56,7 +57,8 @@ validationEl('report').addEventListener('click',async()=>{
  if(!validationReport)return;validationEl('report').disabled=true;
  try{
   const result=await post('/v1/training/report',validationReport);
-  leaveTraining();input.disabled=true;setConsoleTarget(result.run_id);await poll(result.run_id);
+  if(typeof trainingReportReady==='function')trainingReportReady(result);
+  else{leaveTraining();input.disabled=true;setConsoleTarget(result.run_id);await poll(result.run_id);}
  }catch(error){trainMessage(error.message,true);}
  finally{validationEl('report').disabled=false;}
 });

@@ -1,28 +1,43 @@
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 function element(){return {value:'',hidden:true,children:[],handlers:{},textContent:'',disabled:false,
- addEventListener(event,fn){this.handlers[event]=fn;},appendChild(child){this.children.push(child);},setAttribute(){},focus(){this.focused=true;},select(){}};}
+ set innerHTML(value){this.children=[];},addEventListener(event,fn){this.handlers[event]=fn;},appendChild(child){this.children.push(child);},setAttribute(){},focus(){this.focused=true;},select(){}};}
 const els={},requests=[];let previewCount=0,confirmCount=0;
 const $=selector=>els[selector]||(els[selector]=element());
-const data={version:'test',revision:'abc',metrics:{runs:4,good:2,neutral:1,bad:0,flags:1,executed:2,denied:1},period:'Today UTC',sampled:false,context:['START.md'],session:'A-008 active',warnings:[],problems:[{id:'run:test',source:'Journal eval',title:'Review focus'}],assignments:[{id:'A-008',title:'Training',status:'in_progress'}],agents:[]};
-const ctx={document:{querySelector:$,createElement:element},input:element(),hideCommands(){},
- get:async path=>{requests.push(path);return data;},
- post:async(path,body)=>{requests.push(path);
+let problem={id:'run:test',source:'Journal eval',title:'Review focus',priority:'P2',area:'brain',status:'open',notes:'',revision:'r1',evidence:{run_id:'test',version:'0.5.4'}};
+const data={version:'test',revision:'abc',metrics:{runs:4,good:2,neutral:1,bad:0,flags:1,executed:2,denied:1},period:'Today UTC',sampled:false,context:['START.md'],session:'A-016 active',warnings:[],problems:[problem],assignments:[{id:'A-016',title:'Training',status:'in_progress'}],agents:[]};
+const ctx={document:{querySelector:$,createElement:element},get:async path=>{requests.push({path});return data;},
+ post:async(path,body)=>{requests.push({path,body});
  if(path.endsWith('/preview')){previewCount++;return {preview_id:'p',message:'Review',files:[{path:'docs/assignment.md',content:'Scope'}]};}
  if(path.endsWith('/confirm')){confirmCount++;return {message:'Prepared; no agent contacted',handoff:'Paste START',paths:['docs/assignment.md']};}
- throw Error('unexpected mutation');},navigator:{clipboard:{writeText:async()=>{}}},};
+ if(path.endsWith('/problem')){problem={...problem,...body,revision:'r2'};data.problems=[problem];return problem;}
+ throw Error('unexpected mutation');},navigator:{clipboard:{writeText:async()=>{}}}};
 vm.runInNewContext(fs.readFileSync('overlay/training.js','utf8'),ctx);
 (async()=>{
- await ctx.enterTraining();
- assert.equal($('#training-view').hidden,false);assert.equal($('#chat-view').hidden,true);
+ await ctx.refreshTraining();
  assert.equal($('#train-version').textContent,'Jarvis test · abc');
- await ctx.previewTraining({operation:'assignment'});
+ ctx.trainingPanel('validate');assert.equal($('#train-panel-validate').hidden,false);assert.equal($('#train-panel-problems').hidden,true);
+ ctx.trainingPanel('problems');ctx.selectProblem(problem);
+ assert.match($('#train-problem-context').textContent,/run_id/);
+ $('#train-problem-title').value='Edited focus';$('#train-problem-priority').value='P0';$('#train-problem-notes').value='Expected stable focus';
+ $('#problem-form').handlers.input();await ctx.refreshTraining();
+ assert.equal($('#train-problem-title').value,'Edited focus','refresh preserves unsaved edits');
+ await $('#train-generate').handlers.click();
+ assert.equal(problem.title,'Edited focus');assert.equal(problem.priority,'P0');assert.equal($('#train-panel-work').hidden,false);
+ assert.equal($('#train-title').disabled,true,'assignment is tied to saved problem details');
+ $('#assignment-form').handlers.submit({preventDefault(){}});await new Promise(resolve=>setImmediate(resolve));
+ const req=requests.find(r=>r.path.endsWith('/preview'));
+ assert.equal(req.body.problem_id,'run:test');assert.equal(req.body.problem_revision,'r2');assert.equal(req.body.priority,'P0');
  assert.equal(previewCount,1);assert.equal(confirmCount,0,'preview must not write');
  $('#train-cancel').handlers.click();assert.equal(confirmCount,0);
- await ctx.previewTraining({operation:'assignment'});
- await $('#train-confirm').handlers.click();
+ await ctx.previewTraining({operation:'assignment'});await $('#train-confirm').handlers.click();
  assert.equal(confirmCount,1);assert.equal($('#train-handoff').value,'Paste START');
  await $('#train-confirm').handlers.click();assert.equal(confirmCount,1,'double confirm is ignored');
- assert.equal(ctx.leaveTraining(),true);assert.equal($('#training-view').hidden,true);
- assert.equal(ctx.leaveTraining(),false);
- console.log('PASS: Training open/back, metrics, preview/cancel/confirm and paste-ready result');
+ $('#train-filter').value='done';ctx.renderProblems();assert.match($('#train-problem-count').textContent,/0 done/);
+ $('#train-filter').value='open';ctx.renderProblems();
+ const actions=$('#train-problems').children[0].children[2];
+ await actions.children[0].handlers.click();assert.equal(problem.status,'done');
+ $('#train-filter').value='done';ctx.renderProblems();
+ await $('#train-problems').children[0].children[2].children[1].handlers.click();
+ assert.equal(requests.at(-1).body.operation,'problem_delete');assert.equal(confirmCount,1,'delete only previews');
+ console.log('PASS: Training panels, problem edits/priority/evidence, status filters, delete preview, confirmed handoff');
 })().catch(error=>{console.error(error);process.exitCode=1;});

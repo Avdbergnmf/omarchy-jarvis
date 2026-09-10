@@ -1,26 +1,23 @@
-# Session (in-flight agent work)
-
-> Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
+# Session — A-016
 
 ## Active goal
-- Assignment: _(desk queued Training track **A-016 → A-017 → A-018**; claim A-016 with NEW_AGENT)_
-- Area: area:overlay
-- Branch: main
+- Assignment: **A-016 — Training window overhaul** (done; merging handoff)
+- Owner: Codex for Alex
+- Branch: `a016-training-window`
+- Worktree: `/home/omarchy/Work/omarchy-jarvis-a016-training-window`
+- Area: overlay + scoped Training APIs
+- Batch: 1
+
+## Ownership reconciliation
+- Checked all five worktrees read-only: prior assignments record completed handoffs; none active.
+- A-015 is completed on `a015-plan-detail`, awaiting merge; main's queued row is stale.
+- Alex explicitly requested all non-main branches merged and old clean branches removed after this assignment.
 
 ## Checklist
-- [ ] A-016 Problems-first Training window — queued
-- [ ] A-017 Assignments panel — queued (after A-016)
-- [ ] A-018 Agent monitor tiles + visible windows — queued (after A-017)
-- [ ] A-015 Plan detail — queued (after Training track)
+- [x] Separate Training window and panel navigation
+- [x] Persistent Problems list/detail, priority, triage and confirmed assignment generation
+- [x] Tests, ADR, human validation catalog, PROGRESS
+- [ ] Commit/push, merge finished branches, reconcile bookkeeping and clean merged trees
 
-## Done this session (evidence)
-- Desk (Firsty): filed A-018 Agent monitor from Alex brief (tiles, open Hyprland agent window, assignment list, interactive queue board)
-
-## Next action (one concrete step)
-- Coding agent: NEW_AGENT → claim **A-016**
-
-## Parallel agent
-- none (overlay serial)
-
-## Blockers
-- A-017 blocked by A-016; A-018 blocked by A-017
+## Next action
+Commit/push A-016, merge finished A-015/A-016 with current queue preserved, then clean merged branches per Alex.

@@ -4,7 +4,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| A-016 | Training window overhaul (Problems-first) | queued | area:overlay | NO | [active/A-016-training-window-overhaul.md](active/A-016-training-window-overhaul.md) |
+| A-016 | Training window overhaul (Problems-first) | done | area:overlay | NO | [done/A-016-training-window-overhaul.md](done/A-016-training-window-overhaul.md) |
 | A-017 | Training Assignments panel (list/edit/generate/handoff) | queued | area:overlay | NO | [active/A-017-training-assignments-panel.md](active/A-017-training-assignments-panel.md) |
 | A-018 | Training Agent monitor (tiles + visible windows) | queued | area:overlay | NO | [active/A-018-training-agent-monitor.md](active/A-018-training-agent-monitor.md) |
 | A-015 | Richer readable plan details on approve | queued | area:overlay | NO | [active/A-015-training.md](active/A-015-training.md) |
