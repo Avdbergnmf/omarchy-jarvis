@@ -84,8 +84,14 @@ class Journal:
             current = self.logs / 'journal/CURRENT.jsonl'
             if current.exists() and current.stat().st_size:
                 with current.open() as src:
-                    old = json.loads(src.readline())['jarvis_version']
-                if old != self.version:
+                    try:
+                        old = json.loads(src.readline())['jarvis_version']
+                        if not isinstance(old, str):
+                            old = 'unknown'
+                    except (ValueError, KeyError, TypeError):
+                        # Preserve damaged evidence, then allow subsequent runs to log.
+                        old = 'unknown'
+                if old == 'unknown' or old != self.version:
                     archive = current.parent / 'archive'
                     archive.mkdir(parents=True, exist_ok=True, mode=0o700)
                     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')

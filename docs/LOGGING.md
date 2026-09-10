@@ -76,7 +76,9 @@ the first record, not the whole file. Version and git revision are cached at sta
 no git calls occur during runs or polls. To investigate old behavior, use the archived
 journal's git_describe to find the producing commit (a dirty suffix means uncommitted
 changes were present). Git history retains code/schema, **not** ignored private logs;
-keep local archives if old run evidence is needed. Per-run console projections survive rotation.
+keep local archives if old run evidence is needed. Per-run console projections survive rotation. A malformed or missing version in the first
+record also rotates CURRENT to an `vunknown-<timestamp>.jsonl` archive, preserving its
+bytes so later runs can log again; ordinary I/O failures still report to service stderr.
 
 ## Retention and temp cleanup (A-006)
 

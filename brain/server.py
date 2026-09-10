@@ -66,7 +66,7 @@ def journal_event(run_id, phase, **fields):
 
 def log(run_id, event, value):
     if event == 'plan':
-        journal_event(run_id, 'process', process=clean(json.loads(value)))
+        journal_event(run_id, 'process', process=json.loads(value))
         return
     if CONFIG.get('log_level', 'info') != 'debug':
         return

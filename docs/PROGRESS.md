@@ -260,3 +260,6 @@ Claimed by Codex on `a014-hygiene` in the assigned absolute worktree; desk and t
 
 ## 2026-09-10 — A-014 Chunk 4
 - Worked: shared empty-plan guard catches blank replies, bare completion and common first-person claims; tools completion now uses executed labels. 89 tests pass; VERSION 0.4.2. Limitation: lexical guard is not semantic verification. Shared live service was not restarted (other track owns it); deploy/restart and CURRENT version rotation remain for merge handoff.
+
+## 2026-09-10 — A-014 Chunk 5
+- Worked: malformed CURRENT headers now archive byte-for-byte instead of blocking all later evidence; removed redundant plan cleaning before Journal.write. 91 tests pass, including quiet access logging and damaged-header recovery; existing debug/retention/version-rotation tests stay green. No live journal reset.
