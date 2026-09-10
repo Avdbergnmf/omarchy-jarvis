@@ -18,9 +18,58 @@ extract_rows() {
 row_id() { echo "$1" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$2); print $2}'; }
 row_status() { echo "$1" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$4); print $4}'; }
 row_area() { echo "$1" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$5); print $5}'; }
+row_parallel() { echo "$1" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$6); print $6}'; }
 # A-037: the brief's own path link (last markdown link in the row), independent of any
 # columns added between area and path (e.g. the depth column) — never index by position here.
 row_path() { echo "$1" | grep -oE '\]\([^)]+\)' | tail -1 | sed -E 's/^\]\(|\)$//g' || true; }
+
+# ADR-048: NO is a reasoned kill-switch. Closed vocabulary lives in the brief's parallel-ok line.
+NO_REASON_RE='control-plane|single-writer|human-serial'
+
+is_reasoned_no() {
+  local raw=$1
+  [[ "$raw" =~ ^[Nn][Oo]([[:space:]]|$) ]] || return 1
+  echo "$raw" | grep -qiE "$NO_REASON_RE"
+}
+
+is_bare_no() {
+  local raw=$1
+  [[ "$raw" =~ ^[Nn][Oo]([[:space:]]|$) ]] || return 1
+  ! echo "$raw" | grep -qiE "$NO_REASON_RE"
+}
+
+# Soft path hints: Allowed/Forbidden/Soft path hints lines. Empty/"none" never overlap.
+brief_hint_paths() {
+  local body=$1
+  printf '%s\n' "$body" | grep -iE '^- \*\*(Allowed paths|Forbidden paths|Soft path hints)' \
+    | sed -E 's/^- \*\*[^:]+:\*\*[[:space:]]*//' \
+    | tr ',' '\n' \
+    | sed -E 's/\([^)]*\)//g; s/`//g; s/^[[:space:]]+|[[:space:]]+$//g' \
+    | grep -vE '^(none)?$' || true
+}
+
+# Conservative prefix overlap (same idea as agent-status.py), but empty tokens never match.
+# Prints the overlapping token on stdout and returns 0 when any pair intersects.
+paths_intersect() {
+  local left=$1 right=$2 a b a_root b_root
+  while IFS= read -r a; do
+    [[ -z "$a" ]] && continue
+    a_root=${a%%[\*\?\[]*}
+    a_root=${a_root%/}
+    [[ -z "$a_root" ]] && continue
+    while IFS= read -r b; do
+      [[ -z "$b" ]] && continue
+      b_root=${b%%[\*\?\[]*}
+      b_root=${b_root%/}
+      [[ -z "$b_root" ]] && continue
+      if [[ "$a_root" == "$b_root" || "$a_root" == "$b_root"/* || "$b_root" == "$a_root"/* ]]; then
+        printf '%s' "$a_root"
+        return 0
+      fi
+    done <<<"$right"
+  done <<<"$left"
+  return 1
+}
 
 echo "=== Worktree isolation (read-only hints) ==="
 CURRENT_BRANCH=$(git symbolic-ref --quiet --short HEAD || printf 'detached HEAD')
@@ -129,6 +178,8 @@ for row in "${INDEX_ROWS[@]+"${INDEX_ROWS[@]}"}"; do
   STATUS_BY_ID["$(row_id "$row")"]="$(row_status "$row")"
 done
 declare -A UNMET_BY_ID=()
+declare -A PARALLEL_RAW_BY_ID=()
+declare -A HINTS_BY_ID=()
 ANY_BLOCKED=0
 for row in "${ROWS[@]+"${ROWS[@]}"}"; do
   RID=$(row_id "$row")
@@ -136,6 +187,10 @@ for row in "${ROWS[@]+"${ROWS[@]}"}"; do
   [[ "$RPATH" == active/* ]] || continue
   BODY=$(brief_text "$RPATH")
   [[ -n "$BODY" ]] || continue
+  PARALLEL_RAW=$(brief_meta "$BODY" 'parallel-ok')
+  [[ -n "$PARALLEL_RAW" ]] || PARALLEL_RAW=$(row_parallel "$row")
+  PARALLEL_RAW_BY_ID["$RID"]="$PARALLEL_RAW"
+  HINTS_BY_ID["$RID"]="$(brief_hint_paths "$BODY")"
   BLOCKED_BY_RAW=$(brief_meta "$BODY" 'Blocked-by')
   GATE_RAW=$(brief_meta "$BODY" 'Gate')
   # A-037 hardening: strip parentheticals and em-dash prose before extracting ids; dedupe.
@@ -187,6 +242,25 @@ for row in "${ROWS[@]+"${ROWS[@]}"}"; do
 done
 if ((${#IN_PROG[@]} == 0)); then
   echo "(none)"
+fi
+
+echo
+echo "=== parallel-ok (ADR-048 reasoned kill-switch) ==="
+ANY_NO=0
+for row in "${ROWS[@]+"${ROWS[@]}"}"; do
+  RID=$(row_id "$row")
+  RAW="${PARALLEL_RAW_BY_ID[$RID]:-}"
+  [[ -n "$RAW" ]] || RAW=$(row_parallel "$row")
+  if [[ "$RAW" =~ ^[Nn][Oo]([[:space:]]|$) ]]; then
+    ANY_NO=1
+    printf 'NO: %s — %s\n' "$RID" "$RAW"
+    if is_bare_no "$RAW"; then
+      printf 'WARNING: %s is parallel-ok: NO with no reason — treat as YES pending desk review\n' "$RID"
+    fi
+  fi
+done
+if ((ANY_NO == 0)); then
+  echo "(no NO rows in the live queue)"
 fi
 
 echo
@@ -245,32 +319,50 @@ if ((${#IN_PROG[@]} == 0)); then
   exit 0
 fi
 
-echo "Something is already in_progress. You may only claim queued + parallel-ok: YES with an area:"
-echo "different from every in_progress row below (A-023/ADR-034: area + worktree is the isolation;"
-echo "any Allowed/Forbidden paths in active/*.md are optional context, never a gate — same area never"
-echo "counts as parallel-safe just because paths look disjoint)."
+echo "Something is already in_progress. Claimability is computed (ADR-048): queued, Blocked-by met,"
+echo "area different from every in_progress row (ADR-034), and not a reasoned parallel-ok: NO"
+echo "(control-plane / single-writer / human-serial). A bare NO is a filing bug — warned above,"
+echo "treated as YES pending desk review. Allowed/Forbidden paths are optional context, never a gate."
+echo "Alex may authorize an area-disjoint reasoned-NO row with an explicit override phrase"
+echo "(e.g. \"force parallel A-NNN\"); record it in SESSION when used."
 IN_PROG_AREAS=()
+IN_PROG_IDS=()
 for row in "${IN_PROG[@]}"; do
   IN_PROG_AREAS+=("$(row_area "$row")")
+  IN_PROG_IDS+=("$(row_id "$row")")
 done
 FOUND=0
 for row in "${ROWS[@]}"; do
-  if echo "$row" | grep -qi '| queued |' && echo "$row" | grep -qi '| YES |'; then
-    RID=$(row_id "$row")
-    if [[ -n "${UNMET_BY_ID[$RID]:-}" ]]; then
-      echo "Skipping $RID (queued but Blocked-by ${UNMET_BY_ID[$RID]} not done yet) — see Blocked-by section above."
-      continue
-    fi
-    ROW_AREA=$(row_area "$row")
-    CONFLICT=0
-    for A in "${IN_PROG_AREAS[@]}"; do
-      [[ "$ROW_AREA" == "$A" ]] && CONFLICT=1 && break
+  echo "$row" | grep -qi '| queued |' || continue
+  RID=$(row_id "$row")
+  if [[ -n "${UNMET_BY_ID[$RID]:-}" ]]; then
+    echo "Skipping $RID (queued but Blocked-by ${UNMET_BY_ID[$RID]} not done yet) — see Blocked-by section above."
+    continue
+  fi
+  RAW="${PARALLEL_RAW_BY_ID[$RID]:-}"
+  [[ -n "$RAW" ]] || RAW=$(row_parallel "$row")
+  if is_reasoned_no "$RAW"; then
+    echo "Skipping $RID (queued but parallel-ok: $RAW) — reasoned kill-switch (ADR-048)."
+    continue
+  fi
+  ROW_AREA=$(row_area "$row")
+  CONFLICT=0
+  for A in "${IN_PROG_AREAS[@]}"; do
+    [[ "$ROW_AREA" == "$A" ]] && CONFLICT=1 && break
+  done
+  if ((CONFLICT == 0)); then
+    echo "Candidate ($ROW_AREA differs from every in_progress area):"
+    echo "$row"
+    FOUND=1
+    # HEADS-UP is notice-only: never remove this candidate (ADR-034/ADR-048).
+    for ip_id in "${IN_PROG_IDS[@]}"; do
+      overlap=""
+      overlap=$(paths_intersect "${HINTS_BY_ID[$RID]:-}" "${HINTS_BY_ID[$ip_id]:-}" || true)
+      if [[ -n "$overlap" ]]; then
+        printf 'HEADS-UP: %s soft path hints intersect in_progress %s (%s) — human notice only, not a gate\n' \
+          "$RID" "$ip_id" "$overlap"
+      fi
     done
-    if ((CONFLICT == 0)); then
-      echo "Candidate ($ROW_AREA differs from every in_progress area):"
-      echo "$row"
-      FOUND=1
-    fi
   fi
 done
 if ((FOUND == 0)); then

@@ -400,3 +400,65 @@ same missing step, and it is the entire argument for the rule.
 - Nothing here waits on, assumes, or restores branch protection. A-027 is cancelled (ADR-046):
   `main` stays human-reviewed and is not API-enforced, unattended Forge and auto-merge stay off,
   and no rule in this audit would behave differently if protection existed.
+
+## Follow-up proposal (A-042): split `area:docs` → `area:docs` + `area:control-plane`
+
+**Decision: deferred to Alex. A-042 does not change `AREAS`, GitHub labels, or any row's `area:`.**
+
+Option 2 of this audit is still the right precision fix: product documentation and eval
+*specifications-as-docs* stay `area:docs`; the claim/approval/promotion machinery becomes
+`area:control-plane`, so "single writer for the control plane" falls out of the existing
+area-disjointness check instead of living in a flag.
+
+### What would move (open and recently closed)
+
+Live queue at A-042 closeout is empty after this row lands. The interesting set is historical
+Wave 0 / process rows that were `area:docs` because that was the catch-all:
+
+| id | current area | proposed | why |
+|----|--------------|----------|-----|
+| A-027 | docs (cancelled) | control-plane | promotion / Forge actor |
+| A-028 | docs (done) | control-plane | candidate-eval foundation, oracles |
+| A-030 | docs (done) | control-plane | CODEOWNERS + authority map |
+| A-031 | docs (done) | control-plane | protected evaluator / stochastic cases |
+| A-037 | docs (done) | control-plane | Blocked-by/Gate claim machinery |
+| A-039 | docs (done) | control-plane | claim-on-`origin/main` protocol |
+| A-040 | docs (done) | docs *or* control-plane | test-suite policy / CI wrappers — Alex's call |
+| A-042 | docs (this row) | control-plane | claim-rule / Training default tooling |
+| A-026 | docs (done) | control-plane | ledger schema is Control Plane (ADR-050) |
+| A-001 / A-002 / A-013 / A-023 | docs (done) | docs | process prose, not the machinery |
+| A-032 | docs (done) | docs | review artifact |
+
+No currently queued product-docs row would move. Future filings that rewrite `START.md`,
+`AGENTS.md`, paste prompts, `assignment-status.sh`, CODEOWNERS, promotion policy, or the
+ledger/eval schemas should be born `area:control-plane`.
+
+### Code and labels that would have to change
+
+- `AREAS` is a closed tuple in **two** places: `brain/training.py` and `scripts/agent-status.py`
+  (`('overlay', 'brain', 'actions', 'skills', 'docs')`). Adding `control-plane` is a coordinated
+  edit of both, plus Training's area picker UI (A-041's Agent Monitor is out of this proposal's
+  implement scope; it would start accepting the new value the moment `AREAS` grows).
+- Five GitHub area labels exist on the real repository (`area:overlay`, `area:brain`,
+  `area:actions`, `area:skills`, `area:docs`). A sixth (`area:control-plane`) has to be created
+  **before** any issue or assignment uses it, or `agent-status.py` will park those issues under
+  `unassigned`.
+- `docs/assignments/TEMPLATE.md`, `START.md`'s area list, `.github/ISSUE_TEMPLATE/*`, and
+  `docs/templates/ISSUE_{BUG,FEATURE}.md` all enumerate the five areas.
+
+### Safe migration for in-flight rows
+
+Do **not** re-area a row while it is `in_progress`. That is the shared-bookkeeping race this
+audit already named: another agent's claim hint would change under them. Sequence:
+
+1. Create the GitHub label. Land the `AREAS` tuple + template/START enumeration in one PR with
+   no row-area edits (queued rows keep `area:docs` and remain serialized with each other until
+   step 2).
+2. Desk pass: retag **queued** (not `in_progress`) rows whose briefs are control-plane work.
+   `done/` / `cancelled` rows stay historical; rewriting them is optional and must not be
+   mixed with a live claim.
+3. Only after step 2 has been on `origin/main` may a new `area:control-plane` row be claimed
+   beside an `area:docs` row.
+
+Until Alex takes this, `parallel-ok: NO (control-plane)` remains the kill-switch that covers
+the same set, at the cost of a flag instead of an area.

@@ -30,7 +30,7 @@ Related: `docs/passes/` for large historical briefs; prefer **assignments** for 
 `queued` → `in_progress` → `done` (or `blocked` / `cancelled`)
 
 Rules:
-- **One primary `in_progress`** unless extras are `parallel-ok: YES` with disjoint `area:`.
+- **One primary `in_progress`** unless extras are area-disjoint and not a reasoned `parallel-ok: NO` (ADR-048; YES is the default).
 - Coding agents check off boxes in the assignment file and mirror “Next action” in `docs/SESSION.md`.
 - On done: move `active/A-###-*.md` → `done/`, update QUEUE + INDEX + PROGRESS.
 
@@ -96,7 +96,8 @@ recovery](../../START.md#recovering-a-stale-claim), not silently reclaimed.
 - Checklist items must be **verifiable**.
 - Explicit **out of scope** to stop mega-passes.
 - Link existing ADRs/passes instead of pasting novels.
-- Leave `parallel-ok: YES` (default, ADR-048) unless a reasoned kill-switch applies (`control-plane` / `single-writer` / `human-serial`). Do not encode ordering in the flag — use `Blocked-by:`.
+- Leave `parallel-ok: YES` (default, ADR-048) unless a reasoned kill-switch applies (`control-plane` / `single-writer` / `human-serial`). Do not encode ordering in the flag — use `Blocked-by:`. A bare `NO` is a filing bug; `assignment-status.sh` warns and the desk treats it as YES pending review.
+- `parallel-ok` is **workflow-owned** (ADR-031): Training's Assignments editor cannot change it (`META_FIELDS` omits it; later saves preserve `current['parallel']`). Desk or a coding agent sets the flag in the brief and the QUEUE/INDEX row. That is why the editor cannot undo a kill-switch — or a leftover `NO`.
 - Closing behavior work needs a relevant regression artifact (a `tests/` case, and a
   [`docs/evals/`](../evals/README.md) entry when it names a capability/regression worth
   pinning) or a documented reason only human/VM validation is possible (A-028).
@@ -113,7 +114,7 @@ Never tell Alex to paste agent session logs into the next agent. Point at QUEUE 
 
 ## Visibility for humans
 - **Who is working right now?** `docs/SESSION.md` (Active goal) and any QUEUE row with `in_progress`.
-- **What can a second agent take?** `./scripts/assignment-status.sh` (claim hint). New agents follow `prompts/NEW_AGENT.txt`: prefer `parallel-ok: YES` when something is already in progress; otherwise reply **No assignment in queue is possible right now** with the queue list.
+- **What can a second agent take?** `./scripts/assignment-status.sh` (claim hint). New agents follow `prompts/NEW_AGENT.txt` and compute the **same** claim set as the script (ADR-048): queued, Blocked-by met, disjoint `area:`, not a reasoned `NO`. A bare `NO` is warned and treated as YES pending desk review. Alex may `force parallel A-NNN` for an area-disjoint reasoned-`NO` row (record in SESSION). If nothing matches, reply **No assignment in queue is possible right now** with the queue list.
 
 ## One assignment then report (default)
 Coding agents complete **a single** assignment per invocation unless Alex explicitly enables a batch (`keep going`, `batch N`, `until queue empty`). After each assignment they update QUEUE/SESSION/PROGRESS; after the batch (or the single default) they **stop and summarize** for Alex instead of silently draining the queue.
@@ -121,8 +122,8 @@ Coding agents complete **a single** assignment per invocation unless Alex explic
 ## Training-authored assignments and local slots
 Training previews generate a monotonic A-NNN brief, queued QUEUE/INDEX rows and an active
 handoff using NEW_AGENT/CONTINUE. The user sees exact bytes and confirms before writing.
-Rows are serial by default with area scope, an optional soft path hint, a verification
-checklist and source evidence. Human comments should state the expected outcome; an agent must clarify
+Rows default to `parallel-ok: YES` (ADR-048) with area scope, an optional soft path hint, a verification
+checklist and source evidence. The editor cannot change `parallel-ok` (workflow-owned, ADR-031). Human comments should state the expected outcome; an agent must clarify
 insufficient acceptance before broadening work. Preparation does not claim the assignment.
 
 Local slots are stored in ignored `logs/training/agents.json` (version 1, `agents` list),

@@ -11,7 +11,7 @@ Then set SESSION `Batch: N` or `Batch: until-empty` and after each done assignme
 
 ## Steps
 1) Run `./scripts/assignment-status.sh` (fetches + reads canonical `origin/main`, not your local branch). Read START.md (skim), QUEUE.md, SESSION.md.
-2) Resume SESSION’s in_progress (or claim per NEW_AGENT rules, skipping unmet `Blocked-by`, if none and user said continue/next). A fresh claim must be **pushed to `origin/main`** before you touch product code — see below.
+2) Resume SESSION’s in_progress (or claim per NEW_AGENT / `assignment-status.sh` rules — ADR-048 computed claimability, not “only parallel-ok: YES” — skipping unmet `Blocked-by` and reasoned `NO`, if none and user said continue/next). A fresh claim must be **pushed to `origin/main`** before you touch product code — see below. An Alex `force parallel A-NNN` override of an area-disjoint reasoned-`NO` row must be recorded in SESSION.
 3) Work checklist; flush SESSION Next action before any pause.
 4) On acceptance: QUEUE/INDEX → done; move file to docs/assignments/done/; PROGRESS note.
 5) If batch remaining → claim next claimable; else **stop and summarize for Alex**.

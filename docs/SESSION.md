@@ -3,6 +3,7 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
+- **A-042** done — Parallel claimability tooling migration (ADR-048 tooling)
 - **A-035** done — Latency distributions, version compare, ledger hooks (ADR-054)
 - **A-034** done — Training Latency Profiler UI (ADR-053); merged PR #30
 - **A-041** done — Agent Manager visible per-agent auto-queues (ADR-043); merged PR #31, version 0.5.11 restarted
@@ -25,6 +26,7 @@
 - [x] A-034 Training Latency Profiler UI — done (ADR-053); force-parallel with A-041
 - [x] A-041 Agent Monitor redesign — done (ADR-043); human validation remains unvalidated
 - [x] A-035 Latency distributions / compare / ledger PERF hook — done (ADR-054); budgets are placeholders, no IMP allocated
+- [x] A-042 Parallel claimability tooling — done (ADR-048 tooling; `area:control-plane` split left to Alex)
 
 ## Done this session (evidence)
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
@@ -44,9 +46,10 @@
 - Codex: implemented A-041 (ADR-043) — Agent Manager status-colored top tiles, per-agent FIFO queues, canonical available-work/auto-advance checks, automatic cold-start-vs-continue, and visible-window prompt preparation without automatic paste/submit. Updated `feat-agent-monitor`; 256 Python tests + five JS suites pass.
 - Cursor/Grok: implemented A-034 (ADR-053) — Training Latency panel: MRL history bars + waterfall inspector on the A-033 store. Incomplete/error traces stay listed. Did not edit `overlay/agents.js`.
 - Cursor/Grok: claimed A-035 via PR #33 (merged). Implemented A-035 (ADR-054) on `cursor/a035-latency-distributions-a468` from `origin/main`: nearest-rank p50/p90/p95/p99, bounded filters, version/SHA compare, slow-tail jump, Copy PERF note. Budget keys unset by default and never enforced. Did not write `docs/ledger/` or allocate IMP-007.
+- Cursor/Grok: implemented A-042 (ADR-048 tooling) on `cursor/a042-parallel-claimability-tooling-967e` from `origin/main`. Training new-brief default YES (workflow-owned, not META_FIELDS); assignment-status reasons/warnings/HEADS-UP; paste prompts match the script; agent-status dropped the path-fence rule. `area:docs` vs `area:control-plane` written, not executed. Queue empty after this row.
 
 ## Next action (one concrete step)
-- Stop. Next QUEUE row is **A-042** (depth **medium**, `parallel-ok: NO`). Do not start it.
+- Stop. Queue is empty. Do not invent work.
 
 ## Parallel agent
 - none
