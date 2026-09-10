@@ -458,3 +458,30 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: queue A-023 simplify assignment path scope
 - Alex: hard Allowed/Forbidden paths cause constant expansion asks; worktrees already isolate.
 - Prefer area + worktree; paths as optional soft hints. Filed [A-023](assignments/active/A-023-simplify-assignment-path-scope.md).
+
+## 2026-09-10 — A-019 Proposed-action bubble UX
+- Alex (follow-up to A-015): brain-side labels improved, but the overlay still showed a bare
+  tool/skill name plus `key=value` soup in the actions list, with the actually-descriptive
+  reply text stuck in a separate, truncated, below-bubble status line.
+- `renderPlan()` now builds each proposed action as a `.action-card`: a friendly title from
+  `actionTitle()` (covers all 12 tools in `tools.json`), any leftover argument as a small
+  individually-truncating chip (`title=` attribute for the full value on hover), and — for
+  `run_skill` — the plan's own `reply` (A-015's skill description) as the card's description
+  line. `#status` during `awaiting_approval` now says a fixed "Review the plan below."
+  instead of repeating that reply, retiring the redundant text dump Alex named directly.
+- Found while testing: `tests/overlay.test.cjs`'s DOM mock never actually cleared `.children`
+  on `innerHTML=''` (every other test file's mock does), and the mocked `setTimeout` fires
+  synchronously — a background poll chain that outlives a thrown assertion (previously masked
+  because the assertion never failed) became a genuine unbounded-growth hang once bubbles were
+  multi-node. Fixed the mock and hardened the test's outer `.catch` to `process.exit(1)` so a
+  real future failure reports loudly instead of hanging.
+- Evidence: 141 Python tests pass (unchanged — overlay-only), all five JS suites pass
+  (`tests/overlay.test.cjs` gained bubble-content assertions for both a `run_skill` plan and a
+  `report_bug` draft's chips), `doctor.sh --syntax` passes. VERSION 0.5.7 → 0.5.8; ADR-035;
+  `feat-overlay-chat`'s guided steps updated to describe the bubble instead of the old
+  below-bubble text, correctly re-flipping it to unvalidated.
+- Limitation: no live overlay/Hyprland in this sandbox — visual layout (wrapping, chip
+  truncation) is CSS-reviewed, not screenshot-verified. Alex should glance at a real plan
+  (e.g. "open my planning in a new workspace") once merged and confirm it reads cleanly.
+- Live step list (`renderSteps`) untouched — it already shows A-015's server-computed
+  `action_label()` text, which was the right fix for that surface already.

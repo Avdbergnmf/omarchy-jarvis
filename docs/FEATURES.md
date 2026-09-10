@@ -5,7 +5,7 @@ Agents must update definitions when shipping user-visible behavior. Automated te
 
 | id | title | area | status | last tested version |
 |---|---|---|---|---|
-| feat-overlay-chat | Overlay chat and approval | overlay | validated | 0.5.6 |
+| feat-overlay-chat | Overlay chat and approval | overlay | unvalidated | 0.5.6 |
 | feat-open-planning | Open planning workspace | skills | unvalidated | — |
 | feat-scratch-mail | Scratchpad and Outlook | skills | validated | 0.5.6 |
 | feat-report-feature | Bug and feature intake | brain | unvalidated | — |

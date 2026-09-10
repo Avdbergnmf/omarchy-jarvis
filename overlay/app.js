@@ -94,18 +94,61 @@ async function get(path){
  return result;
 }
 
-function describeAction(action){
- const label=((action.arguments&&action.arguments.skill)||action.tool).replace(/_/g,' ');
- const args=Object.entries(action.arguments||{}).filter(([k])=>k!=='skill').map(([k,v])=>k+'='+v).join(', ');
- return label+(args?' ('+args+')':'');
+// A-019: one friendly verb phrase per tool (using its most important argument) instead of
+// a bare tool_name plus raw key=value soup. TITLE_ARGS lists which argument(s) each title
+// already folds in, so actionChips() only surfaces genuinely extra ones as small chips.
+const ACTION_TITLES={
+ workspace_new:()=>'Create a new workspace',
+ scratch_toggle:()=>'Toggle the scratchpad',
+ scratch_move_here:()=>'Move this window to the scratchpad',
+ list_backlog:()=>'List the open backlog',
+ workspace_switch:a=>'Switch to workspace '+a.workspace,
+ run_binding:a=>'Run keybinding: '+a.binding,
+ catalog_bindings:a=>'Look up keybindings'+(a.query?': '+a.query:''),
+ open_webapp:a=>'Open '+a.name,
+ open_app_by_name:a=>'Open '+a.name,
+ run_skill:a=>'Run skill: '+a.skill,
+ report_bug:a=>'File a bug report: '+a.title,
+ report_feature:a=>'File a feature request: '+a.title,
+ prepare_handoff:a=>'Prepare a handoff for issue #'+a.issue+' → '+a.agent,
+};
+const TITLE_ARGS={
+ workspace_switch:['workspace'],run_binding:['binding'],catalog_bindings:['query'],
+ open_webapp:['name'],open_app_by_name:['name'],run_skill:['skill'],
+ report_bug:['title'],report_feature:['title'],prepare_handoff:['issue','agent'],
+};
+function actionTitle(action){
+ const build=ACTION_TITLES[action.tool];
+ return build?build(action.arguments||{}):action.tool.replace(/_/g,' ');
+}
+function actionChips(action){
+ const used=new Set(TITLE_ARGS[action.tool]||[]);
+ return Object.entries(action.arguments||{}).filter(([k])=>!used.has(k));
+}
+function actionCard(action,description){
+ const li=document.createElement('li');li.className='action-card';
+ const title=document.createElement('div');title.className='action-title';title.textContent=actionTitle(action);li.appendChild(title);
+ if(description){const desc=document.createElement('p');desc.className='action-desc';desc.textContent=description;li.appendChild(desc);}
+ const chips=actionChips(action);
+ if(chips.length){
+  const row=document.createElement('div');row.className='action-chips';
+  for(const [key,value] of chips){
+   const chip=document.createElement('span');chip.className='chip';chip.textContent=key+': '+value;chip.title=key+': '+value;
+   row.appendChild(chip);
+  }
+  li.appendChild(row);
+ }
+ return li;
 }
 
 function renderPlan(plan,draft){
  planActions.innerHTML='';
  (plan.actions||[]).forEach(action=>{
-  const li=document.createElement('li');
-  li.textContent=describeAction(action);
-  planActions.appendChild(li);
+  // run_skill's reply is a deterministic description of what the skill actually does
+  // (brain/server.py, A-015) — surfacing it here, not just once in the now-retired
+  // below-bubble status line, is the "important what" Alex asked to see in the bubble.
+  const description=action.tool==='run_skill'?plan.reply:null;
+  planActions.appendChild(actionCard(action,description));
  });
  if(draft){
   draftTitle.textContent=draft.title;
@@ -145,7 +188,10 @@ function renderFeedback(result){
 // the parts of `result` that matter for that decision.
 function render(result){
  status.className=result.status==='error'?'error':'';
- status.textContent=result.reply||result.status;
+ // A-019: the reply now lives inside the proposed-action bubble itself (see renderPlan) —
+ // showing it again here too was the "separate hard-to-read text dump underneath" Alex
+ // asked to retire, and this single-line output truncates long replies anyway.
+ status.textContent=result.status==='awaiting_approval'?'Review the plan below.':(result.reply||result.status);
  const key=result.status+'|'+result.reply+'|'+JSON.stringify(result.plan)+'|'+JSON.stringify(result.draft);
  const isNewState=key!==lastRenderKey;
  lastRenderKey=key;

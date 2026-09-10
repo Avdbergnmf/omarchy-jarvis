@@ -13,13 +13,13 @@
           "prompt": "hello"
         },
         {
-          "text": "Type: switch to workspace 1. Inspect the proposed plan before approving.",
+          "text": "Type: switch to workspace 1. Inspect the proposed-action bubble — it should read as a scannable card (a friendly title like \"Switch to workspace 1\"), not a below-bubble text dump.",
           "kind": "auto",
           "prompt": "switch to workspace 1"
         },
         "Choose Cancel and confirm the desktop was not changed.",
         {
-          "text": "Type: open my planning in a new workspace. Inspect the plan preview before approving — the reply should describe what the skill actually does (which apps, on a new workspace), not just name the skill.",
+          "text": "Type: open my planning in a new workspace. Inspect the proposed-action bubble before approving — the skill's description (which apps, on a new workspace) should appear inside the bubble itself, and the line above the bubble should just say \"Review the plan below.\", not repeat the description.",
           "kind": "auto",
           "prompt": "open my planning in a new workspace"
         }
@@ -37,7 +37,7 @@
         "result": "validated"
       },
       "jarvis_version": "0.5.6",
-      "jarvis_version_shipped": "0.5.7"
+      "jarvis_version_shipped": "0.5.8"
     },
     {
       "id": "feat-open-planning",

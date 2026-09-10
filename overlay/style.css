@@ -15,6 +15,12 @@ li{font-size:13px;padding:6px 8px;border-radius:5px;background:#232c3d}
 li.step-running{color:#e8edf5}
 li.step-done{color:#9dd9d2}
 li.step-error{color:#ffb3a8}
+#plan-actions{max-height:260px}
+.action-card{display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:#232c3d}
+.action-title{font-size:14px;font-weight:600;color:#e8edf5;overflow-wrap:anywhere}
+.action-desc{margin:0;font-size:12px;line-height:1.5;color:#aab3c4;overflow-wrap:anywhere}
+.action-chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11px;background:#141820;border:1px solid #343c4b;border-radius:4px;padding:2px 7px;color:#9dd9d2;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #plan-buttons{display:flex;gap:10px;margin-top:10px}
 #qa p{margin:0 0 10px;font-size:14px}
 #qa-form{display:flex;flex-direction:column;gap:10px}
