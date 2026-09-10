@@ -225,3 +225,31 @@ class AssignmentTest(unittest.TestCase):
         proposal=training.preview(self.root,dict(operation='assignment_save',assignment_id=aid,revision=detail['revision'],fields=fields))
         training.confirm(self.root,proposal['preview_id'])
         self.assertEqual(training.assignment_detail(self.root,aid)['priority'],'P2')
+
+    def test_new_training_draft_defaults_parallel_ok_yes(self):
+        # A-042/ADR-048: Training-authored rows are born YES; the editor cannot flip the flag.
+        aid=self.create()
+        detail=training.assignment_detail(self.root,aid)
+        self.assertIn('- **parallel-ok:** YES', (self.root/detail['path']).read_text())
+        self.assertEqual(detail['parallel'],'YES')
+        for name in [training.QUEUE,training.INDEX]:
+            self.assertRegex((self.root/name).read_text(), rf'\| {aid} \| .* \| queued \| area:overlay \| YES \|')
+
+    def test_existing_parallel_ok_survives_unrelated_field_edit(self):
+        # Workflow-owned (ADR-031): an unrelated title edit must not rewrite the flag.
+        aid=self.create()
+        detail=training.assignment_detail(self.root,aid)
+        path=self.root/detail['path']
+        path.write_text(path.read_text().replace('- **parallel-ok:** YES','- **parallel-ok:** NO (control-plane)'))
+        for name in [training.QUEUE,training.INDEX]:
+            p=self.root/name
+            p.write_text(p.read_text().replace(f'| {aid} | Fix focus | queued | area:overlay | YES |',
+                                               f'| {aid} | Fix focus | queued | area:overlay | NO |'))
+        detail=training.assignment_detail(self.root,aid)
+        self.assertEqual(detail['parallel'],'NO')
+        changed=dict(self.fields,title='Edited title')
+        training.confirm(self.root,training.preview(self.root,dict(operation='assignment_save',assignment_id=aid,revision=detail['revision'],fields=changed))['preview_id'])
+        self.assertEqual(training.assignment_detail(self.root,aid)['parallel'],'NO')
+        self.assertIn('- **parallel-ok:** NO (control-plane)',path.read_text())
+        for name in [training.QUEUE,training.INDEX]:
+            self.assertRegex((self.root/name).read_text(), rf'\| {aid} \| Edited title \| queued \| area:overlay \| NO \|')

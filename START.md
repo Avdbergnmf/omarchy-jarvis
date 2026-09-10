@@ -83,15 +83,21 @@ require Alex to explicitly scope the Control Plane change. See `docs/control-pla
 ## Parallel work
 
 Areas are `area:overlay`, `area:brain`, `area:actions`, `area:skills`, `area:docs`.
-Use one agent ↔ one issue ↔ one area where possible. Parallel work: `parallel-ok` defaults to **YES** (ADR-048); `NO` needs a reason (`control-plane`/`single-writer`/`human-serial`). Parallel work still requires `parallel-ok`
-and a **different `area:`** from every in-progress issue/assignment, plus the mandatory
-separate worktree/branch below — that's the isolation, not a path allowlist. `Allowed
+Use one agent ↔ one issue ↔ one area where possible. Claimability is **computed** (ADR-048),
+not declared: a `queued` row with met `Blocked-by` is claimable when nothing is `in_progress`,
+or when its `area:` differs from every `in_progress` row. `parallel-ok` defaults to **YES**.
+`NO` is a reasoned kill-switch (`control-plane` / `single-writer` / `human-serial`); a bare
+`NO` is a filing bug — tooling warns and the desk treats it as YES pending review. Isolation
+is a different `area:` plus a separate worktree/branch, not a path allowlist. `Allowed
 paths:`/`Forbidden paths:` entries are optional soft hints for context, never a gate; same
-area, no path list makes it parallel-safe (see ADR-034). `single-writer` is the default for
-brain/control-plane work. Never parallelize approve/execute or brain/server.py redesign.
-Merge before handing off contested files. agent-status groups issues by area and warns about
-shared areas and missing scope; warnings require human review, not automatic scheduling.
-Labels permit coordination; they do not authorize agent spending or spawning.
+area never counts as parallel-safe just because paths look disjoint (ADR-034). Path-hint
+overlap prints a non-blocking `HEADS-UP` at claim time. Never parallelize approve/execute or
+`brain/server.py` redesign (`single-writer` reason). Merge before handing off contested files.
+Alex may authorize claiming an area-disjoint reasoned-`NO` row with an explicit override
+phrase (e.g. `force parallel A-NNN`); record it in SESSION when used — escape hatch, not the
+policy. agent-status groups issues by area and warns about shared areas; warnings require
+human review, not automatic scheduling. Labels permit coordination; they do not authorize
+agent spending or spawning.
 
 ### Required isolation for concurrent agents
 

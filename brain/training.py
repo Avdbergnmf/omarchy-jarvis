@@ -77,6 +77,8 @@ def assignments(root, ref=None):
 
 
 # Assignment edits preserve ownership, status, parallel policy and unknown brief sections.
+# parallel-ok stays workflow-owned (ADR-031): not in META_FIELDS, so the editor cannot
+# change it and later saves keep current['parallel']. New drafts default YES (ADR-048).
 SECTION_FIELDS = {'goal': 'Goal', 'checklist': 'Checklist', 'notes': 'Human comments / evidence', 'out_of_scope': 'Out of scope'}
 META_FIELDS = {'area': 'Area', 'priority': 'Priority', 'allowed_paths': 'Allowed paths', 'forbidden_paths': 'Forbidden paths', 'blocked_by': 'Blocked-by', 'gate': 'Gate', 'improvement': 'Improvement'}
 FIELD_LIMITS = dict(title=140, goal=1400, checklist=1400, notes=1200, out_of_scope=1200, allowed_paths=600, forbidden_paths=600, blocked_by=200, gate=60, improvement=20)
@@ -193,7 +195,7 @@ def prepare_assignment_save(root, data):
         ids += [m.group(1) for p in (root/'docs/assignments').glob('*/*.md') if (m := re.match(r'A-(\d+)-', p.name))]
         aid = f'A-{max(map(int, ids), default=0)+1:03d}'
         path = f'docs/assignments/active/{aid}-training.md'
-        body = '# '+aid+' — '+fields['title']+'\n\n- **Status:** queued\n- **parallel-ok:** NO\n'
+        body = '# '+aid+' — '+fields['title']+'\n\n- **Status:** queued\n- **parallel-ok:** YES\n'
         for key, label in META_FIELDS.items(): body = set_metadata(body, label, 'area:'+fields[key] if key=='area' else fields[key])
         for key, label in SECTION_FIELDS.items(): body = set_section(body, label, fields[key])
         if data.get('problem_id'):
@@ -201,7 +203,7 @@ def prepare_assignment_save(root, data):
             before[PROBLEMS] = read(root, PROBLEMS)
             body = set_metadata(body, 'Links', problem['id'])
             body = set_section(body, 'Original problem context (read-only evidence)', json.dumps(problem['evidence'], indent=2))
-        row = assignment_row(aid, fields, 'queued', 'NO', path)
+        row = assignment_row(aid, fields, 'queued', 'YES', path)
         changes = {path: body, QUEUE: append_row(before[QUEUE], row), INDEX: append_row(before[INDEX], row)}
     changes['docs/SESSION.md'] = set_section(before['docs/SESSION.md'], 'Training preparation', f'- Last confirmed assignment save: {aid}. Preparation only; no ownership claimed or agent contacted.')
     for p in changes: before.setdefault(p, read(root, p))
@@ -640,7 +642,7 @@ def preview(root, data, version='unknown', revision='unknown'):
 - **Status:** queued
 - **Area:** area:{area}
 - **Priority:** {priority} (P0 urgent → P3 low; respect QUEUE ownership before claiming)
-- **parallel-ok:** NO
+- **parallel-ok:** YES
 - **Allowed paths:** {area}/, tests/, docs/assignments/, docs/SESSION.md, docs/PROGRESS.md, docs/DECISIONS.md
 - **Forbidden paths:** {forbidden}; approval bypass; real agent dispatch
 - **Links:** {source}
@@ -663,7 +665,7 @@ def preview(root, data, version='unknown', revision='unknown'):
 Unrelated queue work, unreviewed skills, silent cloud spending.
 '''
                 changes[path] = body
-                changes[QUEUE] = append_row(before[QUEUE], f'| {aid} | {title} | queued | area:{area} | NO | [active/{aid}-training.md](active/{aid}-training.md) |')
+                changes[QUEUE] = append_row(before[QUEUE], f'| {aid} | {title} | queued | area:{area} | YES | [active/{aid}-training.md](active/{aid}-training.md) |')
                 changes[INDEX] = append_row(before[INDEX], f'| {aid} | queued | {title} |')
             else:
                 aid = data.get('assignment_id')

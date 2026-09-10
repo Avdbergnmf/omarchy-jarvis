@@ -1,6 +1,6 @@
 # A-042 — Parallel claimability: migrate tooling and prompts to ADR-048
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:docs (+ `scripts/`, two lines of `brain/training.py`, `tests/`)
 - **parallel-ok:** NO (control-plane: claim-rule / Training default tooling — ADR-048)
 - **Recommended depth:** medium
@@ -26,35 +26,35 @@ explicit go-ahead — the area proposal below is a written recommendation, not a
 ## Checklist
 
 ### Stop the ratchet
-- [ ] `brain/training.py::prepare_assignment_save`: new briefs and their QUEUE/INDEX rows default to `parallel-ok: YES`, not `NO` (two literals)
-- [ ] Decide and record whether `parallel-ok` becomes an editable field (`META_FIELDS`) or stays workflow-owned per ADR-031; if it stays workflow-owned, say so in `docs/assignments/README.md` so the next filer knows why the editor cannot change it
-- [ ] `tests/test_assignments.py`: a new Training-authored draft is `YES`; an existing row's flag still survives an unrelated field edit
+- [x] `brain/training.py::prepare_assignment_save`: new briefs and their QUEUE/INDEX rows default to `parallel-ok: YES`, not `NO` (two literals)
+- [x] Decide and record whether `parallel-ok` becomes an editable field (`META_FIELDS`) or stays workflow-owned per ADR-031; if it stays workflow-owned, say so in `docs/assignments/README.md` so the next filer knows why the editor cannot change it
+- [x] `tests/test_assignments.py`: a new Training-authored draft is `YES`; an existing row's flag still survives an unrelated field edit
 
 ### Make a bare `NO` visible
-- [ ] `scripts/assignment-status.sh`: print each `NO` row's reason next to it, parsed from the brief's `parallel-ok:` line
-- [ ] Same script: print `WARNING: A-NNN is parallel-ok: NO with no reason — treat as YES pending desk review` for any `NO` lacking one of `control-plane` / `single-writer` / `human-serial`
-- [ ] Same script: print a non-blocking `HEADS-UP` when a candidate's soft path hints intersect an `in_progress` row's (see ADR-048's named residual risk — a human noticing, never a machine deciding; must not remove any candidate from the hint)
-- [ ] Verify the hint against a synthetic QUEUE reproducing the original bug (A-028 `in_progress` `area:docs`; A-029/A-033/A-041 queued and disjoint — all three must be offered) and against the current shape (A-029 `in_progress` `area:actions` → A-033 and A-041 offered, A-030/A-042 withheld as reasoned `NO`)
+- [x] `scripts/assignment-status.sh`: print each `NO` row's reason next to it, parsed from the brief's `parallel-ok:` line
+- [x] Same script: print `WARNING: A-NNN is parallel-ok: NO with no reason — treat as YES pending desk review` for any `NO` lacking one of `control-plane` / `single-writer` / `human-serial`
+- [x] Same script: print a non-blocking `HEADS-UP` when a candidate's soft path hints intersect an `in_progress` row's (see ADR-048's named residual risk — a human noticing, never a machine deciding; must not remove any candidate from the hint)
+- [x] Verify the hint against a synthetic QUEUE reproducing the original bug (A-028 `in_progress` `area:docs`; A-029/A-033/A-041 queued and disjoint — all three must be offered) and against the current shape (A-029 `in_progress` `area:actions` → A-033 and A-041 offered, A-030/A-042 withheld as reasoned `NO`)
 
 ### Prompts and policy prose agree with the script
-- [ ] `prompts/NEW_AGENT.txt`, `prompts/PARALLEL.txt`, `prompts/CONTINUE.txt`, `prompts/README.md`: replace "only `parallel-ok: YES`" with ADR-048's computed rule; keep claim-on-`origin/main`-first (A-039) and the minimal-token stop unchanged
-- [ ] `START.md` Parallel work section and `docs/assignments/{README,TEMPLATE}.md` re-read end to end for leftover "NO by default" phrasing
-- [ ] Document the Alex escape hatch explicitly: an override phrase may authorize claiming an area-disjoint `NO` row, recorded in SESSION when used
+- [x] `prompts/NEW_AGENT.txt`, `prompts/PARALLEL.txt`, `prompts/CONTINUE.txt`, `prompts/README.md`: replace "only `parallel-ok: YES`" with ADR-048's computed rule; keep claim-on-`origin/main`-first (A-039) and the minimal-token stop unchanged
+- [x] `START.md` Parallel work section and `docs/assignments/{README,TEMPLATE}.md` re-read end to end for leftover "NO by default" phrasing
+- [x] Document the Alex escape hatch explicitly: an override phrase may authorize claiming an area-disjoint `NO` row, recorded in SESSION when used
 
 ### Retire the contradictions on the issue side
-- [ ] `scripts/agent-status.py`: drop `parallel-ok requires Allowed paths: and Forbidden paths:` (ADR-034 made path lists soft hints) and narrow `control-plane/single-writer scope cannot be parallel-ok` so plain `area:brain` no longer trips it
-- [ ] `tests/test_journal.py`'s `agent-status` overview assertions updated to match
-- [ ] `.github/ISSUE_TEMPLATE/workstream.md` reconciled with area + worktree (also listed in A-030's checklist — whoever lands first wins; delete the duplicate item from the other brief)
+- [x] `scripts/agent-status.py`: drop `parallel-ok requires Allowed paths: and Forbidden paths:` (ADR-034 made path lists soft hints) and narrow `control-plane/single-writer scope cannot be parallel-ok` so plain `area:brain` no longer trips it
+- [x] `tests/test_journal.py`'s `agent-status` overview assertions updated to match
+- [x] `.github/ISSUE_TEMPLATE/workstream.md` reconciled with area + worktree (A-030 landed the ADR-034 wording first; this pass extended it for ADR-048). Duplicate item on A-030's done brief left checked — not rewritten.
 
 ### Write down, do not execute, the area proposal
-- [ ] Add a short section to the audit (or a follow-up ADR stub) evaluating `area:docs` → `area:docs` + `area:control-plane`: which open rows move, the `AREAS` tuple in `brain/training.py` and `scripts/agent-status.py`, the five GitHub labels, and how in-flight rows would migrate safely
-- [ ] Leave the decision to Alex; do not change `AREAS` in this assignment
+- [x] Add a short section to the audit (or a follow-up ADR stub) evaluating `area:docs` → `area:docs` + `area:control-plane`: which open rows move, the `AREAS` tuple in `brain/training.py` and `scripts/agent-status.py`, the five GitHub labels, and how in-flight rows would migrate safely
+- [x] Leave the decision to Alex; do not change `AREAS` in this assignment
 
 ### Close out
-- [ ] `./scripts/test-full.sh` green (touches `brain/` and `scripts/`); note the pre-existing `test_write_prunes_journal_archive_on_rotation` flake if it reappears
-- [ ] Update docs/SESSION.md Next action as you go
-- [ ] docs/PROGRESS.md note (append a new dated section; never edit an existing one)
-- [ ] QUEUE/INDEX → done; move this file to docs/assignments/done/
+- [x] `./scripts/test-full.sh` green (touches `brain/` and `scripts/`); note the pre-existing `test_write_prunes_journal_archive_on_rotation` flake if it reappears
+- [x] Update docs/SESSION.md Next action as you go
+- [x] docs/PROGRESS.md note (append a new dated section; never edit an existing one)
+- [x] QUEUE/INDEX → done; move this file to docs/assignments/done/
 
 ## Out of scope
 - Agent Monitor tiles / per-agent auto-queue (A-041) — reference it, do not build it

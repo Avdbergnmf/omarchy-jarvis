@@ -33,9 +33,10 @@ def overview(issues):
         labels = {l['name'] for l in issue['labels']}
         allowed, forbidden = paths(issue.get('body', ''), 'Allowed'), paths(issue.get('body', ''), 'Forbidden')
         if 'parallel-ok' in labels:
-            if not allowed or not forbidden:
-                warnings.append(f"#{issue['number']}: parallel-ok requires Allowed paths: and Forbidden paths: comma-separated lines")
-            if 'single-writer' in labels or 'area:brain' in labels or any(overlap(p, 'brain/server.py') for p in allowed):
+            # ADR-034: path lists are optional soft hints, never required for parallel-ok.
+            # ADR-048: area:brain alone is not a kill-switch; warn only for an explicit
+            # single-writer label or an allowed-path overlap with the approve/execute seam.
+            if 'single-writer' in labels or any(overlap(p, 'brain/server.py') for p in allowed):
                 warnings.append(f"#{issue['number']}: control-plane/single-writer scope cannot be parallel-ok")
             if any(overlap(a, f) for a in allowed for f in forbidden):
                 warnings.append(f"#{issue['number']}: allowed and forbidden paths overlap; narrow the scope")

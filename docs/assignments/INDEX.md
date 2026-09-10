@@ -43,4 +43,4 @@
 | A-039 | Cross-worktree claim visibility (stop double-claiming) | done | area:docs | YES | [done/A-039-cross-worktree-claim-visibility.md](done/A-039-cross-worktree-claim-visibility.md) |
 | A-040 | Test suite optimization (token cost + redundancy) | done | area:docs | NO | [done/A-040-test-suite-token-optimization.md](done/A-040-test-suite-token-optimization.md) |
 | A-041 | Agent Monitor tiles + per-agent auto-queue redesign | done | area:overlay | YES | [done/A-041-agent-monitor-tiles-per-agent-auto-queue.md](done/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
-| A-042 | Parallel claimability tooling migration (default YES + status hints) | queued | area:docs | NO | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |
+| A-042 | Parallel claimability tooling migration (default YES + status hints) | done | area:docs | NO | [done/A-042-parallel-claimability-tooling.md](done/A-042-parallel-claimability-tooling.md) |

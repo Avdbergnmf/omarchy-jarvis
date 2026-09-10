@@ -178,12 +178,19 @@ class JournalTest(unittest.TestCase):
             self.assertNotIn('private', record['value'])
 
     def test_status_scope_collisions(self):
-        def issue(number, area, body):
-            return dict(number=number, title='test', labels=[{'name': 'area:' + area}, {'name': 'parallel-ok'}], body=body)
+        def issue(number, area, body, extra_labels=()):
+            labels = [{'name': 'area:' + area}, {'name': 'parallel-ok'}]
+            labels.extend({'name': name} for name in extra_labels)
+            return dict(number=number, title='test', labels=labels, body=body)
         rows = status.overview([
             issue(1, 'docs', 'Allowed paths: docs/\nForbidden paths: brain/'),
             issue(2, 'overlay', 'Allowed paths: docs/LOGGING.md\nForbidden paths: actions/'),
-            issue(3, 'brain', '')])
+            issue(3, 'brain', ''),
+            issue(4, 'overlay', 'Allowed paths: overlay/', extra_labels=('single-writer',)),
+            issue(5, 'actions', 'Allowed paths: brain/server.py\nForbidden paths: overlay/')])
         self.assertTrue(any('#1 / #2: potential collision' in row for row in rows))
-        self.assertTrue(any('#3: control-plane' in row for row in rows))
-        self.assertTrue(any('#3: parallel-ok requires' in row for row in rows))
+        # ADR-034/ADR-048: path lists are optional; area:brain alone is not a kill-switch.
+        self.assertFalse(any('#3: parallel-ok requires' in row for row in rows))
+        self.assertFalse(any('#3: control-plane' in row for row in rows))
+        self.assertTrue(any('#4: control-plane/single-writer' in row for row in rows))
+        self.assertTrue(any('#5: control-plane/single-writer' in row for row in rows))

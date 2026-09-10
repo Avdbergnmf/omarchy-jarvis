@@ -924,3 +924,31 @@ validation remains pending because the browser connector exposes no browser on t
   GET with query string) and `tests/latency-panel.test.cjs` (stats, filters, compare,
   copy, slow-tail jump + A-034 inspector cases). Did not edit `overlay/agents.js`.
 
+## 2026-09-10 — A-042 Parallel claimability tooling (ADR-048)
+- Training new-brief default is `parallel-ok: YES` (`prepare_assignment_save` + the older
+  slot-handoff template). The flag stays **workflow-owned** (ADR-031): not in `META_FIELDS`,
+  so the Assignments editor cannot change it and unrelated field edits preserve
+  `current['parallel']`. Documented in `docs/assignments/README.md`.
+- `scripts/assignment-status.sh` now prints each `NO` row's brief reason, warns
+  `WARNING: A-NNN is parallel-ok: NO with no reason — treat as YES pending desk review`
+  for a bare `NO`, skips only reasoned kill-switches (`control-plane` / `single-writer` /
+  `human-serial`) when something is already in progress, and prints a non-blocking
+  `HEADS-UP` when a candidate's soft path hints intersect an in-progress row's. The
+  `HEADS-UP` never removes a candidate.
+- Paste prompts (`NEW_AGENT` / `PARALLEL` / `CONTINUE` / README) compute the same claim
+  set as the script. Alex escape hatch: `force parallel A-NNN` for an area-disjoint
+  reasoned-`NO` row, recorded in SESSION. START Parallel work re-read; leftover
+  "serial by default" phrasing removed from the Training-authored section.
+- `scripts/agent-status.py`: dropped `parallel-ok requires Allowed/Forbidden paths`;
+  `control-plane/single-writer scope cannot be parallel-ok` no longer trips on plain
+  `area:brain` (still warns on `single-writer` or allowed-path overlap with
+  `brain/server.py`). `.github/ISSUE_TEMPLATE/workstream.md` updated for ADR-048
+  (A-030 had already landed the ADR-034 area+worktree wording).
+- Area proposal written into `docs/audits/parallel-claimability-2026-09-10.md` (Option 2:
+  `area:docs` + `area:control-plane`). `AREAS` tuple and the five GitHub labels are
+  unchanged — decision left to Alex. Did not touch Agent Monitor / `overlay/`.
+- Tests: `tests/test_assignment_status.py` (original-bug three-candidate synthetic,
+  reasoned-NO withhold, HEADS-UP does not drop a candidate),
+  `tests/test_assignments.py` (new draft YES; flag survives title edit),
+  `tests/test_journal.py` agent-status assertions. `AREAS` not changed.
+

@@ -1,12 +1,13 @@
 # Assignment queue
 
-Oldest queued at the top among `queued`. At most one non-parallel `in_progress` unless `parallel-ok: YES` and disjoint areas.
+Oldest queued at the top among `queued`. At most one `in_progress` unless extras are area-disjoint and not a reasoned `parallel-ok: NO` (ADR-048; default is YES).
 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
-| A-042 | Parallel claimability tooling migration (default YES + status hints) | queued | area:docs | NO | medium | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |
 
-Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-030, A-031, A-032, A-033, A-034, A-035, A-036, A-037, A-038, A-039, A-040, A-041 (see [done/](done/)).
+(no open rows)
+
+Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-030, A-031, A-032, A-033, A-034, A-035, A-036, A-037, A-038, A-039, A-040, A-041, A-042 (see [done/](done/)).
 
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
@@ -53,7 +54,9 @@ outrank any amount of `inferred` repetition), inspect/revoke/restore, byte-ident
 migration with one-time backup, quarantine for unreadable/unknown-version files, `fcntl.flock`
 cross-process locking, and bounded growth (oldest revoked pruned first). IMP-001 updated.
 
-**Next up:** **A-042** (parallel claimability tooling, depth **medium**, `parallel-ok: NO`).
+**Next up:** queue empty. Next claimable row depends on new filings.
+
+**A-042 complete (ADR-048 tooling):** Training defaults new briefs to `parallel-ok: YES`; `assignment-status.sh` prints NO reasons, warns on a bare NO (treat as YES pending desk review), and emits a non-blocking `HEADS-UP` on soft path-hint overlap. Paste prompts compute the same claim set. `area:docs` vs `area:control-plane` split is a written proposal only.
 
 **A-027 / branch protection (ADR-049):** repo is **public**; `main` ruleset requires PR + `test` check, blocks force-push/deletion. ADR-046's "no protection" stance is superseded. Unattended Forge stays parked ([FUTURE.md](../FUTURE.md)). Parallel claimability: **ADR-048** (`parallel-ok` defaults YES).
 
