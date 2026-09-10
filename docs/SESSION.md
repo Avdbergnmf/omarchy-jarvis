@@ -9,18 +9,18 @@
 - Branch/worktree: `a014-hygiene` @ `~/Work/omarchy-jarvis-a014`
 
 ## Checklist
-- [ ] A-014 chunked hygiene until tokens or checklist done
+- [x] Chunk 1 bookkeeping (overnight)
+- [ ] Chunks 2–7 (morning relaunch)
 
 ## Done this session (evidence)
-- A-012 merged on main; A-013 merge + bookkeeping reconciled by desk
-- Filed A-014 for bedtime Codex burn
+- Overnight: Codex claimed A-014, closed smoke backlog note, then hit usage limit (~40k tokens)
+- Morning: desk relaunched keep-going Codex from chunk 2
 
 ## Next action (one concrete step)
-- Codex claims A-014 and keeps going in small commits until session token limit
+- Codex continues A-014 chunks 2→7 until session token limit
 
 ## Parallel agent
 - `codex/training-track` — overlay A-007→A-009 — **do not touch**
-- Do not claim A-007/A-008/A-009
 
 ## Blockers
 - none
