@@ -604,6 +604,14 @@ validation remains pending because the browser connector exposes no browser on t
 - Alex: agents forget to merge; causes conflicts and wasted tokens.
 - CONTINUE / NEW_AGENT / PARALLEL / START / prompts README: land on main before stop; report BLOCKED ON MERGE if needed.
 
+## 2026-09-10 — desk: after merge, delete worktree and return to main
+- Alex: agents should clean up worktrees and sit on main before the next prompt.
+- CONTINUE / NEW_AGENT / PARALLEL / START / prompts README updated.
+
+## 2026-09-10 — desk: queue A-040 test suite optimization
+- Alex: too many tests; token waste concern. Snapshot ~153 Python tests; test_jarvis.py largest.
+- Goal: smoke vs full, cull redundancy, teach agents not to paste full logs.
+
 ## 2026-09-10 — A-039 cross-worktree claim visibility (ADR-038)
 - Claimed A-039 itself by pushing its QUEUE/INDEX/SESSION status flip straight to `origin/main`
   before opening a worktree — the first real use of the protocol it implements.

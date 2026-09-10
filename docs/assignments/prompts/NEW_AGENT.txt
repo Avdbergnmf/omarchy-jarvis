@@ -93,11 +93,25 @@ After your batch is accepted (default: one assignment):
 
 If merge is blocked (permissions, failed checks, conflicts you cannot safely resolve): open/update the PR, say **BLOCKED ON MERGE**, and do not claim you finished landing.
 
-After merge to main is done, from a remaining checkout (actual path/branch):
+## After merge: remove worktree and return to main (required)
+Before you stop **or** claim another assignment / take a new CONTINUE prompt:
+1. Confirm your work is on `origin/main` (merged).
+2. From a remaining checkout (usually the canonical tree), remove **your** finished worktree and delete the merged branch (never force; never touch another agent's tree):
 
-    git -C "$HOME/Work/omarchy-jarvis-a014-example" status --short
-    git worktree remove "$HOME/Work/omarchy-jarvis-a014-example"
-    git branch -d a014-example
+```bash
+git -C "$HOME/Work/omarchy-jarvis-<your-slug>" status --short
+git worktree remove "$HOME/Work/omarchy-jarvis-<your-slug>"
+git branch -d <your-branch>
+```
 
-Remove only clean, merged, unowned trees; never force. Default batch size is 1:
-stop and summarize after this assignment unless Alex explicitly enabled more.
+3. `cd` back to the canonical checkout and update main:
+
+```bash
+cd "$HOME/Work/omarchy-jarvis"
+git checkout main
+git pull origin main
+```
+
+4. Only then stop and report — or, if Batch allows another assignment, claim the next one **from this updated `main`** (new worktree for the new assignment). Do not start the next prompt while still sitting in the old feature worktree.
+
+Remove only clean, merged, unowned trees; never force. Default batch size is 1 unless Alex explicitly enabled more.

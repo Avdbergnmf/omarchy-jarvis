@@ -5,6 +5,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
 | A-036 | Agent monitor usability (depth, delivery, live work) | in_progress | area:overlay | YES | [active/A-036-agent-monitor-usability.md](active/A-036-agent-monitor-usability.md) |
+| A-040 | Test suite optimization (token cost + redundancy) | queued | area:docs | NO | [active/A-040-test-suite-token-optimization.md](active/A-040-test-suite-token-optimization.md) |
 | A-037 | Release gates + claimability visibility | queued | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
 | A-038 | Evidence identity + durable operational bundles v0 | queued | area:brain | NO | [active/A-038-evidence-identity-durable-bundles-v0.md](active/A-038-evidence-identity-durable-bundles-v0.md) |
@@ -27,6 +28,8 @@ status and dependency changes below.
 worktree is opened; `assignment-status.sh` reads `origin/main` as canonical and flags any
 worktree whose local claim disagrees with it. This is now step 1 in every paste prompt and in
 `START.md`'s isolation section.
+
+**High (Alex):** **A-040** — lean the test suite / smoke vs full so agents waste fewer tokens (now claimable, A-039 docs track is done).
 
 **A-036** is **in_progress** on worktree `~/Work/omarchy-jarvis-a036-agent-monitor-usability`
 (claim confirmed on `origin/main`, per A-039).

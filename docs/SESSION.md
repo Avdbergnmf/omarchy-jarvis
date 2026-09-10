@@ -7,6 +7,7 @@
 - **A-039** in_progress — Claude @ `a039-cross-worktree-claim-visibility` / `~/Work/omarchy-jarvis-a039-cross-worktree-claim-visibility` (claim committed to main first, per A-039's own protocol)
 
 ## Checklist
+- [ ] A-040 Test suite token optimization — queued (after A-039)
 - [ ] A-036 Agent monitor usability — in_progress (other worktree)
 - [x] A-039 Cross-worktree claims — claimed, worktree opened
 - [ ] A-037+ — after
