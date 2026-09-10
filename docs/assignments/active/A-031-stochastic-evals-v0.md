@@ -1,6 +1,6 @@
 # A-031 — Stochastic planner evals v0 (10–20 critical behaviors)
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:docs (+ light tests/scripts)
 - **parallel-ok:** NO (control-plane: protected evaluator/runner — ADR-048)
 - **Recommended depth:** high
