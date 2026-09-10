@@ -555,3 +555,6 @@ validation remains pending because the browser connector exposes no browser on t
   `./scripts/restart.sh` and run feat-open-by-name's new correction steps on 0.5.9.
 - GH #16 closed (A-024 + A-025). Queue empty.
 
+## 2026-09-10 — desk: Wave 0 self-improve foundations
+- Decisions in docs/SELF_IMPROVE_ROADMAP.md (ChatGPT reply not pasted into room).
+- Queued A-026…A-029; seeded feat-self-improve-* backlog features.

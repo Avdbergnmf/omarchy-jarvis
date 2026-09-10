@@ -10,6 +10,7 @@ Actions are CLI tools; skills compose reviewed tools. Keybindings come from the 
 Bug and feature intake drafts issues deterministically and waits for approval.
 Dispatch prepares a prompt file; it never contacts an agent.
 See [README](README.md) for product usage and installation.
+Self-improve foundations/roadmap: [docs/SELF_IMPROVE_ROADMAP.md](docs/SELF_IMPROVE_ROADMAP.md).
 
 ## Pick a job
 
