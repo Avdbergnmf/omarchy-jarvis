@@ -27,7 +27,9 @@
 | A-023 | Simplify assignment scope (area + worktree, soft paths) | done | area:docs | YES | [done/A-023-simplify-assignment-path-scope.md](done/A-023-simplify-assignment-path-scope.md) |
 | A-024 | Ambiguous open_app_by_name → top match (Bitwarden #16) | done | area:actions | YES | [done/A-024-open-ambiguous-app-top-match.md](done/A-024-open-ambiguous-app-top-match.md) |
 | A-025 | App-open preferences + “the other one” correction (#16) | done | area:brain | NO | [done/A-025-app-open-preferences-and-correction.md](done/A-025-app-open-preferences-and-correction.md) |
-| A-026 | Improvement Ledger v0 | queued | area:docs | YES | [active/A-026-improvement-ledger-v0.md](active/A-026-improvement-ledger-v0.md) |
+| A-026 | Improvement Ledger v0 (IMP-* wraps QUEUE) | queued | area:docs | YES | [active/A-026-improvement-ledger-v0.md](active/A-026-improvement-ledger-v0.md) |
 | A-027 | Protected promotion path (main ruleset) | queued | area:docs | YES | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
 | A-028 | Eval harness v0 (capability vs regression) | queued | area:docs | YES | [active/A-028-eval-harness-v0.md](active/A-028-eval-harness-v0.md) |
 | A-029 | Memory v0 (typed prefs + provenance) | queued | area:brain | NO | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
+| A-030 | Protect safety/eval/control-plane paths | queued | area:docs | YES | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
+| A-031 | Stochastic evals v0 (~10–20 critical behaviors) | queued | area:docs | YES | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |

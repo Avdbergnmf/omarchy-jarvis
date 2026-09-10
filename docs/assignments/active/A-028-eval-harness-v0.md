@@ -7,7 +7,7 @@
 - **Links:** docs/SELF_IMPROVE_ROADMAP.md
 
 ## Goal
-Label evals **capability** vs **regression**. Bug/assignment close requires automated test and/or validation catalog entry. Eval/safety changes should not silently ride in unrelated behavior PRs.
+Label **capability** (“can Jarvis get better?”) vs **regression** (“did we destroy anything?”). Graduate saturated capability → regression. Bug/assignment close requires automated test and/or validation catalog entry. Eval/safety changes should not silently ride in unrelated behavior PRs.
 
 ## Checklist
 - [ ] Schema/docs for suite split; label existing entries; graduation on Verify

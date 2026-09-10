@@ -7,7 +7,7 @@
 - **Links:** docs/SELF_IMPROVE_ROADMAP.md · extends A-025
 
 ## Goal
-Memory v0 from app-preferences: kinds (`explicit_instruction`, `preference`, `observation`), provenance, write gate, inspect/revert. XDG/gitignored.
+Memory v0 records: id, type, content, source, created_at, scope, confidence, authority, supersedes, expires_at, status. **explicit_instruction ≠ inferred preference ≠ agent_observation**. Extend app-preferences; write gate; inspect/revert. XDG + backup; schema docs in git.
 
 ## Checklist
 - [ ] Schema + migrate existing prefs

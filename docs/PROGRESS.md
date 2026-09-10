@@ -558,3 +558,7 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: Wave 0 self-improve foundations
 - Decisions in docs/SELF_IMPROVE_ROADMAP.md (ChatGPT reply not pasted into room).
 - Queued A-026…A-029; seeded feat-self-improve-* backlog features.
+
+## 2026-09-10 — desk: align Wave 0 to ChatGPT pasted answers
+- Runtime/Desk/Forge/Control Plane; ledger wraps QUEUE; unattended PRs after protected main; journal tiers; snapshots if system-affecting only.
+- QUEUE order A-027, A-026, A-028, A-030, A-031, A-029.

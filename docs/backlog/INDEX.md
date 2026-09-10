@@ -17,8 +17,8 @@ _Converted:_ bug-open-bitwarden → assignments A-024 + A-025 (`bugs/converted/`
 
 | id | type | title | difficulty | status | gh issue |
 |----|------|-------|------------|--------|----------|
-| feat-self-improve-stochastic-evals | feature | Stochastic behavioral evals (N-run reliability) | L | open | — |
-| feat-self-improve-protect-evaluator | feature | Protect eval suite from same-PR gaming | M | open | — |
+| feat-self-improve-stochastic-evals | feature | Stochastic behavioral evals (N-run reliability) | L | converted | A-031 |
+| feat-self-improve-protect-evaluator | feature | Protect eval suite from same-PR gaming | M | converted | A-030 |
 | feat-self-improve-state-machine | feature | Formal improvement state machine in Training/ledger | L | open | — |
 | feat-self-improve-secrets-broker | feature | Secrets broker (no raw tokens in prompts/memory) | L | open | — |
 | feat-self-improve-network-policy | feature | Outbound network allowlists for tools/sandboxes | M | open | — |

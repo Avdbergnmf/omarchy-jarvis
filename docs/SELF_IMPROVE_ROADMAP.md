@@ -1,31 +1,48 @@
 # Self-improve roadmap (desk decisions 2026-09-10)
 
-Informed by ChatGPT’s 70-point plan + Firsty audit of omarchy-jarvis @ 0.5.9.
-ChatGPT’s full reply was not pasted into chat; decisions below are explicit defaults Alex can override.
+Sources: ChatGPT 70-point plan → Firsty audit → **ChatGPT answers to 8 questions (pasted by Alex)**.
 
-## Scope decisions
+## North-star sentence
+
+> Jarvis may autonomously discover, design, implement, test and refine improvements.  
+> Jarvis may **not** autonomously redefine what counts as safe, what counts as successful, or what becomes trusted production Jarvis.
+
+Architecture stays **Runtime + Desk + Forge (worktree coding agents) + Control Plane** — not in-process self-rewrite.
+
+| Subsystem | Role |
+|-----------|------|
+| **Runtime** | Personal assistant (overlay/Training UI, Ollama, actions/skills) |
+| **Desk** | Planning/orchestration (Firsty, QUEUE, filing) |
+| **Forge** | Coding agents in isolated worktrees; candidate PRs |
+| **Control Plane** | Approvals, policies, evals, promotion, deployment gates |
+
+Forge may modify Runtime. Forge must **not** freely modify Control Plane authorization/evaluation mechanisms.
+
+## Decisions (from ChatGPT answers)
 
 | Question | Decision |
 |----------|----------|
-| What is “Jarvis”? | **Runtime** (`omarchy-jarvis`) **plus** the coding-agent factory (desk/assignments/Training handoffs). Control plane spans both. |
-| Improvement Ledger vs QUEUE | Ledger **indexes** issues/assignments/Training problems — does **not** replace QUEUE. |
-| Run journals in git? | Stay **gitignored** (privacy). Ledger/PROGRESS hold redacted promotion evidence; local journals remain source for forensics. |
-| First eval investment | Deepen **unit + human validation**; split capability vs regression. Disposable VM e2e later. |
-| Unattended PRs | Allowed **after** protected `main` exists; merge remains human gate. Until then: branches/worktrees only; no silent main. |
-| Memory now? | **Memory v0** = extend preference/correction store with typed records + provenance — not full episodic memory yet. |
-| Safety/eval in same PR as behavior? | **No** — policy: eval/safety/control-plane file changes need separate review/assignment (or explicit Alex OK). |
-| Omarchy snapshots in-loop? | **Human/ops** for now; document in runbook, don’t automate yet. |
+| What is Jarvis? | Whole system with explicit subsystems (table above). |
+| Ledger vs QUEUE | **Wrap/evolve** QUEUE. Ledger = durable audit (`improvement_id`); QUEUE = operational tasks (`assignment_id`). Ledger item may spawn queue tasks. |
+| Gitignored journals? | **Three tiers:** ephemeral scratch gitignore OK; operational traces durable backed-up outside git OK; decisions/approved improvements/eval defs/behavioral rules **versioned in git**. If losing it prevents explaining current behavior → not gitignore-only. |
+| Eval investment | Human + deterministic tests first; targeted VM E2E next on dangerous Omarchy boundaries. |
+| Unattended PRs? | **Yes, strongly** once `main` is protected. Hard gate = merge/promotion. Credentials must not bypass rulesets. |
+| Memory now? | Small correct schema now (provenance + explicit≠inferred). No giant vector memory yet. |
+| Safety/eval in same PR as features? | **Block by default** for protected evals/safety/auth/promotion. Feature unit tests may ride along. CODEOWNERS + rulesets. |
+| Omarchy snapshots? | **Yes for system-affecting** deploys; **no for every /home app commit**. Snapshots ≠ `/home` backup. |
 
 ## Build order
 
-### Wave 0 — assignments (now)
-1. **A-026** Improvement Ledger v0  
-2. **A-027** Protected promotion path (`main` rules + checklist)  
-3. **A-028** Eval harness v0 (capability vs regression + bug→regression rule)  
-4. **A-029** Memory v0 (typed prefs/memory with provenance)
+### Wave 0 — now
+1. **A-027** Protect `main` externally  
+2. **A-026** Improvement Ledger v0 (`IMP-*` → assignments)  
+3. **A-028** Capability vs regression evals  
+4. **A-030** Protect safety/eval/control-plane paths  
+5. **A-031** Stochastic evals v0 (~10–20 behaviors)  
+6. **A-029** Memory v0 provenance  
 
-### Wave 1+ — backlog features (draw later)
-See `docs/backlog/features/feat-self-improve-*.md` and INDEX.
+### Wave 1 — backlog after Wave 0
+Secrets broker; deployment ladder + health/rollback; friction metrics; rejection memory; resource budgets; skill manifests; VM candidates; …
 
-## Non-goals (near term)
-In-process Jarvis rewriting its running code; passwordless sudo for Jarvis; single vanity quality score; replacing Training/QUEUE with a greenfield system.
+### Deprioritized
+In-process self-rewrite; heavy autonomous self-reflection machinery; vanity single score.

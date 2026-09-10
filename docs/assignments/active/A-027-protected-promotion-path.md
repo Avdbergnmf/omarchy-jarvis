@@ -7,7 +7,7 @@
 - **Links:** docs/SELF_IMPROVE_ROADMAP.md
 
 ## Goal
-Experiments free in worktrees/branches; **promotion to main/live** requires Alex/ruleset. Protect `main` (PR required, restrict direct pushes, required checks when CI exists). Document promotion checklist + kill/disable commands.
+Forge may **unattended** branch/commit/PR/update checks. **Merge to main** requires Alex + ruleset (required PR/checks, no force-push, no credential bypass). Document ladder: candidate → CI → evals → review → (VM if system-affecting) → merge/tag → (snapshot if system-affecting) → deploy → health → ledger. Protect `main` (PR required, restrict direct pushes, required checks when CI exists). Document promotion checklist + kill/disable commands.
 
 ## Checklist
 - [ ] Apply or document GitHub ruleset on `main`
