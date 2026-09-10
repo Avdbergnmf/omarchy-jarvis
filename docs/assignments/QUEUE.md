@@ -4,12 +4,13 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| A-015 | I wanna see what the plan is its going to execute with some more details... | queued | area:skills | NO | [active/A-015-training.md](active/A-015-training.md) |
-
-_(queue empty — all assignments through A-014 are done)_
+| A-016 | Training window overhaul (Problems-first) | queued | area:overlay | NO | [active/A-016-training-window-overhaul.md](active/A-016-training-window-overhaul.md) |
+| A-015 | Richer readable plan details on approve | queued | area:overlay | NO | [active/A-015-training.md](active/A-015-training.md) |
 
 Recently completed: A-001 … A-014 (see [done/](done/)).
 
-**Merged 2026-09-10:** `a014-hygiene` + `codex/training-track` into `main` (desk). Overlay A-007→A-009 and hygiene A-014 are on main.
+**A-016 (Alex priority):** Training as its own Hyprland window — top stats bar, feature nav, Problems list/detail/priority/assignment button first.
+
+**A-015:** Chat overlay plan view needs clearer parameters/readability (filed earlier from Training observation). Same `area:overlay` → serial after A-016 unless Alex says otherwise.
 
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).

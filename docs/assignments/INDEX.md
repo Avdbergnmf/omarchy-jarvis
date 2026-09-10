@@ -16,4 +16,5 @@
 | A-012 | Open YouTube + honest open plans | done | area:actions | YES | [done/A-012-open-youtube-honest-plans.md](done/A-012-open-youtube-honest-plans.md) |
 | A-013 | Parallel agents: default git worktrees | done | area:docs | YES | [done/A-013-parallel-worktrees-default.md](done/A-013-parallel-worktrees-default.md) |
 | A-014 | Hygiene: bug hunt, tests, lean cleanup | done | area:docs | YES | [done/A-014-hygiene-bug-hunt-cleanup.md](done/A-014-hygiene-bug-hunt-cleanup.md) |
-| A-015 | queued | I wanna see what the plan is its going to execute with some more details... |
+| A-015 | Richer readable plan details on approve | queued | area:overlay | NO | [active/A-015-training.md](active/A-015-training.md) |
+| A-016 | Training window overhaul (Problems-first) | queued | area:overlay | NO | [active/A-016-training-window-overhaul.md](active/A-016-training-window-overhaul.md) |

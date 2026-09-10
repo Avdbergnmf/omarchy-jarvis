@@ -324,3 +324,8 @@ validation remains pending because the browser connector exposes no browser on t
 - Resolved ADR numbering (YouTube/honesty 024, worktrees 025, slash 026, training 027, validation 028).
 - VERSION → 0.5.2; QUEUE empty; A-001…A-014 done.
 - Restart jarvis.service still required for live overlay/training.
+
+## 2026-09-10 — desk: queue A-016 Training window overhaul
+- Alex: Training must be a main self-improve surface; current UI too chaotic.
+- Wanted: separate Hyprland window, top stats bar, feature nav buttons, Problems-first (color-coded list, dismiss/check-off, detail+edit+save, priority, generate assignment).
+- Filed [A-016](assignments/active/A-016-training-window-overhaul.md); kept earlier plan-detail ask as A-015 (lower priority, same area).

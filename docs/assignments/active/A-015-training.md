@@ -1,10 +1,10 @@
-# A-015 — I wanna see what the plan is its going to execute with some more details...
+# A-015 — Richer readable plan details on approve
 
 - **Status:** queued
-- **Area:** area:skills
+- **Area:** area:overlay (+ light brain for plan payload)
 - **parallel-ok:** NO
-- **Allowed paths:** skills/, tests/, docs/assignments/, docs/SESSION.md, docs/PROGRESS.md, docs/DECISIONS.md
-- **Forbidden paths:** overlay/, brain/, actions/; approval bypass; real agent dispatch
+- **Allowed paths:** overlay/, brain/server.py (plan JSON richness only), tests/, docs/assignments/, docs/SESSION.md, docs/PROGRESS.md, docs/DECISIONS.md, docs/FEATURES.md, docs/validation/
+- **Forbidden paths:** actions/ (except labels if needed); approval bypass; Training window redesign (that is A-016); real agent dispatch
 - **Links:** Manual training observation
 - **Prepared for:** My coding agent (claude-code); human must paste the handoff
 

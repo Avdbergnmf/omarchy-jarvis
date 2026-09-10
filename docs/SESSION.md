@@ -3,24 +3,23 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Assignment: _(none — queue empty after merge)_
-- Branch: `main` (merged `a014-hygiene` + `codex/training-track`)
+- Assignment: _(desk queued **A-016**; claim with NEW_AGENT — Alex priority)_
+- Also queued: A-015 (plan detail readability) — same area, do after A-016 unless told otherwise
+- Area: area:overlay
+- Branch: main
 
 ## Checklist
-- [x] Merge a014-hygiene
-- [x] Merge codex/training-track (A-007→A-009)
-- [ ] Restart shared jarvis.service so VERSION 0.5.2 + overlay/training load
-- [ ] Human validation pass in Training mode (Alex)
+- [ ] A-016 Training window overhaul — queued
+- [ ] A-015 Richer plan details — queued (lower priority)
 
 ## Done this session (evidence)
-- Desk merged both feature branches into main; resolved bookkeeping conflicts
-- A-001…A-014 all done on disk
+- Desk (Firsty): filed A-016 from Alex Training UX brief; fixed A-015 INDEX/area; ordered QUEUE A-016 then A-015
 
 ## Next action (one concrete step)
-- Restart jarvis service from main; Alex smoke-tests overlay + Training validation queue
+- Coding agent: NEW_AGENT → claim **A-016**
 
 ## Parallel agent
-- none active after merge
+- none (overlay serial)
 
 ## Blockers
 - none
