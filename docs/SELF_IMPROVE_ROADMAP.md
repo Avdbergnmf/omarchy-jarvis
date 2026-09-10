@@ -33,7 +33,10 @@ Forge may modify Runtime. Forge must **not** freely modify Control Plane authori
 
 ## Build order
 
-### Wave 0 — now
+### Gate before Wave 0
+**A-032** — ChatGPT/Sol deep review of this roadmap vs the codebase (docs-only). Do not implement Wave 0 until A-032 lands and Alex accepts deltas.
+
+### Wave 0 — now (after A-032)
 1. **A-027** Protect `main` externally  
 2. **A-026** Improvement Ledger v0 (`IMP-*` → assignments)  
 3. **A-028** Capability vs regression evals  

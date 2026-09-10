@@ -3,19 +3,19 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Wave 0 ChatGPT-aligned: prefer **A-027**, or PARALLEL A-026/A-027/A-028
+- Assignment: **A-032** ChatGPT deep plan-vs-codebase review (Sol 5.6 ultra-high depth) — **first**
+- Then Wave 0 A-027…A-031 / A-029 as revised by A-032
 - Branch: main
 
 ## Checklist
-- [ ] A-027 Protected main
-- [ ] A-026 Ledger
-- [ ] A-028 Eval split
-- [ ] A-030 Protect control-plane paths
-- [ ] A-031 Stochastic evals (after A-028)
-- [ ] A-029 Memory v0
+- [ ] A-032 plan perfection review — queued (PRIORITY)
+- [ ] A-027…A-031 / A-029 — wait for A-032 output
+
+## Done this session (evidence)
+- Desk (Firsty): filed A-032 as queue head for Sol 5.6 ultra-high-depth plan review
 
 ## Next action (one concrete step)
-- NEW_AGENT / PARALLEL → A-027 (+ A-026/A-028)
+- Alex: paste NEW_AGENT (or Sol entry) claiming **A-032** only
 
 ## Blockers
-- none
+- Wave 0 implementation blocked on A-032 completion / Alex accept of revised roadmap
