@@ -407,3 +407,9 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: queue A-019 proposed-action bubble UX
 - Alex: plan info still lands as hard-to-read text below the proposed bubble; wants it inside the bubble, intuitive, wrap only if needed.
 - Follow-up to A-015 (brain labels). Filed [A-019](assignments/active/A-019-proposed-action-bubble-ux.md).
+
+## 2026-09-10 — desk: queue A-020 Validate features UX
+- Verify/Fail not removing items / results not obviously recorded; include-validated should show reports.
+- Run id requested but never shown by Jarvis.
+- Automate mechanical guided steps; Alex judges desktop outcome after Run.
+- Filed [A-020](assignments/active/A-020-validate-features-ux.md); queued ahead of A-019.
