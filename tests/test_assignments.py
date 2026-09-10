@@ -19,7 +19,7 @@ class AssignmentTest(unittest.TestCase):
         for name in [training.QUEUE,training.INDEX,'docs/SESSION.md']:
             p=self.root/name;p.parent.mkdir(parents=True,exist_ok=True)
             p.write_text('# Queue\n\n| id | title | status | area | parallel-ok | path |\n|----|-------|--------|------|-------------|------|\n' if name!='docs/SESSION.md' else '# Session\n## Active goal\n- Assignment: A-017\n- Owner: Another worker\n\n## Next action\n- Continue A-017.\n')
-        self.fields=dict(title='Fix focus',area='overlay',priority='P1',goal='The window gets focus',notes='Expected stable focus',checklist='- [ ] Reproduce the bug\n- [ ] Verify stable focus',allowed_paths='overlay/, tests/',forbidden_paths='brain/, actions/',out_of_scope='Unrelated work')
+        self.fields=dict(title='Fix focus',area='overlay',priority='P1',goal='The window gets focus',notes='Expected stable focus',checklist='- [ ] Reproduce the bug\n- [ ] Verify stable focus',allowed_paths='overlay/, tests/',forbidden_paths='brain/, actions/',blocked_by='',gate='',out_of_scope='Unrelated work')
         training.PREVIEWS.clear()
 
     def tearDown(self):
@@ -56,6 +56,27 @@ class AssignmentTest(unittest.TestCase):
         detail=training.assignment_detail(self.root,aid)
         self.assertEqual(detail['fields']['allowed_paths'],'')
         self.assertEqual(detail['fields']['forbidden_paths'],'')
+
+    def test_blocked_by_and_gate_are_structured_optional_hints(self):
+        # A-037: Blocked-by/Gate are parsed for claimability, not free prose — invalid shapes
+        # are rejected up front so assignment-status.sh can trust the format later.
+        for bad in (dict(blocked_by='not an id'), dict(gate='Not Lowercase')):
+            with self.assertRaises(ValueError):
+                training.preview(self.root,dict(operation='assignment_save',fields=dict(self.fields,**bad)))
+        fields=dict(self.fields,blocked_by='A-038, A-030',gate='control-plane')
+        aid=training.confirm(self.root,training.preview(self.root,dict(operation='assignment_save',fields=fields))['preview_id'])['assignment']
+        detail=training.assignment_detail(self.root,aid)
+        self.assertEqual(detail['fields']['blocked_by'],'A-038, A-030')
+        self.assertEqual(detail['fields']['gate'],'control-plane')
+        item=next(a for a in training.assignments(self.root) if a['id']==aid)
+        self.assertEqual(item['blocked_by'],['A-038','A-030'])
+        self.assertEqual(item['gate'],'control-plane')
+        self.assertEqual(item['unmet_blocked_by'],['A-038','A-030'],'neither blocker is done yet')
+        # Add a synthetic A-038 row marked done so unmet_blocked_by narrows to the remaining id.
+        p=self.root/training.QUEUE
+        p.write_text(p.read_text()+'| A-038 | Prereq | done | area:brain | NO | [done/A-038-x.md](done/A-038-x.md) |\n')
+        item=next(a for a in training.assignments(self.root) if a['id']==aid)
+        self.assertEqual(item['unmet_blocked_by'],['A-030'],'a done blocker drops out of unmet_blocked_by')
 
     def test_stale_preview_and_claimed_assignment_rejected(self):
         aid=self.create();detail=training.assignment_detail(self.root,aid)

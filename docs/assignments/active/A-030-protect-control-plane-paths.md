@@ -5,8 +5,9 @@
 - **parallel-ok:** NO (promotion/evaluator ownership is serial Control Plane work)
 - **Recommended depth:** medium
 - **Soft path hints:** `.github/CODEOWNERS`, `.github/`, `docs/control-plane/`, `docs/evals/`, `START.md`
-- **Blocks / blocked-by:** After **A-027 + A-028**. Blocks A-031 and unattended Forge.
-- **Links:** SELF_IMPROVE_ROADMAP · ChatGPT Q7 · A-032 review
+- **Blocked-by:** A-027, A-028
+- **Gate:** control-plane
+- **Links:** SELF_IMPROVE_ROADMAP · ChatGPT Q7 · A-032 review · blocks A-031 and unattended Forge
 
 ## Goal
 Prevent candidates from redefining authorization, trust, evidence or promotion in the same
