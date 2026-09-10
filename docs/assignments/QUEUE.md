@@ -7,7 +7,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | A-033 | Latency profiler foundation (traces/spans/store) | in_progress | area:brain | YES | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
-| A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | YES | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
+| A-041 | Agent Monitor tiles + per-agent auto-queue redesign | in_progress | area:overlay | YES | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
 | A-042 | Parallel claimability tooling migration (default YES + status hints) | queued | area:docs | NO | medium | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |
 
 Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-030, A-031, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
