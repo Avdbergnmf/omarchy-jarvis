@@ -4,8 +4,9 @@
 
 ## Active goal
 - **A-029** done — see [done/A-029-memory-v0-provenance-prefs.md](assignments/done/A-029-memory-v0-provenance-prefs.md) / ADR-047
+- **A-027 cancelled** — no GitHub Pro / no public; ADR-046; do not wait on branch protection
 - **A-041** filed — Agent Monitor tiles + per-agent auto-queue redesign (queued, area:overlay, depth high, gate training-dispatch)
-- **Next:** A-033 (area:brain) or A-041 (area:overlay, gate training-dispatch) — both queued, disjoint areas
+- **Next:** A-030 (area:docs, now unblocked), A-033 (area:brain), or A-041 (area:overlay, gate training-dispatch) — queued, disjoint areas
 
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
@@ -16,6 +17,8 @@
 - [x] A-026 Improvement Ledger v0 — done, merged to main, worktree/branch removed
 - [x] A-028 Deterministic candidate-eval foundation — done, merged to main, worktree/branch removed
 - [x] A-029 Preference memory v0 — done, merged to main, worktree/branch removed
+- [x] A-027 Protected promotion — cancelled (ADR-046)
+- [ ] A-030 Protect control-plane paths — queued (unblocked; no enforceable GitHub gate)
 - [ ] A-041 Agent Monitor redesign — queued (filed; not started)
 
 ## Done this session (evidence)
@@ -32,7 +35,7 @@
 - Claude: implemented A-029 (ADR-047) — `~/.config/jarvis/app-preferences.json` moves to a versioned v2 schema: each app-open ranking influence is now a durable, provenance-carrying record (`id`/`authority`/`source`/`created_at`/`confidence`/`expiry`/`status`) instead of a bare int weight. Authority-tiered precedence via a large integer multiplier (`explicit_correction`/`migrated_v1` always outrank any amount of `inferred` repetition) without touching `ranked_apps()`'s existing sort key. v1 files migrate in memory on every load (pure, no mutation-on-read), byte-identical ranking, backed up once (`.v1.bak`) on first write; unreadable/unknown-version files are quarantined, never silently overwritten. `fcntl.flock`-based cross-process locking closes the old bare-counter's read-modify-write race. Bounded growth (`PREF_RECORD_KEEP`, oldest revoked pruned first). `inspect_preferences`/`revoke_preference`/`restore_preference` for transparency and reversibility. `correct_open()` now calls `add_preference_record(..., authority='explicit_correction')` instead of the old `bump_app_weight`. Found and fixed a real bug in `_prune_records`'s first draft (default arg bound at def-time, so test patching of `PREF_RECORD_KEEP` had no effect — fixed by always passing it explicitly from `save_app_prefs`). IMP-001 updated with the hardening event. 19 new tests; 223/223 pass. Merged, worktree/branch removed.
 
 ## Next action (one concrete step)
-- Claim and implement either A-033 (Latency profiler foundation, area:brain) or A-041 (Agent Monitor tiles + per-agent auto-queue redesign, area:overlay, `Gate: training-dispatch`) — both `queued`, disjoint areas, either is a valid next claim.
+- Claim and implement A-030 (Protect safety/eval/control-plane paths, area:docs — unblocked, ADR-046), A-033 (Latency profiler foundation, area:brain), or A-041 (Agent Monitor tiles + per-agent auto-queue redesign, area:overlay, `Gate: training-dispatch`) — all `queued`, disjoint areas, any is a valid next claim.
 
 ## Parallel agent
 - none

@@ -63,7 +63,7 @@ def assignments(root):
                                 blocked_by=blocked_by, gate=gate if gate and gate.lower() != 'none' else None))
     status_by_id = {item['id']: item['status'] for item in result}
     for item in result:
-        item['unmet_blocked_by'] = [bid for bid in item['blocked_by'] if status_by_id.get(bid) != 'done']
+        item['unmet_blocked_by'] = [bid for bid in item['blocked_by'] if status_by_id.get(bid) not in ('done', 'cancelled')]
     return result
 
 

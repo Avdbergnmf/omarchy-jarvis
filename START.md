@@ -67,6 +67,13 @@ Read the issue and local mirror. Fix bugs before enhancements. One PR per issue 
 to comment. Never close without evidence. Reports and handoffs link run_id, journal/console
 path and jarvis_version. Do not silently expand a pass into unrelated open issues.
 
+## GitHub branch protection (read this)
+
+This private Free repo **cannot** enable GitHub branch protection/rulesets unless it becomes
+public or the account gets Pro. Alex decided (2026-09-10, ADR-046 / cancelled A-027): **neither
+for now**. Do not block assignments on A-027, do not change visibility/billing, do not invent a
+fake hard gate. Unattended Forge/auto-merge stay off; use human-reviewed merges.
+
 ## Parallel work
 
 Areas are `area:overlay`, `area:brain`, `area:actions`, `area:skills`, `area:docs`.
