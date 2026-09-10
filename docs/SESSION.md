@@ -3,26 +3,27 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- **A-040** in_progress — Claude @ `a040-test-suite-token-optimization` / `~/Work/omarchy-jarvis-a040-test-suite-token-optimization` (claim committed to main first, per ADR-038)
+- No assignment in_progress.
+- **A-040** done — see [done/A-040-test-suite-token-optimization.md](assignments/done/A-040-test-suite-token-optimization.md) / ADR-040
 - **A-039** done — see [done/A-039-cross-worktree-claim-visibility.md](assignments/done/A-039-cross-worktree-claim-visibility.md) / ADR-038
 - **A-036** done — see [done/A-036-agent-monitor-usability.md](assignments/done/A-036-agent-monitor-usability.md) / ADR-039
+- **Next up: A-037** — recommended depth medium (release gates + claimability visibility)
 
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
-- [x] A-036 Agent monitor usability — done; Batch 1 stops after merge
-- [ ] A-040 Test suite token optimization — in_progress, worktree opened
-- [ ] A-037+ — after
+- [x] A-036 Agent monitor usability — done
+- [x] A-040 Test suite token optimization — done, merging to main
+- [ ] A-037+ — next claimable
 
 ## Done this session (evidence)
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
-- Claude: claimed A-039 by pushing QUEUE/INDEX/SESSION status → in_progress directly to `origin/main` *before* opening the feature worktree (dogfooding the fix itself).
-- Claude: implemented A-039 (ADR-038) — `assignment-status.sh` reads `origin/main` as canonical claim truth + cross-worktree mismatch detector; claim-on-main-first is step 1 in START/prompts; stale-claim recovery documented. Reconciled with Alex's concurrent direct-to-main commits (merge-to-main-at-batch-end, post-merge worktree cleanup, A-040 queued).
-- Claude: merged to `main` (`4ecd639`), pushed, removed the `a039-cross-worktree-claim-visibility` worktree and local+remote branch. `origin/main` confirmed up to date.
-- Codex: implemented A-036 launch-depth, delivery, local-status and active-work behavior. Focused tests and all 158 Python tests pass.
-- Codex: all five JavaScript suites, ShellCheck, `doctor.sh --syntax`, and diff checks pass; human validation remains pending on the live desktop.
+- Claude: implemented A-039 (ADR-038) — claim-on-origin/main-first protocol, `assignment-status.sh` canonical read + mismatch detector, stale-claim recovery. Merged, worktree/branch removed.
+- Codex: implemented A-036 launch-depth, delivery, local-status and active-work behavior; all tests pass.
+- Claude: claimed A-040 by pushing QUEUE/INDEX/SESSION status → in_progress directly to `origin/main` before opening the feature worktree.
+- Claude: implemented A-040 (ADR-040) — audited the 158-case suite, found no safe cull (kept everything); added `scripts/test-smoke.sh` (curated critical-path subset, ~71 cases + all 5 cjs suites, ~0.4s) and `scripts/test-full.sh` (mirrors CI, ~1.5s), both quiet-by-default with a bounded failure tail; START/prompts updated to default to smoke, full before landing/on brain-overlay-actions changes, never paste `-v` output. Found and documented that `overlay.test.cjs` already runs all five cjs suites via `require()` (corrects a stale A-032-review finding). Verified failure detection by injecting a false assertion into `test_journal.py`, confirming `test-smoke.sh` reports it correctly, then reverted. Reconciled with Alex's concurrent direct-to-main "depth column" commit.
 
 ## Next action (one concrete step)
-- In the `a040-test-suite-token-optimization` worktree: inventory tests, propose keep/merge/drop, add smoke script, update START/prompts, ADR.
+- Merge `a040-test-suite-token-optimization` into `main`, push, remove the worktree/branch, then report to Alex. Next claimable: A-037 (area:docs, recommended depth medium).
 
 ## Parallel agent
 - none

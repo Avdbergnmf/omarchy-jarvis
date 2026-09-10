@@ -1,6 +1,6 @@
 # A-040 — Test suite optimization (token cost + redundancy)
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:docs (+ `tests/` maintenance; no product behavior changes unless a test is wrong)
 - **parallel-ok:** NO while A-039 (docs) is in_progress; claim after A-039 (or PARALLEL only if A-039 done)
 - **Recommended depth:** medium
@@ -27,12 +27,12 @@ Make the suite **lean where safe** and teach agents a **cheap default vs full** 
 Do **not** weaken protected eval ideas (A-028/A-030) — this is engineering unit/overlay tests, not deleting the future capability/regression harness.
 
 ## Checklist
-- [ ] Inventory: count per file, overlap map, token/log pain points for agents
-- [ ] Propose keep/merge/drop list with risk notes; implement approved culls/merges
-- [ ] Add `scripts/test-smoke.sh` (or make target) + document `test-full`
-- [ ] Update START/prompts: default smoke; full before land-on-main; no pasting megabyte test output
-- [ ] Confirm critical regressions still covered; time both smoke and full
-- [ ] ADR + PROGRESS; SESSION; QUEUE/INDEX → done
+- [x] Inventory: count per file, overlap map, token/log pain points for agents — 158 Python cases (93 in `test_jarvis.py`), 5 `.cjs` suites; no duplicate py/cjs coverage found (different layers — server logic vs overlay UI); `subTest` already used in 5 places (already table-driven). The real pain point is `-v`/full-suite pasting, not test count.
+- [x] Propose keep/merge/drop list with risk notes; implement approved culls/merges — **kept everything**; audit found no safe cull (every test name maps to a distinct named regression, out-of-scope risk to guess otherwise). See ADR-040.
+- [x] Add `scripts/test-smoke.sh` (or make target) + document `test-full` — both added, quiet-by-default (summary + bounded failure tail, full output to `logs/tests/*.log`).
+- [x] Update START/prompts: default smoke; full before land-on-main; no pasting megabyte test output — `START.md` Token & context discipline + all three paste prompts' Land-on-main steps.
+- [x] Confirm critical regressions still covered; time both smoke and full — smoke: 71 py cases + 5 cjs suites in ~0.4s; full: doctor+158 py+shellcheck+node-check+5 cjs in ~1.5s. Verified failure detection by injecting a false assertion into `test_journal.py`, confirming `test-smoke.sh` reports it correctly, then reverting.
+- [x] ADR + PROGRESS; SESSION; QUEUE/INDEX → done — ADR-040.
 
 ## Out of scope
 Deleting human validation catalog; stochastic eval harness (A-031); rewriting product code to make tests pass; inventing flaky desktop e2e.
