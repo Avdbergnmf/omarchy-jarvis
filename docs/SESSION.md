@@ -3,9 +3,9 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Assignment: _(none — A-020 done this session, queue has A-019/A-021)_
-- Branch: `a020-validate-features-ux` (pushed, merging into main and removing)
-- Batch: 1 (default; stop and report after this assignment)
+- Assignment: _(none — A-020 done and merged this session; queue has A-019/A-021/A-022/A-023)_
+- Branch: `main` (a020-validate-features-ux merged at 791577d and removed)
+- Batch: 1 (default; stop and report after each assignment)
 
 ## Checklist
 - [x] Read START, SESSION, QUEUE; claimed A-020 (priority row)
