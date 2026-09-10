@@ -254,3 +254,6 @@ Claimed by Codex on `a014-hygiene` in the assigned absolute worktree; desk and t
 
 ## 2026-09-10 — A-014 Chunk 2
 - Worked: baseline 85 tests green; added app-plan approval and YouTube missing-window regressions (87 tests). Python, doctor syntax, ShellCheck and overlay checks pass. No live desktop actions or service changes.
+
+## 2026-09-10 — A-014 Chunk 3
+- Worked: removed unreachable duplicate/recipe-combination checks after the JSON planner’s existing one-action limit, plus three unused test imports. Existing multi-action rejection test and all 87 tests pass. Kept callable action/script entry points; no speculative deletions.

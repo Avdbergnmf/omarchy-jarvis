@@ -193,15 +193,9 @@ def json_plan(prompt):
     plan = json.loads(ollama_chat({'model':MODEL,'messages':[{'role':'system','content':instructions},{'role':'user','content':prompt}],'format':PLAN_SCHEMA,'stream':False,'options':{'temperature':0,'num_ctx':8192}})['content'])
     if not isinstance(plan,dict) or set(plan)!={'actions','reply'} or not isinstance(plan['actions'],list) or len(plan['actions'])>1 or not isinstance(plan['reply'],str):
         raise ValueError('Invalid JSON action plan')
-    seen=set()
     for action in plan['actions']:
         if not isinstance(action,dict) or set(action)!={'tool','arguments'}: raise ValueError('Invalid plan action')
         tool_argv(action['tool'],action['arguments'])
-        signature=json.dumps(action,sort_keys=True)
-        if signature in seen: raise ValueError('Duplicate action in plan')
-        seen.add(signature)
-    if any(a['tool']=='run_skill' for a in plan['actions']) and len(plan['actions'])!=1:
-        raise ValueError('A complete recipe cannot be combined with other actions')
     if not plan['actions'] and FALSE_ACTION_CLAIM_RE.match(plan['reply'].strip()):
         plan['reply'] = "I don't have a way to do that yet, so nothing happened — try rephrasing, or ask for something more specific."
     return plan

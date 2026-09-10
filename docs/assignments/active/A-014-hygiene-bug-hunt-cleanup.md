@@ -25,7 +25,7 @@ After each chunk: update checklist, PROGRESS one line, SESSION Next action, comm
 ## Checklist
 - [x] Chunk 1 bookkeeping
 - [x] Chunk 2 tests
-- [ ] Chunk 3 dead code
+- [x] Chunk 3 dead code
 - [ ] Chunk 4 honesty
 - [ ] Chunk 5 logging
 - [ ] Chunk 6 docs drift
