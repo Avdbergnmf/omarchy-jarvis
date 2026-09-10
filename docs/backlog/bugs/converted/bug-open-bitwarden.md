@@ -47,3 +47,5 @@ claude-code — contained action/skill change, cheap on Claude Code Sonnet
 ---
 Filed by Jarvis (`report_bug`) so a cold agent can act without chat history. Secrets are redacted before filing.
 
+---
+Converted to assignments **A-024** + **A-025** (desk Firsty, 2026-09-10). GH #16 stays open until both land.

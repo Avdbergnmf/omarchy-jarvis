@@ -1,7 +1,12 @@
 const fs=require('node:fs');const vm=require('node:vm');const assert=require('node:assert/strict');
 const handlers={};const requests=[];
 function makeElement(){
- return {hidden:true,disabled:false,className:'',textContent:'',innerHTML:'',children:[],focused:false,
+ return {hidden:true,disabled:false,className:'',textContent:'',children:[],focused:false,
+  // A-019: proposed-action bubbles are nested elements now, not a single text node, so an
+  // orphaned background poll chain (see the A-010 comment below) re-renders them into an
+  // unbounded array without this — innerHTML='' must actually clear children, matching every
+  // other test file's element mock (assignments/agents/validation.test.cjs already do this).
+  set innerHTML(value){this.children=[];},
   setAttribute(k,v){this[k]=v;},removeAttribute(k){delete this[k];},
   focus(){this.focused=true;},
   appendChild(child){this.children.push(child);},
@@ -57,7 +62,7 @@ const context={
   if(path==='/health')return {ok:true,json:async()=>({model:'qwen2.5:3b',ollama:'ok',approval_mode:'always'})};
   if(path==='/v1/run')return {ok:true,json:async()=>({run_id:'test-run',status:'planning',reply:'Thinking…'})};
   if(path==='/v1/runs/test-run')return {ok:true,json:async()=>{
-   if(runState==='awaiting_approval')return {status:'awaiting_approval',reply:'Review the plan.',plan:{actions:[{tool:'run_skill',arguments:{skill:'open-planning'}}]},steps:[]};
+   if(runState==='awaiting_approval')return {status:'awaiting_approval',reply:'Review the plan.',plan:{actions:[{tool:'run_skill',arguments:{skill:'open-planning'}}],reply:'Review the plan.'},steps:[]};
    return {status:'done',reply:'Completed: open-planning.',plan:{actions:[{tool:'run_skill',arguments:{skill:'open-planning'}}]},steps:[{tool:'run_skill',label:'open-planning',status:'done',summary:'ok'}]};
   }};
   if(path==='/v1/runs/test-run/approve'){runState='done';return {ok:true,json:async()=>({status:'running'})};}
@@ -107,8 +112,16 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
  await handlers.submit({preventDefault(){}});
  assert.equal(JSON.parse(requests.find(r=>r.path==='/v1/run').options.body).prompt,typedPrompt);
  assert.equal(elements['#prompt'].value,'','the input must be cleared once the prompt is sent (A-010)');
- assert.equal(elements['#status'].textContent,'Review the plan.');
+ // A-019: the model's reply no longer duplicates as a separate below-bubble text dump —
+ // it now lives inside the proposed-action bubble itself (asserted below).
+ assert.equal(elements['#status'].textContent,'Review the plan below.');
  assert.equal(elements['#plan'].hidden,false,'plan panel must be shown while awaiting approval');
+ const bubble=elements['#plan-actions'].children[0];
+ assert.equal(bubble.className,'action-card');
+ assert.equal(bubble.children[0].className,'action-title');
+ assert.equal(bubble.children[0].textContent,'Run skill: open-planning','a friendly title, not a bare tool_name plus key=value soup');
+ assert.equal(bubble.children[1].className,'action-desc');
+ assert.equal(bubble.children[1].textContent,'Review the plan.','the reply describing what the skill does now lives in the bubble');
  assert.equal(elements['#run-btn'].focused,true,'Run button must receive focus so Enter confirms');
  assert.equal(elements['#console-btn'].disabled,false,'Open console must be enabled for the current run');
  // A-020: the run id is now visible (not just usable internally for console/feedback),
@@ -172,6 +185,12 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
  assert.equal(elements['#plan'].hidden,false,'plan panel must show the filed draft for review');
  assert.equal(elements['#draft-preview'].hidden,false,'draft preview must show for report_bug plans');
  assert.equal(elements['#draft-title'].textContent,'Bug: x');
+ // A-019: report_bug's title/body/difficulty args aren't all folded into the bubble title —
+ // the leftover ones (body, difficulty) surface as chips instead of being dropped.
+ const draftBubble=elements['#plan-actions'].children[0];
+ assert.equal(draftBubble.children[0].textContent,'File a bug report: Bug: x');
+ const chipTexts=draftBubble.children[1].children.map(c=>c.textContent);
+ assert.deepEqual(chipTexts,['body: y','difficulty: M']);
  qaRunState='finished'; // let any still-orphaned background poll settle to a terminal status
 
  // A-021: Enter with an empty answer in the report Q&A must act like the Skip button,
@@ -186,7 +205,13 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
  assert.equal(JSON.parse(emptyAnswerReq.options.body).text,'skip','empty Enter in report Q&A must skip, matching the Skip button');
 
  console.log('PASS: overlay plan/approve, step completion, Escape, always-available Open console, intake Q&A + draft preview');
-})().then(testRestoreOnLoad);
+})().then(testRestoreOnLoad).catch(error=>{
+ // A thrown assertion here previously left an orphaned background poll chain (this mock's
+ // setTimeout fires synchronously, so a run stuck non-terminal past the failure point keeps
+ // scheduling itself forever) running with nothing to stop it, hanging the process instead
+ // of reporting the failure — force exit so a real regression fails loudly, not silently.
+ console.error(error);process.exit(1);
+});
 
 // A-010: reopening the overlay used to always start blank, discarding whatever the
 // last run's final state was even though the server still had it — a fresh vm context
