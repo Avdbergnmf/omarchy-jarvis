@@ -8,7 +8,7 @@
 - **A-040** next claimable (area:docs, parallel-ok: NO — wait for A-036 area:overlay to be clear if a serial slot is wanted, or pick an area-disjoint task)
 
 ## Checklist
-- [x] A-039 Cross-worktree claims — done, merging to main
+- [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
 - [ ] A-036 Agent monitor usability — in_progress (other worktree)
 - [ ] A-040 Test suite token optimization — queued
 - [ ] A-037+ — after
@@ -17,9 +17,10 @@
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
 - Claude: claimed A-039 by pushing QUEUE/INDEX/SESSION status → in_progress directly to `origin/main` *before* opening the feature worktree (dogfooding the fix itself).
 - Claude: implemented A-039 (ADR-038) — `assignment-status.sh` reads `origin/main` as canonical claim truth + cross-worktree mismatch detector; claim-on-main-first is step 1 in START/prompts; stale-claim recovery documented. Reconciled with Alex's concurrent direct-to-main commits (merge-to-main-at-batch-end, post-merge worktree cleanup, A-040 queued).
+- Claude: merged to `main` (`4ecd639`), pushed, removed the `a039-cross-worktree-claim-visibility` worktree and local+remote branch. `origin/main` confirmed up to date.
 
 ## Next action (one concrete step)
-- Merge `a039-cross-worktree-claim-visibility` into `main`, push, remove the worktree/branch, then report to Alex. Next claimable per QUEUE: A-040 (area:docs) or continue A-036/A-037+.
+- Report to Alex (done). Next claimable per QUEUE: A-040 is `parallel-ok: NO` so it waits for A-036 to clear; otherwise continue A-036 or pick up A-037+ once unblocked.
 
 ## Parallel agent
 - A-036 overlay worktree — do not edit
