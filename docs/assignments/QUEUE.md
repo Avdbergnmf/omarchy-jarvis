@@ -6,7 +6,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 |----|-------|--------|------|-------------|------|
 | A-032 | ChatGPT deep review: plan vs codebase (plan perfection) | queued | area:docs | NO | [active/A-032-chatgpt-plan-codebase-review.md](active/A-032-chatgpt-plan-codebase-review.md) |
 | A-036 | Agent monitor usability (depth, delivery, live work) | queued | area:overlay | YES | [active/A-036-agent-monitor-usability.md](active/A-036-agent-monitor-usability.md) |
-| A-037 | Formal assignment stages + blocked visibility | queued | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
+| A-037 | Release gates + claimability visibility | queued | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
 | A-027 | Protected promotion path (main ruleset) | queued | area:docs | YES | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
 | A-026 | Improvement Ledger v0 (IMP-* wraps QUEUE) | queued | area:docs | YES | [active/A-026-improvement-ledger-v0.md](active/A-026-improvement-ledger-v0.md) |
 | A-028 | Eval harness v0 (capability vs regression) | queued | area:docs | YES | [active/A-028-eval-harness-v0.md](active/A-028-eval-harness-v0.md) |
@@ -26,7 +26,7 @@ Recently completed: A-001 … A-025 (see [done/](done/)).
 - Cold/new Sol chat → paste [`NEW_AGENT.txt`](prompts/NEW_AGENT.txt); it should claim the first queued row (**A-032**).
 - Briefing without chat history: `docs/audits/chatgpt-self-improve-discussion-brief-2026-09-10.md`
 
-**After A-032 — Training dispatch usability (do before grinding Wave 0 from the window):** A-036 then A-037 (stages).
+**After A-032 — Training dispatch usability (do before grinding Wave 0 from the window):** A-036 then A-037 (gates + blocked-by, not stage integers).
 
 **Wave 0 / stage 1 (after A-032; ideally after A-036/A-037 if dispatching from Training):** A-027 → A-026 → A-028 → A-030 → A-031 → A-029. Roadmap: [docs/SELF_IMPROVE_ROADMAP.md](../SELF_IMPROVE_ROADMAP.md).
 

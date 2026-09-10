@@ -37,8 +37,11 @@ Today’s options (`Prepare now if idle — paste yourself` / `Queue locally unt
 - [ ] In-progress / active-work visibility even when queue filter excludes them
 - [ ] Tests + ADR; PROGRESS; SESSION; QUEUE/INDEX → done
 
+## Also (light, for dispatch)
+- Surface simple blocked/waiting hints from QUEUE when known; full gates = **A-037**.
+
 ## Out of scope
-Formal stages feature (A-037); auto-detecting arbitrary third-party chats with perfect fidelity; changing Wave 0/1 product scope; latency profiler.
+Formal gate schema (A-037); auto-detecting arbitrary third-party chats with perfect fidelity; changing Wave 0/1 product scope; latency profiler.
 
 ## Notes
 Align with ADR-032 (visible windows). Store per-slot `reasoning_effort` in agent registry if needed.

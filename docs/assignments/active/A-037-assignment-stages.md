@@ -1,40 +1,45 @@
-# A-037 — Formal assignment stages (waves) + blocked visibility
+# A-037 — Release gates + claimability visibility (not a second wave counter)
 
 - **Status:** queued
-- **Area:** area:docs (+ `area:overlay` Training + light `area:brain` training APIs)
-- **parallel-ok:** NO (touches assignment schema + Training + QUEUE conventions; after A-036 preferred so monitor can show stage)
-- **Wave / stage:** **0** (same usability gate band as A-036)
-- **Soft path hints:** assignment TEMPLATE/README/QUEUE/INDEX, `overlay/assignments.js`, `overlay/agents.js`, `brain/training.py`, START.md
-- **Blocks / blocked-by:** Best after **A-036**; can follow A-032
-- **Links:** Alex 2026-09-10 — waves should be first-class; show blocked-by-parallel and blocked-by-stage
+- **Area:** area:docs (+ light `area:overlay` / `brain/training.py` for surfacing)
+- **parallel-ok:** NO (after **A-036**; coordinate with **A-026**)
+- **Soft path hints:** `docs/assignments/`, `START.md`, `scripts/assignment-status.sh`, Training panels, `docs/MILESTONES.md`, ledger docs when present
+- **Blocks / blocked-by:** After **A-036**. Do not invent a parallel ID space vs A-026.
+- **Links:** Alex stages/waves idea; desk review vs roadmap/ledger
+
+## Decision (why not “stage: 0/1/2” algebra)
+
+Informal **Wave 0 / Wave 1** prose already exists. A global integer **stage** system with “shift everything +1” would **duplicate**:
+
+- **QUEUE order** + `parallel-ok` / area rules
+- **`Blocks / blocked-by`** (already on the assignment template)
+- **Improvement Ledger** `IMP-*` lifecycle (A-026) — improvement state, not queue release gating
+- **`docs/MILESTONES.md`**
+
+**Better model:** one queue (`A-###`); sequencing via **`blocked-by`** + optional **`gate:`** labels; Training/`assignment-status` **explains why something isn’t claimable**. “New wave” = add a **gate** (stub assignment or record) that later work `blocked-by` — not renumber everything.
 
 ## Goal
-Replace informal “Wave 0 / Wave 1” prose with a **formal stage system**:
+In Training Agent monitor / Assignments, Alex sees:
 
-1. Stages are integers; **lowest is always 0**. Adding a stage can **shift existing stages up by 1** (desk/Training action with confirm).
-2. Every assignment has a **`stage:`** (default 0) settable from: Training assignment editor, generation questions, or repo markdown.
-3. **Current stage** = minimum stage that still has unfinished work (or explicit “active stage” pointer — pick one, document in ADR).
-4. Agent monitor + assignment list show **stage**, and whether an item is **blocked** because:
-   - `blocked-by` / dependency on another assignment, or
-   - `parallel-ok: NO` collision / area conflict, or
-   - **stage &gt; current stage** (not yet released)
-5. QUEUE.md remains human-readable but gains a clear stage convention (table column and/or section headers). `assignment-status.sh` should surface stage + blocked reasons.
+1. In-progress work (with A-036)
+2. Blocked + **why** (dependency, parallel/area, waiting on gate)
+3. Optional **gate** slug on each assignment (`plan-review`, `control-plane`, `latency`, …)
+4. Editor/generate/repo can set `blocked-by` + `gate`
 
-Done when Alex can see “we’re on stage 0; A-032 in progress; A-033 is stage 1 / blocked” without reading chat history.
+Optional cheap: confirmable “add gate” that offers to attach `blocked-by` — **not** global stage shift.
 
 ## Checklist
-- [ ] Schema: `stage` on assignments; migrate existing Wave notes (0 = self-improve foundations usability+control, map A-032/A-036/A-037 → stage 0, Wave 0 foundations → stage 1?, latency A-033+ → higher — **propose mapping in ADR, Alex can tweak**)
-- [ ] Desk op: insert stage (shift up) with confirm; edit stage on assignment
-- [ ] Training editor + generate flow ask/set stage
-- [ ] Agent monitor / board: stage badge + blocked reasons
-- [ ] START + assignment README + status script; tests; PROGRESS; SESSION; QUEUE/INDEX → done
+- [ ] ADR: gates + blocked-by + QUEUE order; relate to A-026 / MILESTONES; reject stage integers unless A-032 demands them
+- [ ] Frontmatter: `blocked-by`, optional `gate:`; migrate Wave prose into gate labels
+- [ ] `assignment-status.sh`: claimability + blocked reasons
+- [ ] Training: show gate + blocked reasons (on A-036 board)
+- [ ] Editor/generate + README/START; PROGRESS; SESSION; QUEUE/INDEX → done
 
 ## Out of scope
-Auto-starting next stage agents; changing ledger IMP ids; latency profiler UI.
+Global stage shift-up; auto-start next gate; replace QUEUE with ledger; latency profiler.
 
-## Notes
-Suggested initial mapping (adjust in ADR if cleaner):  
-- **stage 0:** A-032 plan review + A-036/A-037 Training dispatch usability  
-- **stage 1:** former Wave 0 (A-026…A-031, A-029)  
-- **stage 2:** former Wave 1 latency (A-033…A-035)  
-Keep “wave” as optional alias in docs = stage.
+## Notes — initial gates (labels; order from blocked-by/QUEUE)
+- `plan-review` — A-032
+- `training-dispatch` — A-036 / A-037
+- `control-plane` — A-026…A-031, A-029
+- `latency` — A-033…A-035

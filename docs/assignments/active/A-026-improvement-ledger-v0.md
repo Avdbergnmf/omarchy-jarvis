@@ -12,9 +12,10 @@ Durable **Improvement Ledger** (`IMP-####`) = audit/history; **QUEUE** stays ope
 ## Checklist
 - [ ] Schema + `docs/ledger/README.md` + INDEX (`improvement_id` ≠ `assignment_id`)
 - [ ] Filing bug/feature creates/links IMP row that can enqueue A-### work
+- [ ] Optional milestone note on IMP; do **not** invent assignment `stage:` integers (A-037 gates)
 - [ ] Seed examples from A-019…A-025 / #15/#16
 - [ ] Document desk/Training append rules in START + assignments README
 - [ ] ADR; PROGRESS; SESSION; QUEUE/INDEX → done
 
 ## Out of scope
-Replacing QUEUE/Training; forcing journals into git; big Training UI.
+Replacing QUEUE/Training; forcing journals into git; big Training UI; release-gate UX (A-037).
