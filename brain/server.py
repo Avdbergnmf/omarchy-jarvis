@@ -142,8 +142,22 @@ def tool_argv(name, args):
     elif name == 'open_app_by_name': argv += ['--name', args['name']]
     return argv
 
+def skill_description(skill):
+    """One-line SKILL.md 'description:' front matter, or None if unreadable —
+    lets plan/step labels say what a skill does, not just its slug (A-015)."""
+    try:
+        text = (ROOT / 'skills/examples' / str(skill) / 'SKILL.md').read_text()
+    except OSError:
+        return None
+    match = re.search(r'^description:\s*(.+)$', text, re.M)
+    return match.group(1).strip() if match else None
+
 def action_label(name, args):
-    label = args.get('skill') or args.get('title') or (name == 'prepare_handoff' and 'issue #' + str(args.get('issue'))) or (name == 'open_app_by_name' and args.get('name')) or name
+    if name == 'run_skill':
+        skill = args.get('skill')
+        description = skill_description(skill)
+        return str(skill) + (' — ' + description if description else '')
+    label = args.get('title') or (name == 'prepare_handoff' and 'issue #' + str(args.get('issue'))) or (name == 'open_app_by_name' and args.get('name')) or name
     return str(label).replace('_', ' ')
 
 def restore_target(target):
@@ -208,11 +222,45 @@ def json_plan(prompt):
         tool_argv(action['tool'],action['arguments'])
     if not plan['actions']:
         plan['reply'] = empty_plan_reply(plan['reply'])
+    elif plan['actions'][0]['tool'] == 'run_skill':
+        # A-015: the model's own reply for a skill recipe tends to name only the
+        # skill, not what it actually does ("Opening your planning apps."); swap in
+        # the skill's own one-line description so the pre-approval preview tells the
+        # user what's about to run, deterministically rather than trusting the model.
+        description = skill_description(plan['actions'][0]['arguments'].get('skill'))
+        if description:
+            plan['reply'] = description
     return plan
 
 # Backlog/handoff tools file GitHub issues or write local files; they don't touch
 # the desktop, so executing them shouldn't depend on (or close) any window.
 NON_DESKTOP_TOOLS = {'report_bug', 'report_feature', 'list_backlog', 'prepare_handoff'}
+
+def summarize_step_result(name, stdout):
+    """Human-readable one-liner for a finished step's raw stdout (A-015). run_skill's
+    stdout is {'skill':..., 'results': [...one dict per underlying action...]} — a
+    parameter dump that isn't readable in the overlay's step list — so turn it into
+    a sentence naming what actually opened/moved. Falls back to the raw (truncated)
+    stdout for every other tool, or if the JSON doesn't have the shape we expect."""
+    stdout = stdout.strip()
+    if name != 'run_skill':
+        return stdout[:300]
+    try:
+        results = json.loads(stdout)['results']
+        parts = []
+        for item in results:
+            if item.get('name'):
+                parts.append('opened ' + item['name'])
+            elif item.get('address'):
+                parts.append('moved the focused window to scratchpad')
+            elif item.get('workspace') is not None:
+                parts.append('created workspace ' + str(item['workspace']))
+        if not parts:
+            raise ValueError('no recognizable step results')
+    except (ValueError, TypeError, KeyError, AttributeError):
+        return stdout[:300]
+    summary = '; '.join(parts) + '.'
+    return summary[:1].upper() + summary[1:]
 
 def execute_plan(run_id, plan, target):
     try:
@@ -232,9 +280,9 @@ def execute_plan(run_id, plan, target):
             if result.returncode:
                 with STATE_LOCK: step.update(status='error', summary=result.stdout.strip()[:300])
                 raise RuntimeError('Action failed: ' + result.stdout.strip())
-            with STATE_LOCK: step.update(status='done', summary=result.stdout.strip()[:300])
+            with STATE_LOCK: step.update(status='done', summary=summarize_step_result(name, result.stdout))
             summaries.append(label)
-        reply = 'Completed: '+', '.join(summaries)+'.' if summaries else plan['reply'][:1000]
+        reply = 'Completed: '+', '.join(s.rstrip('.') for s in summaries)+'.' if summaries else plan['reply'][:1000]
         announce(run_id,reply)
         with STATE_LOCK: RUNS[run_id].update(status='done',reply=reply)
     except Exception as e:
@@ -351,7 +399,7 @@ def execute_tools_plan(run_id, target, messages):
             if result.returncode:
                 with STATE_LOCK: step.update(status='error', summary=result.stdout.strip()[:300])
                 raise RuntimeError('Action failed: ' + result.stdout.strip())
-            with STATE_LOCK: step.update(status='done', summary=result.stdout.strip()[:300])
+            with STATE_LOCK: step.update(status='done', summary=summarize_step_result(name, result.stdout))
             messages.append({'role':'tool','tool_name':name,'content':result.stdout[:16000]})
         msg = ollama_chat({'model':MODEL,'messages':messages,'tools':TOOLS_FOR_MODEL,'stream':False,'options':{'temperature':0,'num_ctx':8192}})
         msg = {k:v for k,v in msg.items() if k in ('role','content','tool_calls')}
@@ -359,7 +407,7 @@ def execute_tools_plan(run_id, target, messages):
         pending_calls = msg.get('tool_calls') or []
         if pending_calls:
             raise ValueError('Additional model actions were not approved; submit a new request to review them')
-        reply = 'Completed: ' + ', '.join(step['label'] for step in RUNS[run_id]['steps']) + '.'
+        reply = 'Completed: ' + ', '.join(step['label'].rstrip('.') for step in RUNS[run_id]['steps']) + '.'
         announce(run_id, reply[:250])
         with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
     except Exception as e:

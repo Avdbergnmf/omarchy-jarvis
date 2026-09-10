@@ -155,3 +155,41 @@ validation, retain tested version/revision/notes, and generate FEATURES from the
 **Consequences:** automated checks never manufacture human validation. Failures remain local
 until the user drafts and approves an issue through existing intake. Source run context is
 explicit, avoiding attribution to an unrelated recent run. Verification auto-closes nothing.
+
+## ADR-029 — A-015: deterministic, description-backed plan/step labels for skill recipes (2026-09-10)
+- **Context:** Alex validated feat-overlay-chat on 0.5.2 and noted that asking Jarvis to run a
+  skill recipe (e.g. "open my planning in a new workspace") showed almost no detail before or
+  during execution — just the bare skill slug, not what it would do or with what parameters,
+  and "poorly readable for a human." Training turned that note into A-015, scoped to `skills/`
+  only. Tracing the actual text showed the root cause was `action_label()`/`json_plan()`'s
+  model-written `reply` in `brain/server.py`, both outside that scope — a `skills/`-only change
+  (e.g. richer `SKILL.md` prose) could not have altered what's displayed, since nothing read
+  `SKILL.md` at runtime. Asked Alex directly; scope was explicitly expanded to
+  `brain/server.py` + `brain/system_prompt.md` rather than shipping a no-op fix or leaving A-015
+  blocked.
+- **Decision:** `action_label()` now appends a `run_skill` action's own `SKILL.md`
+  `description:` front matter to its slug — this label is what both the live step list
+  ("Running open-planning — Open Todoist, …") and the final "Completed: …" message use.
+  `json_plan()` deterministically overwrites a single run_skill action's model-generated
+  `reply` with that same description before it reaches the pre-approval preview headline,
+  rather than trusting a 3B model to reliably describe a skill recipe on its own (consistent
+  with this codebase's existing pattern of not trusting model prose for user-facing claims —
+  see ADR-024's honesty guard). A new `summarize_step_result()` parses a finished run_skill
+  step's raw JSON stdout (`{'skill':…, 'results':[…]}`) into a plain sentence ("Created
+  workspace 3; opened Todoist; opened Google Calendar.") instead of a truncated JSON dump,
+  falling back to the raw (truncated) stdout for any other tool or an unrecognized shape.
+  No other tool's label/reply path, `overlay/`, or `actions/` changed.
+- **Consequences:** Every place the user sees a skill-recipe plan or its outcome — preview
+  headline, running step, completion message — now names what it actually does, without a
+  model round-trip in the loop for that text. `feat-overlay-chat`'s `jarvis_version_shipped`
+  moved to 0.5.3 (VERSION bumped to match) and it gained a fifth guided step exercising a
+  skill-based plan preview; `definition_hash` correctly flips its recorded validation back to
+  unvalidated, so Alex re-tests the actual fix rather than it silently reading as already
+  covered by the 0.5.2 validation that reported this exact problem. Covered by
+  `tests/test_jarvis.py`: `test_skill_description_reads_skill_md_front_matter`,
+  `test_action_label_names_a_run_skill_action_with_its_description`,
+  `test_summarize_step_result_turns_skill_json_into_a_sentence`/`_falls_back_on_unrecognized_shape`,
+  plus `test_valid_complete_recipe` and `test_success_reply_comes_from_executed_tool` updated
+  to expect the richer text (109 Python tests pass). Not exercised: the real overlay/Ollama
+  end-to-end path (no live Hyprland/model in this sandbox) — Alex should restart
+  `jarvis.service` from `main` and re-run feat-overlay-chat's step 5 on 0.5.3.

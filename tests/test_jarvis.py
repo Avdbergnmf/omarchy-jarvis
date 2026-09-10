@@ -85,6 +85,23 @@ class BrainTest(unittest.TestCase):
    with self.subTest(name=name,args=args),self.assertRaises(ValueError): server.tool_argv(name,args)
  def test_known_skill_argv(self):
   self.assertEqual(server.tool_argv('run_skill',{'skill':'open-planning'}),[str(ROOT/'actions/run_skill'),'open-planning'])
+ def test_skill_description_reads_skill_md_front_matter(self):
+  self.assertEqual(server.skill_description('open-planning'),'Open Todoist, Google Calendar, Outlook and WhatsApp together when asked for a planning workspace.')
+  self.assertIsNone(server.skill_description('not-a-real-skill'))
+ def test_action_label_names_a_run_skill_action_with_its_description(self):
+  # A-015: a bare skill slug told a human nothing about what would actually run.
+  self.assertEqual(server.action_label('run_skill',{'skill':'open-planning'}),'open-planning — Open Todoist, Google Calendar, Outlook and WhatsApp together when asked for a planning workspace.')
+  self.assertEqual(server.action_label('run_skill',{'skill':'not-a-real-skill'}),'not-a-real-skill')
+ def test_summarize_step_result_turns_skill_json_into_a_sentence(self):
+  stdout = json.dumps({'skill':'open-planning','results':[
+   {'argv':['workspace_new'],'workspace':3},
+   {'name':'Todoist','address':'0x1','workspace':3,'class':'jarvis-todoist'},
+   {'name':'Google Calendar','address':'0x2','workspace':3,'class':'jarvis-google-calendar'}]})
+  self.assertEqual(server.summarize_step_result('run_skill',stdout),'Created workspace 3; opened Todoist; opened Google Calendar.')
+ def test_summarize_step_result_falls_back_on_unrecognized_shape(self):
+  self.assertEqual(server.summarize_step_result('run_skill','not json'),'not json')
+  self.assertEqual(server.summarize_step_result('run_skill',json.dumps({'skill':'x','results':[]})),json.dumps({'skill':'x','results':[]}))
+  self.assertEqual(server.summarize_step_result('scratch_toggle','{"ok":true}'),'{"ok":true}')
  def test_original_target_disappearing_stops_actions(self):
   with patch.object(server,'hypr',return_value=[]),self.assertRaises(ValueError): server.restore_target('0x123')
  def test_restore_target_focuses_without_closing_overlay(self):
@@ -118,9 +135,13 @@ class JsonPlanTest(unittest.TestCase):
    def read(self): return json.dumps({'message':{'content':json.dumps(plan)}}).encode()
   return Response()
  def test_valid_complete_recipe(self):
-  plan={'actions':[{'tool':'run_skill','arguments':{'skill':'scratch-and-mail'}}],'reply':'Opening mail.'}
-  with patch.object(server,'urlopen',return_value=self.response(plan)):
-   self.assertEqual(server.json_plan('scratch and mail'),plan)
+  # A-015: json_plan swaps a run_skill action's model-written reply for the skill's
+  # own SKILL.md description, so the returned reply differs from the model's raw output.
+  model_plan={'actions':[{'tool':'run_skill','arguments':{'skill':'scratch-and-mail'}}],'reply':'Opening mail.'}
+  with patch.object(server,'urlopen',return_value=self.response(model_plan)):
+   result=server.json_plan('scratch and mail')
+  self.assertEqual(result['actions'],model_plan['actions'])
+  self.assertEqual(result['reply'],'Move the focused application to scratchpad and open Outlook when asked to scratch a window and open email.')
  def test_rejects_multiple_actions_before_execution(self):
   plan={'actions':[{'tool':'scratch_move_here','arguments':{}},{'tool':'run_skill','arguments':{'skill':'scratch-and-mail'}}],'reply':'Done'}
   with patch.object(server,'urlopen',return_value=self.response(plan)),self.assertRaises(ValueError):server.json_plan('scratch and mail')
@@ -128,11 +149,13 @@ class JsonPlanTest(unittest.TestCase):
   plan={'actions':[{'tool':'workspace_switch','arguments':{'workspace':'1'}}],'reply':'Done'}
   with patch.object(server,'urlopen',return_value=self.response(plan)),self.assertRaises(ValueError):server.json_plan('workspace one')
  def test_success_reply_comes_from_executed_tool(self):
+  # A-015: the completion reply's action_label now includes the skill's SKILL.md
+  # description, not just its slug, so the user sees what actually ran.
   rid='json-unit';server.RUNS[rid]={'steps':[]};server.BUSY.acquire()
   plan={'actions':[{'tool':'run_skill','arguments':{'skill':'open-planning'}}],'reply':'Unverified claim'}
   with patch.object(server,'restore_target'),patch.object(server,'announce'),patch.object(server,'log'),patch.object(server.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'{"ok":true}','')):
    server.execute_plan(rid,plan,None)
-  self.assertEqual(server.RUNS[rid]['reply'],'Completed: open-planning.')
+  self.assertEqual(server.RUNS[rid]['reply'],'Completed: open-planning — Open Todoist, Google Calendar, Outlook and WhatsApp together when asked for a planning workspace.')
   self.assertFalse(server.BUSY.locked())
  def test_false_action_claim_with_no_actions_is_rewritten_honestly(self):
   # A-012: run fad6f832 shipped exactly {"actions": [], "reply": "Opening YouTube."} —
