@@ -27,10 +27,14 @@
     "docs/DECISIONS.md",
     "docs/assignments/README.md",
     "docs/assignments/TEMPLATE.md",
+    "docs/evals/cases.json",
+    "docs/evals/stochastic/cases.json",
+    "docs/evals/stochastic/baseline.json",
     "docs/FEATURES.md",
     "docs/FUTURE.md",
     "docs/SELF_IMPROVE_ROADMAP.md",
     "scripts/skill-draft.py",
+    "scripts/stochastic-evals.py",
     "tests/test_jarvis.py"
   ],
   "classifications": [

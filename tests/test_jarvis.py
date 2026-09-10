@@ -400,6 +400,16 @@ class SelfImproveServerTest(unittest.TestCase):
   self.assertIsNone(server.detect_app_correction('hello'))
   # Correction is more specific than bug intake and must win for these phrases.
   self.assertEqual(server.detect_intake('no, the other bitwarden'),(None,None))
+ def test_route_prompt_is_the_live_planner_router(self):
+  # A-031: stochastic router cases call this function, so it must be the same
+  # decision the HTTP handler uses — not a second copy of the regexes.
+  self.assertEqual(server.route_prompt('no, the other bitwarden'),{'mode':'correction','correction':{'query':'bitwarden'}})
+  self.assertEqual(server.route_prompt('that was wrong')['mode'],'intake')
+  self.assertEqual(server.route_prompt('that was wrong')['kind'],'bug')
+  self.assertEqual(server.route_prompt('/backlog')['plan']['actions'][0]['tool'],'list_backlog')
+  self.assertEqual(server.route_prompt('/dispatch #12 to claude-code')['plan']['actions'][0]['tool'],'prepare_handoff')
+  self.assertEqual(server.route_prompt('open the other workspace'),{'mode':'json_plan'})
+  self.assertEqual(server.route_prompt('hello', tools_mode=True),{'mode':'tools_run'})
  def test_correct_app_open_excluded_from_model_facing_planner(self):
   names={t['function']['name'] for t in server.TOOLS_FOR_MODEL}
   self.assertNotIn('correct_app_open',names)

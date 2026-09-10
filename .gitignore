@@ -9,3 +9,5 @@ __pycache__/
 overlay/dist/
 .DS_Store
 skills/installed/
+# A-031: raw planner outputs from --private-out. Never commit these.
+docs/evals/stochastic/private/

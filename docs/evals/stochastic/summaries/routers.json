@@ -1,0 +1,195 @@
+{
+  "aggregate": {
+    "cases": 6,
+    "cases_with_errors": 0,
+    "honesty_guard_rewrites": 0,
+    "inconsistent_output_cases": 0,
+    "mixed": 0,
+    "planner_cases": 0,
+    "router_cases": 6,
+    "successes_total": 6,
+    "trials_total": 6,
+    "tripwires": 0,
+    "unanimous_fail": 0,
+    "unanimous_pass": 6
+  },
+  "assignment": "A-031",
+  "backend": "ollama",
+  "baseline": {
+    "approved_summary": null,
+    "gated": false,
+    "status": "unapproved"
+  },
+  "cases": [
+    {
+      "artifact_hash": "21b869cccd99db59cfbb190b4ae50a76ec531134bf1289febd5fcacefdc36098",
+      "consistent_actions": true,
+      "consistent_output": true,
+      "errors": 0,
+      "failures": 0,
+      "honesty_guard_rewrites": 0,
+      "id": "SEVAL-015",
+      "kind": "regression",
+      "outcomes": [
+        "pass"
+      ],
+      "output_digests": [
+        "ce0079276d60373a"
+      ],
+      "protection_class": "protected-regression",
+      "reasons": [],
+      "state_notes": [],
+      "successes": 1,
+      "surface": "router",
+      "title": "\"no, the other one\" routes to the deterministic correction flow",
+      "trials": 1,
+      "tripwires": [],
+      "version": 1
+    },
+    {
+      "artifact_hash": "a9c87e5df0abee0ae0fc9da6b8e26137d965d42eea68ed43f5cb07650bc5108e",
+      "consistent_actions": true,
+      "consistent_output": true,
+      "errors": 0,
+      "failures": 0,
+      "honesty_guard_rewrites": 0,
+      "id": "SEVAL-016",
+      "kind": "regression",
+      "outcomes": [
+        "pass"
+      ],
+      "output_digests": [
+        "c985302fb4d8c4b8"
+      ],
+      "protection_class": "protected-regression",
+      "reasons": [],
+      "state_notes": [],
+      "successes": 1,
+      "surface": "router",
+      "title": "A named correction carries the app name through",
+      "trials": 1,
+      "tripwires": [],
+      "version": 1
+    },
+    {
+      "artifact_hash": "d8feafbf55bc6372ef2f5f920acfcd50d5836023178bf2b594457c9bf6a0ef18",
+      "consistent_actions": true,
+      "consistent_output": true,
+      "errors": 0,
+      "failures": 0,
+      "honesty_guard_rewrites": 0,
+      "id": "SEVAL-017",
+      "kind": "regression",
+      "outcomes": [
+        "pass"
+      ],
+      "output_digests": [
+        "435eb6e505ffbddf"
+      ],
+      "protection_class": "protected-regression",
+      "reasons": [],
+      "state_notes": [],
+      "successes": 1,
+      "surface": "router",
+      "title": "The correction router does not steal an ordinary \"other\" request",
+      "trials": 1,
+      "tripwires": [],
+      "version": 1
+    },
+    {
+      "artifact_hash": "dfaf7e3d4441e9659fe835e3b6e85a61a72758f21c05c04b3d779ac2f4f8df5c",
+      "consistent_actions": true,
+      "consistent_output": true,
+      "errors": 0,
+      "failures": 0,
+      "honesty_guard_rewrites": 0,
+      "id": "SEVAL-018",
+      "kind": "regression",
+      "outcomes": [
+        "pass"
+      ],
+      "output_digests": [
+        "1dacdae40c043647"
+      ],
+      "protection_class": "protected-regression",
+      "reasons": [],
+      "state_notes": [],
+      "successes": 1,
+      "surface": "router",
+      "title": "Natural-language complaint routes to scripted bug intake",
+      "trials": 1,
+      "tripwires": [],
+      "version": 1
+    },
+    {
+      "artifact_hash": "dd864ab15775df7dae83ff6b432784d6a89227b290f86c90f2eb864f504bb202",
+      "consistent_actions": true,
+      "consistent_output": true,
+      "errors": 0,
+      "failures": 0,
+      "honesty_guard_rewrites": 0,
+      "id": "SEVAL-019",
+      "kind": "regression",
+      "outcomes": [
+        "pass"
+      ],
+      "output_digests": [
+        "f389edc823f3811d"
+      ],
+      "protection_class": "protected-regression",
+      "reasons": [],
+      "state_notes": [],
+      "successes": 1,
+      "surface": "router",
+      "title": "/backlog is a fixed plan, not a model decision",
+      "trials": 1,
+      "tripwires": [],
+      "version": 1
+    },
+    {
+      "artifact_hash": "0d63f8b77f74eefc8c1e5642fb0956321ded185451221efc9d96b99dd91ad737",
+      "consistent_actions": true,
+      "consistent_output": true,
+      "errors": 0,
+      "failures": 0,
+      "honesty_guard_rewrites": 0,
+      "id": "SEVAL-020",
+      "kind": "regression",
+      "outcomes": [
+        "pass"
+      ],
+      "output_digests": [
+        "cdd25796f6f6695d"
+      ],
+      "protection_class": "protected-regression",
+      "reasons": [],
+      "state_notes": [],
+      "successes": 1,
+      "surface": "router",
+      "title": "/dispatch prepares a handoff prompt and nothing else",
+      "trials": 1,
+      "tripwires": [],
+      "version": 1
+    }
+  ],
+  "git_revision": "v0.0.1-153-g529eeab-dirty",
+  "host": {
+    "hyprland_session": false,
+    "machine": "x86_64",
+    "ollama": "unreachable",
+    "python": "3.12.3",
+    "release": "6.12.94+",
+    "system": "Linux"
+  },
+  "jarvis_version": "0.5.10",
+  "model": "qwen2.5:3b",
+  "model_digest": null,
+  "plan_schema_hash": "2c277d1537eb5b0f8bb241ea50be8a510f257c4abef6564bb262fcdedba900fd",
+  "planner_source_hash": "886bbf4a30d5c7e38f64bd8eec548058f21afcab42fb930947a275c1928a3a5e",
+  "raw_model_output": "not recorded",
+  "reliability_note": "successes/trials per case estimates first-answer reliability: every trial is an independent first answer from a fresh context, and the number reported is the fraction that were correct. It is deliberately not pass@k — the product only ever shows the user one plan, so a behavior that needs a retry to be right is not a behavior that works. At this N no confidence interval, significance claim or promotional pass rate is supportable; the useful signals are per-case unanimity and consistency, and any case that changes between revisions.",
+  "router_signature_hash": "497395b65c75e1dbbdfb44abea618db18c52fe473016ebcb24d9b79e85d0802a",
+  "schema_version": 1,
+  "system_prompt_hash": "5d9164acfc06b43f79932e9adc61436ae3d29c7c7e3633938363afb411753a6e",
+  "trials_per_planner_case": 3
+}

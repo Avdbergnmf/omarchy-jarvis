@@ -3,10 +3,8 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- **A-031** in_progress — Cursor cloud agent (claim via PR; ruleset requires PR to main)
-- **A-030** done — control-plane v1 merged
-- **Next after A-031:** A-033 (brain) or A-041 (overlay) — both parallel-ok YES
-
+- **A-031** done — stochastic planner evals v0 (ADR-051), landing via PR
+- **Next:** A-033 (area:brain, depth high, parallel-ok YES) or A-041 (area:overlay, depth high)
 
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
@@ -19,6 +17,7 @@
 - [x] A-029 Preference memory v0 — done, merged to main, worktree/branch removed
 - [x] A-027 Protected promotion — cancelled (ADR-046)
 - [x] A-030 Protect control-plane paths — done (PR + `test` enforced; CODEOWNERS review remains policy)
+- [x] A-031 Stochastic planner evals v0 — done (ADR-051); baseline remains human-unapproved
 - [ ] A-041 Agent Monitor redesign — queued (filed; not started)
 
 ## Done this session (evidence)
@@ -31,12 +30,13 @@
 - Desk/Firsty: filed **A-041** (Agent Monitor tiles + per-agent auto-queue redesign); ADR-043 stub reserved for the auto-submit-vs-paste policy decision at implement time.
 - Claude: implemented A-026 (ADR-044) — `docs/ledger/` Desk-owned Improvement Ledger, `scripts/ledger-status.py`. Seeded IMP-001…IMP-006. A-029 unblocked. Merged, worktree/branch removed.
 - Claude: claimed A-028 by pushing QUEUE/INDEX/SESSION status → in_progress directly to `origin/main` before opening the feature worktree.
-- Claude: implemented A-028 (ADR-045) — `docs/evals/` documents the four evidence planes (CI/unit, runtime journal, human validation, candidate evals) and none auto-graduates into another; `docs/evals/schema.json`/`cases.json` define one `unit-test-reference` case shape (deterministic, side-effect-free by construction); `scripts/eval-status.py` validates cases and confirms every `reference` resolves to a real test via `ast.parse`; `scripts/check-test-coverage.py` (new CI step) fails on any `tests/*.test.cjs` unreachable from a CI entrypoint or `tests/*.py` not matching `unittest discover`'s pattern — the "no quiet suite omission" contract. Seeded EVAL-001…EVAL-005 from known planner/approval history. Result envelope reuses A-038's `fingerprint()` verbatim plus `counts`/`artifact_hash`, documented for A-031's future runner (no runner built). `START.md`/assignments README now require a regression artifact to close behavior work. A-030 intentionally left blocked (still needs external A-027). Found and fixed a real bug in `check-test-coverage.py`'s first draft (closed over the wrong variable, silently reading the real repo instead of its test fixture). 14 new tests (5 + 9); 204/204 pass.
-- Claude: implemented A-029 (ADR-047) — `~/.config/jarvis/app-preferences.json` moves to a versioned v2 schema: each app-open ranking influence is now a durable, provenance-carrying record (`id`/`authority`/`source`/`created_at`/`confidence`/`expiry`/`status`) instead of a bare int weight. Authority-tiered precedence via a large integer multiplier (`explicit_correction`/`migrated_v1` always outrank any amount of `inferred` repetition) without touching `ranked_apps()`'s existing sort key. v1 files migrate in memory on every load (pure, no mutation-on-read), byte-identical ranking, backed up once (`.v1.bak`) on first write; unreadable/unknown-version files are quarantined, never silently overwritten. `fcntl.flock`-based cross-process locking closes the old bare-counter's read-modify-write race. Bounded growth (`PREF_RECORD_KEEP`, oldest revoked pruned first). `inspect_preferences`/`revoke_preference`/`restore_preference` for transparency and reversibility. `correct_open()` now calls `add_preference_record(..., authority='explicit_correction')` instead of the old `bump_app_weight`. Found and fixed a real bug in `_prune_records`'s first draft (default arg bound at def-time, so test patching of `PREF_RECORD_KEEP` had no effect — fixed by always passing it explicitly from `save_app_prefs`). IMP-001 updated with the hardening event. 19 new tests; 223/223 pass. Merged, worktree/branch removed.
-- Codex: implemented A-030 (ADR-050) — versioned Control Plane threat/classification map, CODEOWNERS ownership map, deterministic CI boundary checker, explicit mixed candidate+policy review rule, ADR-034 issue-template reconciliation, and deferred physical-extraction backlog. Live API evidence confirms ADR-049: PR + `test` enforced, but approving/code-owner review off. A-031 unblocked. Six focused tests; full-suite result in PROGRESS.
+- Claude: implemented A-028 (ADR-045) — `docs/evals/` four evidence planes; `EVAL-001`…`EVAL-005`; `eval-status.py` + `check-test-coverage.py`. A-030 left blocked at the time.
+- Claude: implemented A-029 (ADR-047) — provenance-carrying app-open preference records. Merged, worktree/branch removed.
+- Codex: implemented A-030 (ADR-050) — Control Plane boundary v1, CODEOWNERS, `check-control-plane.py`. A-031 unblocked.
+- Cursor/Grok: implemented A-031 (ADR-051) — planner-only stochastic eval runner. 20 `SEVAL-*` cases (14 `json_plan`, 6 `route_prompt`). Fresh child process per trial with execution tripwires; A-038 `kind: eval` bundles; pass@k not reported; baseline unapproved. Router 6/6 and stub-planner 14/14 in `docs/evals/stochastic/summaries/`. Live Ollama N-runs not spent.
 
 ## Next action (one concrete step)
-- Claim A-031 (Stochastic planner evals v0, area:docs, depth high) and keep every trial planner-only/non-executing.
+- Stop. Next claimable: A-033 (depth high) or A-041 (depth high). Do not batch.
 
 ## Parallel agent
 - none

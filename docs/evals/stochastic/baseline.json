@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "status": "unapproved",
+  "approved_by": null,
+  "approved_at": null,
+  "approved_summary": null,
+  "trials": null,
+  "note": "No stochastic result blocks anything while this file says \"unapproved\". A baseline becomes real only when Alex has read a specific summary from a specific fingerprint, written its path into approved_summary, and filled in a tolerance for every planner-json case. Until then `--gate` refuses to run and the runner's exit code reflects runner health (validation, tripwires, model errors) rather than how many trials passed.",
+  "tolerance": {}
+}

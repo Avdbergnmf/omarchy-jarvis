@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Omarchy Jarvis stochastic planner-eval case (A-031 v0)",
+  "description": "One critical planner-only behavior, graded by a deterministic oracle over the plan the planner returns. A trial NEVER approves or executes anything: the runner (scripts/stochastic-evals.py) calls brain/server.py's planner surface in a fresh child process with execution tripwires installed, so a case can only ever observe a proposed plan. Cases are validated by `scripts/stochastic-evals.py --validate`, which also checks every named tool/argument against the tool schemas that actually ship.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "kind", "title", "surface", "owner", "protection_class", "prompt", "expect"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^SEVAL-[0-9]{3,}$", "description": "Distinct from A-028's EVAL-NNN id space: an EVAL case's oracle is an existing deterministic test, a SEVAL case's oracle grades live planner output."},
+    "version": {"type": "integer", "minimum": 1, "description": "Bump when the case definition (prompt or oracle) changes. A result is only comparable to another result of the same case version."},
+    "kind": {"type": "string", "enum": ["capability", "regression"]},
+    "title": {"type": "string", "maxLength": 140},
+    "surface": {
+      "type": "string",
+      "enum": ["planner-json", "router"],
+      "description": "planner-json: brain/server.py::json_plan — the model plans, so results are stochastic and get N trials. router: brain/server.py::route_prompt — deterministic regex routing with no model call, so it gets exactly one trial and is reported separately, never mixed into the stochastic aggregate."
+    },
+    "owner": {"type": "string", "enum": ["control-plane"], "description": "Adding, editing or promoting a case is a Control Plane change (A-030), never something Runtime or Training does on its own."},
+    "protection_class": {"type": "string", "enum": ["protected-regression", "candidate-capability"], "description": "protected-regression: an accepted safety/honesty boundary. candidate-capability: still exploratory; a small-N result here is a diagnostic, not a promise."},
+    "prompt": {"type": "string", "minLength": 1, "maxLength": 200, "description": "Exactly what a user would type into the overlay. Sent verbatim; never templated or rewritten by the runner."},
+    "expect": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A closed oracle vocabulary evaluated by the runner in code. No predicate is ever eval()'d from this file, and no model judges another model's output.",
+      "properties": {
+        "actions": {
+          "description": "\"none\" requires an empty action list. A list of tool names requires exactly one action whose tool is one of them.",
+          "oneOf": [
+            {"type": "string", "enum": ["none"]},
+            {"type": "array", "minItems": 1, "items": {"type": "string"}}
+          ]
+        },
+        "arguments": {"type": "object", "additionalProperties": {"type": "string"}, "description": "Case-insensitive regex per argument name, searched against that argument's value. Only valid with a single-tool `actions` list; argument names are checked against that tool's real schema."},
+        "forbidden_tools": {"type": "array", "items": {"type": "string"}, "description": "Tools that must never appear, even when `actions` allows several."},
+        "planner_rejection": {"type": "string", "enum": ["pass", "fail"], "description": "What it means when the planner raises instead of returning a plan (its own guard rejecting the model's output). Default fail; \"pass\" for safety cases where refusing is as correct as planning nothing."},
+        "reply": {"type": "string", "enum": ["must-not-claim-action", "any"], "description": "must-not-claim-action: the reply must not claim an action happened (brain/server.py's FALSE_ACTION_CLAIM_RE, the A-012 honesty guard). Defaults to must-not-claim-action when actions is \"none\", \"any\" otherwise."},
+        "route": {"type": "string", "enum": ["json_plan", "tools_run", "correction", "intake", "fixed_plan"], "description": "router cases only: the mode route_prompt must select."},
+        "detail": {"type": "object", "description": "router cases only: a subset of the routing decision that must match exactly — {\"query\": null|string} for correction, {\"kind\": \"bug\"|\"feature\"} for intake, {\"tool\": name} for fixed_plan."}
+      }
+    },
+    "notes": {"type": "string", "maxLength": 600}
+  }
+}

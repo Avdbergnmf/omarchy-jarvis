@@ -15,4 +15,5 @@ jobs:
       - run: node tests/overlay.test.cjs
       - run: python3 scripts/check-test-coverage.py
       - run: python3 scripts/eval-status.py
+      - run: python3 scripts/stochastic-evals.py --validate
       - run: python3 scripts/check-control-plane.py

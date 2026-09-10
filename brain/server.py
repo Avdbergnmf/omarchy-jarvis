@@ -494,6 +494,27 @@ def detect_app_correction(prompt):
         name = None
     return {'query': name}
 
+def route_prompt(prompt, tools_mode=False):
+    """Which planner mode a prompt takes, plus whatever that decision already parsed out
+    of the text. Pure and deterministic: regexes over the user's own words (ADR-009's
+    scripted intake, ADR-036's correction router), no model call, no run state, nothing
+    executed. Exposed as a function so A-031's stochastic eval runner can check these
+    routers against the code that actually ships instead of keeping a second copy of the
+    rules that would drift from it."""
+    correction = detect_app_correction(prompt)
+    if correction is not None:
+        return {'mode': 'correction', 'correction': correction}
+    kind, seed = detect_intake(prompt)
+    if kind:
+        return {'mode': 'intake', 'kind': kind, 'seed': seed}
+    if BACKLOG_SLASH.match(prompt):
+        return {'mode': 'fixed_plan', 'plan': {'actions': [{'tool': 'list_backlog', 'arguments': {}}], 'reply': 'Listing open backlog items.'}}
+    dispatch_match = DISPATCH_SLASH.match(prompt)
+    if dispatch_match:
+        issue, agent = int(dispatch_match[1]), dispatch_match[2].lower()
+        return {'mode': 'fixed_plan', 'plan': {'actions': [{'tool': 'prepare_handoff', 'arguments': {'issue': issue, 'agent': agent}}], 'reply': 'Preparing a handoff prompt for issue #' + str(issue) + '.'}}
+    return {'mode': 'tools_run' if tools_mode else 'json_plan'}
+
 def start_correction_plan(run_id, correction, target):
     try:
         announce(run_id, 'Preparing…')
@@ -886,23 +907,18 @@ class Handler(BaseHTTPRequestHandler):
                 BUSY_RUN_ID = run_id
             original_prompt = prompt
             prompt = prompt.strip()
-            correction = detect_app_correction(prompt)
-            kind, seed = detect_intake(prompt)
-            dispatch_match = DISPATCH_SLASH.match(prompt)
             # A-038: `mode` is the run's planner-routing fingerprint field — the same
             # journal record other evidence (jarvis_version/git_describe) already carries.
-            if correction is not None:
-                mode, thread_target, thread_args = 'correction', start_correction_plan, (run_id, correction, target)
-            elif kind:
-                mode, thread_target, thread_args = 'intake', start_intake, (run_id, kind, seed, target)
-            elif BACKLOG_SLASH.match(prompt):
-                mode, thread_target, thread_args = 'fixed_plan', start_fixed_plan, (run_id, {'actions':[{'tool':'list_backlog','arguments':{}}],'reply':'Listing open backlog items.'}, target)
-            elif dispatch_match:
-                issue, agent = int(dispatch_match[1]), dispatch_match[2].lower()
-                mode, thread_target, thread_args = 'fixed_plan', start_fixed_plan, (run_id, {'actions':[{'tool':'prepare_handoff','arguments':{'issue':issue,'agent':agent}}],'reply':'Preparing a handoff prompt for issue #'+str(issue)+'.'}, target)
+            route = route_prompt(prompt, os.environ.get('JARVIS_PLANNER') == 'tools')
+            mode = route['mode']
+            if mode == 'correction':
+                thread_target, thread_args = start_correction_plan, (run_id, route['correction'], target)
+            elif mode == 'intake':
+                thread_target, thread_args = start_intake, (run_id, route['kind'], route['seed'], target)
+            elif mode == 'fixed_plan':
+                thread_target, thread_args = start_fixed_plan, (run_id, route['plan'], target)
             else:
-                tools_mode = os.environ.get('JARVIS_PLANNER') == 'tools'
-                mode, thread_target, thread_args = ('tools_run' if tools_mode else 'json_plan'), (plan_tools_run if tools_mode else plan_and_maybe_run), (run_id, prompt, target)
+                thread_target, thread_args = (plan_tools_run if mode == 'tools_run' else plan_and_maybe_run), (run_id, prompt, target)
             journal_event(run_id, 'prompt', prompt=original_prompt, mode=mode, model=MODEL)
             threading.Thread(target=thread_target,args=thread_args,daemon=True).start()
             return self.reply(202, {'run_id':run_id,'status':'planning','reply':'Thinking…'})

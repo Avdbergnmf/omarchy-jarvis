@@ -40,7 +40,7 @@ never the default and nothing in this codebase selects it automatically.
 ```jsonc
 {
   "schema_version": 1,
-  "kind": "run",              // "eval" is a future A-028/A-031 extension point
+    "kind": "run",              // "eval" is written by A-031's planner-only runner
   "id": "<sha256 of the envelope's own canonical content>",
   "tier": "reference|summary|full",
   "fingerprint": {
@@ -52,7 +52,7 @@ never the default and nothing in this codebase selects it automatically.
     "system_prompt_hash": "sha256 of brain/system_prompt.md at export time",
     "schema_hash": "sha256 of the active PLAN_SCHEMA or TOOLS_FOR_MODEL",
     "options": {"temperature": 0, "num_ctx": 8192},
-    "case_id": null,          // set by a future candidate-eval runner (A-028/A-031)
+    "case_id": null,          // set by the candidate-eval runner (A-031: SEVAL-NNN)
     "case_version": null
   },
   "source": {"run_id": "...", "phases_present": ["done", "eval", "process", "prompt"]},
@@ -100,6 +100,6 @@ and nothing here silently adds cloud/network sync.
 
 ## What consumes this shape
 
-A-026 (Improvement Ledger) and A-028/A-031 (candidate evals) are expected to reference bundles
-by their content-addressed `id` rather than duplicating fingerprint data. Neither is implemented
-by this assignment — v0 only defines the shape and the exporter.
+A-026 (Improvement Ledger) references bundles by content-addressed `id`. A-031 writes `kind:
+eval` bundles (`brain/evidence.py::build_eval_envelope`) with `counts` and per-trial outcome
+digests — never raw model text. Run bundles still come from `scripts/export-evidence.py`.

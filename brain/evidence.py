@@ -123,6 +123,33 @@ def build_envelope(phases, fp, tier='summary'):
     return envelope
 
 
+def build_eval_envelope(fp, counts, trials, tier='summary', source=None):
+    """A-028's documented candidate-eval result shape: the same schema_version/fingerprint
+    envelope a run bundle uses — `kind: 'eval'` is the extension point A-038 reserved for
+    exactly this — plus `counts` (successes out of trials, never a single scalar standing
+    in for the whole suite) and one bounded record per trial.
+
+    Raw model text never enters this envelope, at any tier: a trial carries its outcome, a
+    bounded reason code and the sha256 of its canonical plan, so two revisions can be
+    compared byte-for-byte without the bundle storing what the model said. There is
+    deliberately no 'full' tier here (a run bundle's opt-in raw text has no eval
+    equivalent), and nothing time-varying is recorded, so identical results under an
+    identical fingerprint keep addressing the identical file."""
+    if tier not in ('reference', 'summary'):
+        raise ValueError("An eval envelope supports tier 'reference' or 'summary'; raw model output is never bundled")
+    envelope = dict(
+        schema_version=SCHEMA_VERSION,
+        kind='eval',
+        tier=tier,
+        fingerprint=fp,
+        source=dict(clean(source or {}), case_id=fp.get('case_id'), case_version=fp.get('case_version')),
+        counts=dict(counts),
+    )
+    if tier == 'summary':
+        envelope['trials'] = [dict(clean(trial)) for trial in trials]
+    return envelope
+
+
 def content_id(envelope):
     """Deterministic address for this envelope's logical content: same fingerprint
     + same source + same tier ⇒ same id, regardless of when it's exported. Two

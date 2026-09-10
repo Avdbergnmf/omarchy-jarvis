@@ -98,7 +98,7 @@ Not actionable on this remote right now. Do not reopen; file new work if Pro/ano
    Inventory authority-bearing surfaces and add CODEOWNERS as an ownership **map**. Without
    GitHub protection (ADR-046), review remains human policy — document that limit; do not claim
    an enforceable gate.
-5. **A-031 — Stochastic planner evals v0** *(after A-028 + A-030)*
+5. **A-031 — Stochastic planner evals v0** *(after A-028 + A-030; done, ADR-051)*
    Run 10–20 critical planner-only behaviors repeatedly under A-038's pinned envelope.
    Never approve/execute desktop actions. Report successes/trials and all-trials consistency;
    calibrate with Alex before making thresholds promotional.

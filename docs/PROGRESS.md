@@ -858,3 +858,15 @@ validation remains pending because the browser connector exposes no browser on t
 - Reconciled `.github/ISSUE_TEMPLATE/workstream.md` with ADR-034: area + isolated worktree is the parallel rule; paths are optional soft hints. `START.md` rejects mixed candidate + grader/authorization/trusted-skill/ledger/workflow/promotion changes without explicit Alex scope.
 - Live API evidence (ruleset `22779389`) confirms ADR-049: PR + `test` are required and bypass/force-push/deletion are blocked; approving reviews and code-owner review remain off. CODEOWNERS is not overstated as an enforced human-review gate.
 - A-031 unblocked (`Blocked-by: none`, status queued). Six new focused tests, smoke, and the full suite pass (229 tests total); full log: `logs/tests/full-20260910-163429.log`.
+
+## 2026-09-10 — A-031 Stochastic planner evals v0 (ADR-051)
+- Added `docs/evals/stochastic/` (20 `SEVAL-*` cases, closed oracles, unapproved baseline) and
+  `scripts/stochastic-evals.py`: each trial is a fresh child process that tripwires every
+  approve/execute/desktop/journal path before calling `json_plan` or the extracted
+  `route_prompt()` (the same function the HTTP handler uses). Default N=3; report is
+  successes/trials per case plus consistency — not pass@k, not a promotional scalar.
+- Reused A-038: `brain/evidence.py::build_eval_envelope` writes `kind: eval` bundles with
+  `counts` and per-trial output digests. Raw model text is `--private-out` only (gitignored).
+- `--gate` refuses until Alex approves `baseline.json`. CI runs `--validate` only (no model).
+- Evidence: router 6/6; stub-planner 14/14 (runner-health, not a qwen measurement). Summaries:
+  `docs/evals/stochastic/summaries/`. Live Ollama planner N-runs not spent from this agent.
