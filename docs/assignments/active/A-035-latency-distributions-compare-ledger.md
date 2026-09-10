@@ -1,6 +1,6 @@
 # A-035 — Latency distributions, filters, version compare, ledger hooks
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:overlay (+ light brain/docs)
 - **parallel-ok:** YES
 - **Recommended depth:** medium
