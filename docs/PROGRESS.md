@@ -668,3 +668,7 @@ validation remains pending because the browser connector exposes no browser on t
   reverted. `./scripts/doctor.sh --syntax` passes (covers the two new scripts). No product
   behavior changed; `.github/workflows/ci.yml` untouched (its own `-v` output serves a human
   reading Actions logs, a different tradeoff, out of scope).
+
+## 2026-09-10 — desk: empty-queue = minimal tokens
+- Alex: no claimable work → almost no tokens; explicit override only; ask if unclear.
+- CONTINUE / NEW_AGENT / PARALLEL / prompts README / START updated.

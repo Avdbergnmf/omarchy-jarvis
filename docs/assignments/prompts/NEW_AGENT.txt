@@ -22,7 +22,7 @@ B) Else compute **claimable** queued rows:
    - If any `in_progress`: only `parallel-ok: YES` with an `area:` different from every in_progress row's area; never claim `parallel-ok: NO` while something else is in_progress; never same area as an in_progress, even if that row's active/*.md lists path hints — paths are optional context, never a gate that excuses a same-area claim.
    - If nothing in_progress → first queued row.
 C) Claimed → mark in_progress in QUEUE+INDEX, fill SESSION, **commit and push straight to `origin/main`** (see "Required worktree setup" below) *before* opening your worktree or writing product code, then execute.
-D) If nothing claimable, do not code. Reply:
+D) If nothing claimable, do not code and spend almost no tokens. Reply:
 
 ```
 No assignment in queue is possible right now.
@@ -54,6 +54,19 @@ Or: `No assignment in queue is possible right now. The queue is empty.`
 
 If the push is rejected, `git fetch && git pull --ff-only`, re-check, and either
 retry or pick a different claimable id — never force-push over another claim.
+
+## Nothing claimable = stop cheap (required)
+If `assignment-status` / QUEUE shows **no claimable assignment**:
+- Reply with a **short** fixed message only (a few lines). Do **not** explore the repo, re-read large docs, invent work, “while I’m here” refactors, or burn tokens summarizing the whole project.
+- Default reply shape:
+
+```
+No assignment in queue is possible right now.
+Queue: <one-line status or empty>
+```
+
+- Do **not** overwrite this by starting docs chores, test runs, or opportunistic fixes unless Alex **explicitly** said to (e.g. “ignore empty queue and …”, “do maintenance anyway”, “take A-0xx even if blocked”).
+- If Alex’s instruction is **ambiguous** (might mean force-claim vs idle): **ask one clear question and stop** — do not guess. Example: “Queue has nothing claimable; should I stop, or force-claim a blocked/in_progress id?”
 
 ## Required worktree setup (only after the claim commit is on origin/main)
 Concurrent agents must each use a separate worktree + branch, even if clean.

@@ -24,7 +24,7 @@ Canonical prompt source path: `~/Work/omarchy-jarvis/docs/assignments/prompts/`
 - `docs/SESSION.md` + the `in_progress` column in [`../QUEUE.md`](../QUEUE.md)
 - `./scripts/assignment-status.sh` — run this first; it hints what a new agent may claim
 
-If nothing is claimable, agents must stop and say **“No assignment in queue is possible right now.”** plus the queue list (or that the queue is empty). They must **not** grab a `parallel-ok: NO` task while another assignment is in progress — they should take a `parallel-ok: YES` candidate or report nothing possible.
+If nothing is claimable, agents must stop **immediately with minimal tokens** and say **“No assignment in queue is possible right now.”** plus a one-line queue status. No exploring, no invented chores, no full-suite runs. Override only if Alex explicitly says so; if unclear, ask one question and stop. They must **not** grab a `parallel-ok: NO` task while another assignment is in progress — take a `parallel-ok: YES` candidate or report nothing possible.
 
 ## One vs many assignments
 - **Default:** agent finishes **one** assignment, then reports back to you.

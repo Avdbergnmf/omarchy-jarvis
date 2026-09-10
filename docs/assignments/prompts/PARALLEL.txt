@@ -4,7 +4,7 @@ Another agent may already own an in_progress assignment. You take a PARALLEL tra
 1) Run `./scripts/assignment-status.sh` (fetches + reads canonical `origin/main`, not your local branch). Read START.md parallel rules, QUEUE.md, SESSION.md.
 2) Note every `in_progress` row's `area:` on `origin/main` (and any optional path hints in its active/*.md — context only).
 3) Claim the first `queued` assignment with **parallel-ok: YES** whose `area:` differs from every in_progress row's area. Path hints never override this — same area, no claim, even if paths look disjoint.
-4) If none: stop with the same **“No assignment in queue is possible right now.”** + queue list as in NEW_AGENT.txt. Do not touch in_progress work.
+4) If none: stop immediately with the short **“No assignment in queue is possible right now.”** reply (see below). Do not touch in_progress work. Do not explore or invent tasks.
 5) If claimed: mark in_progress, update SESSION “Parallel agent”, **push that claim to `origin/main` before opening a worktree** (see below), work within the assignment's area/goal/out-of-scope (any path hints are non-binding), finish → done/, then **land on main** before stopping.
 
 ## Push the claim to origin/main BEFORE opening a worktree (required, A-039)
@@ -18,6 +18,19 @@ Another agent may already own an in_progress assignment. You take a PARALLEL tra
 
 If the push is rejected, `git fetch && git pull --ff-only`, re-check, and either
 retry or pick a different claimable id — never force-push over another claim.
+
+## Nothing claimable = stop cheap (required)
+If `assignment-status` / QUEUE shows **no claimable assignment**:
+- Reply with a **short** fixed message only (a few lines). Do **not** explore the repo, re-read large docs, invent work, “while I’m here” refactors, or burn tokens summarizing the whole project.
+- Default reply shape:
+
+```
+No assignment in queue is possible right now.
+Queue: <one-line status or empty>
+```
+
+- Do **not** overwrite this by starting docs chores, test runs, or opportunistic fixes unless Alex **explicitly** said to (e.g. “ignore empty queue and …”, “do maintenance anyway”, “take A-0xx even if blocked”).
+- If Alex’s instruction is **ambiguous** (might mean force-claim vs idle): **ask one clear question and stop** — do not guess. Example: “Queue has nothing claimable; should I stop, or force-claim a blocked/in_progress id?”
 
 ## Required worktree setup (only after the claim commit is on origin/main)
 Concurrent agents must each use a separate worktree + branch, even if clean.

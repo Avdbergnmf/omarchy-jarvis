@@ -15,7 +15,7 @@ Then set SESSION `Batch: N` or `Batch: until-empty` and after each done assignme
 3) Work checklist; flush SESSION Next action before any pause.
 4) On acceptance: QUEUE/INDEX → done; move file to docs/assignments/done/; PROGRESS note.
 5) If batch remaining → claim next claimable; else **stop and summarize for Alex**.
-6) If nothing claimable → “No assignment in queue is possible right now.” + queue list / empty.
+6) If nothing claimable → short “No assignment…” reply only (minimal tokens). No repo tourism.
 
 ## Push the claim to origin/main BEFORE opening a worktree (required, A-039)
 `origin/main` is the only place a claim counts. From your current checkout:
@@ -28,6 +28,19 @@ Then set SESSION `Batch: N` or `Batch: until-empty` and after each done assignme
 
 If the push is rejected, `git fetch && git pull --ff-only`, re-check, and either
 retry or pick a different claimable id — never force-push over another claim.
+
+## Nothing claimable = stop cheap (required)
+If `assignment-status` / QUEUE shows **no claimable assignment**:
+- Reply with a **short** fixed message only (a few lines). Do **not** explore the repo, re-read large docs, invent work, “while I’m here” refactors, or burn tokens summarizing the whole project.
+- Default reply shape:
+
+```
+No assignment in queue is possible right now.
+Queue: <one-line status or empty>
+```
+
+- Do **not** overwrite this by starting docs chores, test runs, or opportunistic fixes unless Alex **explicitly** said to (e.g. “ignore empty queue and …”, “do maintenance anyway”, “take A-0xx even if blocked”).
+- If Alex’s instruction is **ambiguous** (might mean force-claim vs idle): **ask one clear question and stop** — do not guess. Example: “Queue has nothing claimable; should I stop, or force-claim a blocked/in_progress id?”
 
 ## Required worktree setup (only after the claim commit is on origin/main)
 Concurrent agents must each use a separate worktree + branch, even if clean.
