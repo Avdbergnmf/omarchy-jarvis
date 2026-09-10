@@ -6,11 +6,13 @@ const claudeSlot={id:'slot-a1',label:'My coding agent',kind:'claude-code',status
 const codexSlot={id:'slot-c1',label:'Codex deep',kind:'cursor',status:'idle',current_assignment:null,queued_assignment_ids:[],busy:false,last_handoff:null,reasoning_effort:'xhigh',effective_reasoning_effort:'xhigh',reasoning_effort_source:'slot launch setting'};
 const humanSlot={id:'slot-h1',label:'Alex himself',kind:'human',status:'idle',current_assignment:'A-020',queued_assignment_ids:[],busy:true,last_handoff:'docs/backlog/handoffs/active/x.md'};
 const data={agents:[claudeSlot,codexSlot,humanSlot],available_assignments:[{id:'A-021',title:'Other',status:'queued',area:'skills'}],assignments:[{id:'A-020',title:'Fix focus',status:'in_progress',area:'overlay',parallel:'NO'},{id:'A-021',title:'Other',status:'queued',area:'skills',parallel:'YES'},{id:'A-022',title:'Waiting',status:'blocked',area:'docs',parallel:'NO'}]};
+let advanceResult={advanced:[]},setHandoffCalls=[];
 const ctx={document:{querySelector:$,createElement:element},trainingData:data,trainEl:id=>$('#train-'+id),
  trainMessage(text){$('#message').textContent=text;},
  trainingLine(parent,text){const p=element();p.textContent=text;parent.children.push(p);return p;},
  trainingOption(parent,value,label){const o=element();o.value=value;o.textContent=label;parent.children.push(o);},
- post:async(path,body)=>{requests.push({path,body});return {ok:true};},
+ setHandoffText(text){setHandoffCalls.push(text);$('#train-handoff').value=text;$('#train-handoff').hidden=!text;$('#train-copy').hidden=!text;},
+ post:async(path,body)=>{requests.push({path,body});if(path.endsWith('/agent-advance'))return advanceResult;return {ok:true};},
  previewTraining:async payload=>{ctx.lastPreview=payload;}};
 vm.runInNewContext(fs.readFileSync('overlay/agents.js','utf8'),ctx);
 (async()=>{
@@ -75,5 +77,15 @@ vm.runInNewContext(fs.readFileSync('overlay/agents.js','utf8'),ctx);
  assert.equal($('#train-effort').disabled,false);
  assert.ok($('#train-effort').children.some(option=>option.value==='max'),'new Claude slot lists Max');
 
- console.log('PASS: agent depth, clear delivery/status controls, visible window launch, active-work strip, queue board');
+ // A-044: auto-advance must route through the shared setHandoffText sync so a
+ // previously-hidden Copy button reappears instead of staying stuck hidden.
+ $('#train-panel-agents').hidden=false;$('#train-copy').hidden=true;
+ advanceResult={advanced:[{assignment_id:'A-099',slot_id:'slot-a1',handoff_text:'Paste CONTINUE'}]};
+ await ctx.pollAgentAdvance();
+ assert.deepEqual(setHandoffCalls,['Paste CONTINUE'],'advance delivers text through the shared sync helper');
+ assert.equal($('#train-handoff').value,'Paste CONTINUE');
+ assert.equal($('#train-copy').hidden,false,'Copy is un-hidden once advance prepares text');
+ assert.equal($('#train-result').hidden,false);
+
+ console.log('PASS: agent depth, clear delivery/status controls, visible window launch, active-work strip, queue board, auto-advance handoff sync');
 })().catch(error=>{console.error(error);process.exitCode=1;});

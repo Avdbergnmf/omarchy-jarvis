@@ -5,12 +5,21 @@ Oldest queued at the top among `queued`. At most one `in_progress` unless extras
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
 | A-043 | Training Problems: whole row bubble clickable | queued | area:overlay | YES | low | [active/A-043-problem-row-full-bubble-click.md](active/A-043-problem-row-full-bubble-click.md) |
-| A-044 | Agent manager: Copy handoff fix | in_progress | area:overlay | YES | low | [active/A-044-agent-copy-handoff-fix.md](active/A-044-agent-copy-handoff-fix.md) |
 | A-045 | Agent manager: opt-in auto-send prompt | queued | area:overlay | YES | medium | [active/A-045-agent-auto-send-prompt-option.md](active/A-045-agent-auto-send-prompt-option.md) |
 | A-046 | Validate features overhaul (simple cards) | queued | area:overlay | YES | high | [active/A-046-validate-features-overhaul.md](active/A-046-validate-features-overhaul.md) |
 | A-047 | Agent monitor: dynamic status + simpler send | queued | area:overlay | YES | high | [active/A-047-agent-monitor-dynamic-status-send.md](active/A-047-agent-monitor-dynamic-status-send.md) |
 
-Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-030, A-031, A-032, A-033, A-034, A-035, A-036, A-037, A-038, A-039, A-040, A-041, A-042, A-048 (see [done/](done/)).
+Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-030, A-031, A-032, A-033, A-034, A-035, A-036, A-037, A-038, A-039, A-040, A-041, A-042, A-044, A-048 (see [done/](done/)).
+
+**A-044 complete:** `overlay/training.js` gained `setHandoffText()` as the single place that
+syncs the handoff textarea value with the Copy button's `hidden`/`disabled` state, and
+`copyText()` — a guarded Clipboard API call that falls back to focus+select+
+`document.execCommand('copy')` and never reports success on a path that didn't actually copy.
+The real "feels dead" bug was `overlay/agents.js` `pollAgentAdvance` filling the textarea on
+auto-advance without re-showing a previously-hidden Copy button; it now routes through the same
+helper. **A-045 is unblocked** (`gate:training-ux` satisfied). Did not add a Copy control to the
+agent-detail panel (checklist's optional item) — `last_handoff` is a handoff-file path, not the
+prepared text, and no endpoint serves that file's content to the client.
 
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
@@ -57,7 +66,7 @@ outrank any amount of `inferred` repetition), inspect/revoke/restore, byte-ident
 migration with one-time backup, quarantine for unreadable/unknown-version files, `fcntl.flock`
 cross-process locking, and bounded growth (oldest revoked pruned first). IMP-001 updated.
 
-**Next up:** queue empty. Next claimable row depends on new filings.
+**Next up:** A-043 (low) and A-045 (medium, now unblocked) are both claimable; A-046 and A-047 (both high) remain queued behind them.
 
 **A-042 complete (ADR-048 tooling):** Training defaults new briefs to `parallel-ok: YES`; `assignment-status.sh` prints NO reasons, warns on a bare NO (treat as YES pending desk review), and emits a non-blocking `HEADS-UP` on soft path-hint overlap. Paste prompts compute the same claim set. `area:docs` vs `area:control-plane` split is a written proposal only.
 

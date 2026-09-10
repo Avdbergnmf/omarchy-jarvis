@@ -5,12 +5,15 @@ const els={},requests=[];let previewCount=0,confirmCount=0,linked=null;
 const $=selector=>els[selector]||(els[selector]=element());
 let problem={id:'run:test',source:'Journal eval',title:'Review focus',priority:'P2',area:'brain',status:'open',notes:'',revision:'r1',evidence:{run_id:'test',version:'0.5.4'}};
 const data={version:'test',revision:'abc',metrics:{runs:4,good:2,neutral:1,bad:0,flags:1,executed:2,denied:1},period:'Today UTC',sampled:false,context:['START.md'],session:'A-016 active',warnings:[],problems:[problem],assignments:[{id:'A-016',title:'Training',status:'in_progress'}],agents:[]};
-const ctx={newAssignment(p){linked=p;ctx.trainingPanel('work');},document:{querySelector:$,createElement:element},get:async path=>{requests.push({path});return data;},
+let clipboardWrite=async()=>{},execCommandResult=true,execCommandCalls=0;
+const ctx={newAssignment(p){linked=p;ctx.trainingPanel('work');},
+ document:{querySelector:$,createElement:element,execCommand(){execCommandCalls++;return execCommandResult;}},
+ get:async path=>{requests.push({path});return data;},
  post:async(path,body)=>{requests.push({path,body});
  if(path.endsWith('/preview')){previewCount++;return {preview_id:'p',message:'Review',files:[{path:'docs/assignment.md',content:'Scope'}]};}
  if(path.endsWith('/confirm')){confirmCount++;return {message:'Prepared; no agent contacted',handoff:'Paste START',paths:['docs/assignment.md']};}
  if(path.endsWith('/problem')){problem={...problem,...body,revision:'r2'};data.problems=[problem];return problem;}
- throw Error('unexpected mutation');},navigator:{clipboard:{writeText:async()=>{}}}};
+ throw Error('unexpected mutation');},navigator:{clipboard:{writeText:(...args)=>clipboardWrite(...args)}}};
 vm.runInNewContext(fs.readFileSync('overlay/training.js','utf8'),ctx);
 (async()=>{
  await ctx.refreshTraining();
@@ -33,6 +36,31 @@ vm.runInNewContext(fs.readFileSync('overlay/training.js','utf8'),ctx);
  await ctx.previewTraining({operation:'assignment'});await $('#train-confirm').handlers.click();
  assert.equal(confirmCount,1);assert.equal($('#train-handoff').value,'Paste START');
  await $('#train-confirm').handlers.click();assert.equal(confirmCount,1,'double confirm is ignored');
+
+ // A-044: Copy handoff must actually work, degrade gracefully, and never claim
+ // success it did not achieve.
+ assert.equal($('#train-copy').hidden,false,'a confirmed handoff reveals Copy');
+ assert.equal($('#train-copy').disabled,false);
+ await $('#train-copy').handlers.click();
+ assert.match($('#train-message').textContent,/Handoff copied/,'clipboard write succeeds');
+
+ clipboardWrite=async()=>{throw new Error('denied')};execCommandResult=true;execCommandCalls=0;
+ $('#train-handoff').focused=false;
+ await $('#train-copy').handlers.click();
+ assert.equal(execCommandCalls,1,'clipboard failure falls back to select+execCommand');
+ assert.equal($('#train-handoff').focused,true);
+ assert.match($('#train-message').textContent,/Handoff copied/,'fallback copy still reports success');
+
+ execCommandResult=false;
+ await $('#train-copy').handlers.click();
+ assert.match($('#train-message').textContent,/Could not copy automatically/,'never claims success when every path fails');
+
+ ctx.setHandoffText('');
+ assert.equal($('#train-copy').hidden,true,'no handoff text hides Copy');
+ assert.equal($('#train-copy').disabled,true);
+ assert.equal($('#train-handoff').hidden,true);
+ await $('#train-copy').handlers.click();
+ assert.match($('#train-message').textContent,/No handoff text to copy yet/,'empty state is a clear message, not a silent no-op');
  $('#train-filter').value='done';ctx.renderProblems();assert.match($('#train-problem-count').textContent,/0 done/);
  $('#train-filter').value='open';ctx.renderProblems();
  const actions=$('#train-problems').children[0].children[2];
