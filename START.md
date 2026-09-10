@@ -78,6 +78,35 @@ stay there; do not create another or switch back to the canonical checkout.
 Never checkout, stash, reset, clean, or edit another agent's tree. See
 [ADR-024](docs/DECISIONS.md#adr-024--isolated-worktrees-for-concurrent-agents-2026-09-09).
 
+#### Step 1 — claim on `origin/main` before you create a worktree
+
+`origin/main` is the **only** place a claim counts (A-039). A status edit that
+lives only on your feature branch is invisible to every other agent and to
+`assignment-status.sh` until it is pushed — that is exactly how A-036 got
+claimed on its worktree while `main` still said `queued`. From your current
+checkout (not yet the new worktree):
+
+```bash
+git fetch origin
+./scripts/assignment-status.sh   # canonical claim hint, reads origin/main
+```
+
+If the id you want is still `queued`/claimable there (no conflicting
+`in_progress` area), edit `docs/assignments/QUEUE.md` + `INDEX.md` (status →
+`in_progress`) and `docs/SESSION.md` (owner/branch/worktree) **on `main`**,
+commit, and push straight to `origin/main`:
+
+```bash
+git add docs/assignments/QUEUE.md docs/assignments/INDEX.md docs/SESSION.md
+git commit -m "docs: claim A-NNN on main before opening worktree"
+git push origin main
+```
+
+If the push is rejected (someone raced you), `git fetch && git pull --ff-only`
+and re-check — do not force-push over another agent's claim; pick a different
+claimable id instead. Only after the claim commit is on `origin/main` do you
+open the worktree:
+
 ```bash
 # Run from the current Jarvis checkout; replace slug/branch with your assignment.
 git worktree list
@@ -91,21 +120,42 @@ git status --short --branch
 ```
 
 Use a unique branch based on `origin/main` (or an explicitly agreed base).
-If offline, use locally verified `main` and report that it may be stale. For an
-existing assigned tree, verify its branch and resume there; do not use `--force`
-or `-B` to bypass an occupied branch/path. Worktree creation needs writable access
-to both the destination and the repository's shared git metadata.
+If offline, use locally verified `main` and report that it may be stale — say so,
+and treat the claim as provisional until you can push it once back online.
+For an existing assigned tree, verify its branch and resume there; do not use
+`--force` or `-B` to bypass an occupied branch/path. Worktree creation needs
+writable access to both the destination and the repository's shared git metadata.
 
-Before claiming, inspect QUEUE/SESSION and active scopes in the other listed
-trees **read-only** and coordinate with the desk agent: these files are separate
-branch snapshots, not a live cross-worktree lock. Record assignment, owner,
-branch, absolute worktree path and Batch in your own SESSION; desk records each
-dispatched claim in its QUEUE. A stale queued row does not free an owned task.
-Scope rules still apply; isolation does not make overlapping product work safe.
-Shared bookkeeping (QUEUE/INDEX/SESSION/PROGRESS/ADRs) must be reconciled on merge,
-preserving other assignments' statuses and evidence; never overwrite another
-agent's SESSION. Live services/ports and the desktop are shared too: coordinate
-live testing; do not restart another track's service.
+Before claiming, also inspect QUEUE/SESSION and active scopes in the other
+listed trees **read-only** and coordinate with the desk agent — a worktree's own
+copy can still be behind `origin/main` between fetches, so `origin/main` (via
+`assignment-status.sh`) is the tiebreaker, not any one tree's local file. A
+stale `queued` row on `origin/main` older than your own successful push does
+not free a task you just claimed; a `queued` row that is actually stale
+(crashed agent, abandoned worktree) is released per **Recovering a stale
+claim** below, not silently reclaimed. Scope rules still apply; isolation does
+not make overlapping product work safe. Shared bookkeeping
+(QUEUE/INDEX/SESSION/PROGRESS/ADRs) must be reconciled on merge, preserving
+other assignments' statuses and evidence; never overwrite another agent's
+SESSION. Live services/ports and the desktop are shared too: coordinate live
+testing; do not restart another track's service.
+
+#### Recovering a stale claim
+
+An `in_progress` row can outlive its agent (crash, abandoned worktree, Alex
+closed the session). Before reclaiming an `in_progress` id:
+
+1. Check `git worktree list` and the tree named in `docs/SESSION.md`/the QUEUE
+   row for that id. If the tree is gone or has no unpushed commits ahead of
+   `origin/main` for that branch, and there has been no activity (no new
+   commits on its branch, no SESSION update) for a stretch that makes it clearly
+   abandoned, it is safe to release.
+2. Release on `origin/main` directly: set the row back to `queued` in
+   `QUEUE.md`/`INDEX.md`, note the release in `docs/SESSION.md` and
+   `docs/PROGRESS.md` (who released it, why, evidence checked), commit, push.
+3. If the branch has unpushed work you can still see (a live worktree with
+   commits or uncommitted changes), do **not** discard it — flag it to Alex
+   instead of releasing or deleting.
 
 Commit only your assignment's files, push your branch, then **land on `main` before you stop**:
 

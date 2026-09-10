@@ -1,12 +1,28 @@
 #!/usr/bin/env bash
 # Show queue, in-progress work, and a naive claimability hint for new agents.
+# Canonical claim truth is origin/main (A-039): a claim only counts once it is
+# pushed there, so this script reads QUEUE from origin/main, not the local
+# checkout's branch, and cross-checks every worktree for unpushed/stale claims.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+QUEUE_REL="docs/assignments/QUEUE.md"
+SESSION_REL="docs/SESSION.md"
+
+extract_rows() {
+  grep -E '^\| A-[0-9]+ \|' 2>/dev/null || true
+}
+
+row_id() { echo "$1" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$2); print $2}'; }
+row_status() { echo "$1" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$4); print $4}'; }
+row_area() { echo "$1" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$5); print $5}'; }
+
 echo "=== Worktree isolation (read-only hints) ==="
 CURRENT_BRANCH=$(git symbolic-ref --quiet --short HEAD || printf 'detached HEAD')
 printf 'Current: %s [%s]\n' "$ROOT" "$CURRENT_BRANCH"
+declare -a WT_PATHS=()
+declare -a WT_BRANCHES=()
 TREE=""
 BRANCH=""
 while IFS= read -r -d '' FIELD; do
@@ -16,6 +32,8 @@ while IFS= read -r -d '' FIELD; do
     detached) BRANCH="detached HEAD" ;;
     "")
       if [[ -n "$TREE" ]]; then
+        WT_PATHS+=("$TREE")
+        WT_BRANCHES+=("${BRANCH:-unknown}")
         if [[ -d "$TREE" ]] && STATE=$(git --no-optional-locks -C "$TREE" status --porcelain --untracked-files=normal 2>/dev/null); then
           if [[ -n "$STATE" ]]; then
             printf 'DIRTY: %s [%s]\n' "$TREE" "${BRANCH:-unknown}"
@@ -38,21 +56,39 @@ while IFS= read -r -d '' FIELD; do
   esac
 done < <(git worktree list --porcelain -z)
 echo "Concurrent agents require separate worktrees/branches (START.md); no automatic claim."
-echo "QUEUE/SESSION below are branch-local. Check other trees' claims read-only and coordinate with the desk."
 echo
 
-echo "=== Who is working (SESSION) ==="
-if [[ -f docs/SESSION.md ]]; then
-  sed -n '/^## Active goal/,/^## Checklist/p' docs/SESSION.md | sed '$d'
-  echo
-  sed -n '/^## Next action/,/^## Parallel/p' docs/SESSION.md | sed '$d'
-else
-  echo "(no docs/SESSION.md)"
+echo "=== Claim source ==="
+FETCH_OK=1
+if ! git fetch origin --quiet 2>/dev/null; then
+  FETCH_OK=0
+  echo "OFFLINE: could not fetch origin. Falling back to local $QUEUE_REL ($CURRENT_BRANCH) — may be stale."
 fi
-
+CANON_SOURCE="origin/main"
+CANON_TEXT=""
+if ((FETCH_OK)) && CANON_TEXT=$(git show origin/main:"$QUEUE_REL" 2>/dev/null); then
+  echo "Reading canonical claims from origin/main:$QUEUE_REL (the only place a claim counts, per A-039)."
+else
+  CANON_SOURCE="local ($ROOT, branch $CURRENT_BRANCH)"
+  CANON_TEXT=$(cat "$QUEUE_REL" 2>/dev/null || true)
+  echo "Reading claims from $CANON_SOURCE — NOT guaranteed canonical. Fetch/merge before trusting this for a claim decision."
+fi
 echo
-echo "=== QUEUE (open rows) ==="
-mapfile -t ROWS < <(grep -E '^\| A-[0-9]+ \|' docs/assignments/QUEUE.md || true)
+
+echo "=== Who is working (SESSION, every worktree) ==="
+for i in "${!WT_PATHS[@]}"; do
+  TREE="${WT_PATHS[$i]}"
+  BR="${WT_BRANCHES[$i]}"
+  SESSION_FILE="$TREE/$SESSION_REL"
+  if [[ -f "$SESSION_FILE" ]]; then
+    printf -- '--- %s [%s] ---\n' "$TREE" "$BR"
+    sed -n '/^## Active goal/,/^## Checklist/p' "$SESSION_FILE" | sed '$d'
+  fi
+done
+echo
+
+echo "=== QUEUE (canonical: $CANON_SOURCE) ==="
+mapfile -t ROWS < <(printf '%s\n' "$CANON_TEXT" | extract_rows)
 if ((${#ROWS[@]} == 0)); then
   echo "(queue empty of open A-### rows)"
 else
@@ -60,7 +96,7 @@ else
 fi
 
 echo
-echo "=== in_progress ==="
+echo "=== in_progress (canonical) ==="
 IN_PROG=()
 for row in "${ROWS[@]+"${ROWS[@]}"}"; do
   if echo "$row" | grep -qi '| in_progress |'; then
@@ -73,7 +109,37 @@ if ((${#IN_PROG[@]} == 0)); then
 fi
 
 echo
+echo "=== Cross-worktree claim mismatches (unpushed/stale claims) ==="
+MISMATCH=0
+for i in "${!WT_PATHS[@]}"; do
+  TREE="${WT_PATHS[$i]}"
+  BR="${WT_BRANCHES[$i]}"
+  LOCAL_QUEUE="$TREE/$QUEUE_REL"
+  [[ -f "$LOCAL_QUEUE" ]] || continue
+  mapfile -t LOCAL_ROWS < <(extract_rows <"$LOCAL_QUEUE")
+  for lrow in "${LOCAL_ROWS[@]+"${LOCAL_ROWS[@]}"}"; do
+    lid=$(row_id "$lrow")
+    lstatus=$(row_status "$lrow")
+    for crow in "${ROWS[@]+"${ROWS[@]}"}"; do
+      cid=$(row_id "$crow")
+      [[ "$lid" == "$cid" ]] || continue
+      cstatus=$(row_status "$crow")
+      if [[ "$lstatus" != "$cstatus" ]]; then
+        printf 'MISMATCH: %s local=%s on %s [%s] vs canonical=%s — push the claim commit to origin/main or treat as stale.\n' \
+          "$lid" "$lstatus" "$TREE" "$BR" "$cstatus"
+        MISMATCH=1
+      fi
+    done
+  done
+done
+if ((MISMATCH == 0)); then
+  echo "(none found — every checked worktree agrees with canonical)"
+fi
+
+echo
 echo "=== Claim hint (new / parallel agent) ==="
+echo "Reminder (A-039): push your QUEUE/INDEX/SESSION status change to origin/main FIRST,"
+echo "then open your worktree from the updated origin/main — do not claim only on a branch."
 if ((${#ROWS[@]} == 0)); then
   echo "No assignment in queue is possible right now. The queue is empty."
   exit 0
@@ -99,12 +165,12 @@ echo "any Allowed/Forbidden paths in active/*.md are optional context, never a g
 echo "counts as parallel-safe just because paths look disjoint)."
 IN_PROG_AREAS=()
 for row in "${IN_PROG[@]}"; do
-  IN_PROG_AREAS+=("$(echo "$row" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$5); print $5}')")
+  IN_PROG_AREAS+=("$(row_area "$row")")
 done
 FOUND=0
 for row in "${ROWS[@]}"; do
   if echo "$row" | grep -qi '| queued |' && echo "$row" | grep -qi '| YES |'; then
-    ROW_AREA=$(echo "$row" | awk -F'|' '{gsub(/^[ \t]+|[ \t]+$/,"",$5); print $5}')
+    ROW_AREA=$(row_area "$row")
     CONFLICT=0
     for A in "${IN_PROG_AREAS[@]}"; do
       [[ "$ROW_AREA" == "$A" ]] && CONFLICT=1 && break

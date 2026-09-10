@@ -14,7 +14,9 @@ How Firsty (or any desk agent) adds work: [`../README.md`](../README.md)
 Concurrent agents must use separate worktrees/branches; paste the assigned absolute
 working directory with the prompt. Reuse an already assigned isolated tree.
 See [START commands](../../../START.md#required-isolation-for-concurrent-agents).
-QUEUE/SESSION are branch-local: confirm claims across trees and with the desk.
+`origin/main`'s QUEUE/SESSION is the canonical claim truth (A-039): an agent
+must push its claim there **before** opening a worktree, not just record it
+branch-locally. `./scripts/assignment-status.sh` fetches and reads `origin/main`.
 
 Canonical prompt source path: `~/Work/omarchy-jarvis/docs/assignments/prompts/`
 
