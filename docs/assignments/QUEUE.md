@@ -12,6 +12,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | NO | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
+| A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | NO | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
 
 Recently completed: A-001 … A-025, A-026, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
 
@@ -59,5 +60,7 @@ A-030. See the [roadmap](../SELF_IMPROVE_ROADMAP.md) and
 **Wave 1 (after Wave 0):** A-033 → A-034 → A-035 text latency profiler. Brief: [chatgpt-latency-profiler-brief](../audits/chatgpt-latency-profiler-brief-2026-09-10.md).
 
 **Depth column:** Codex `model_reasoning_effort` recommendation (`low|medium|high|xhigh`). Set it when filing; agents report the **next** row’s depth on closeout.
+
+**A-041 filed:** Agent Monitor tiles + per-agent auto-queue redesign (queued, `area:overlay`, depth high, `Gate: training-dispatch`) — Alex UX 2026-09-10; does not block Wave 0/1 claimability.
 
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).

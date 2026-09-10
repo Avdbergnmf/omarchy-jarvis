@@ -42,3 +42,4 @@
 | A-038 | Evidence identity + durable operational bundles v0 | done | area:brain | NO | [done/A-038-evidence-identity-durable-bundles-v0.md](done/A-038-evidence-identity-durable-bundles-v0.md) |
 | A-039 | Cross-worktree claim visibility (stop double-claiming) | done | area:docs | YES | [done/A-039-cross-worktree-claim-visibility.md](done/A-039-cross-worktree-claim-visibility.md) |
 | A-040 | Test suite optimization (token cost + redundancy) | done | area:docs | NO | [done/A-040-test-suite-token-optimization.md](done/A-040-test-suite-token-optimization.md) |
+| A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | NO | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
