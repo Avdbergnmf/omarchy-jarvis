@@ -711,3 +711,26 @@ validation remains pending because the browser connector exposes no browser on t
 - Test coverage: `test_blocked_by_parser_strips_prose_and_dedupes` covers parentheticals,
   em-dash prose, and duplicate collapsing.
 - PR #17 to main.
+
+## 2026-09-10 — A-038 evidence identity + durable operational bundles v0 (ADR-042)
+- `brain/evidence.py`: generic fingerprint + tiered envelope (`reference`/`summary`/`full`) +
+  content-addressed, atomic, mode-0600 bundle writer under `$XDG_STATE_HOME/jarvis/evidence/`.
+  `scripts/export-evidence.py <run_id> [--tier] [--out]` is the bounded callable entry point.
+- `brain/server.py`: each run's `prompt`-phase journal record now also carries `mode`
+  (`json_plan`/`tools_run`/`correction`/`intake`/`fixed_plan`) and `model` — the routing
+  decision already existed, just wasn't recorded; reordered one block so it's known before the
+  journal write instead of after, no other behavior change.
+- `docs/evidence/README.md` (new) + `docs/LOGGING.md`/`START.md` updated: schema, tiers, bounds,
+  retention/backup-verification note, and the "source disappearance vs. bundle validity"
+  distinction the checklist asked for (bundles store `run_id`, never a path back to the journal).
+- On acceptance: A-026 and A-028 (`Blocked-by: A-038` only) flip to `Blocked-by: none`,
+  `Status: queued` in their briefs, QUEUE.md and INDEX.md.
+- Evidence: `tests/test_evidence.py` (20 new cases — stable fingerprints, mutable model
+  digest changing the address, dirty-revision pass-through, redaction in both content tiers,
+  atomicity via a mocked write failure, the 64KB size bound, malformed/partial sources,
+  symlink refusal both directions, mode 0600/0700, Ollama-unreachable never raising). Manually
+  verified end-to-end against a synthetic run-log and the real local Ollama daemon — live model
+  digest resolved correctly, idempotent re-export confirmed ("Already durable"), distinct tiers
+  addressed distinct files. `python3 -m unittest discover -s tests` — 180/180 pass (160 + 20
+  new); `./scripts/doctor.sh --syntax` and `./scripts/test-full.sh` green. No shared-service
+  restart performed from this worktree (out of scope).

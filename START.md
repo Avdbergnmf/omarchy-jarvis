@@ -208,10 +208,12 @@ INDEX statuses and keep active passes small. Document journal schema changes.
 On a version bump or big behavior change, change VERSION and restart the service (`./scripts/restart.sh`):
 the first journal write archives CURRENT and starts a fresh file. Record the reset in
 PROGRESS; see [LOGGING](docs/LOGGING.md) for recovery and matching old code to evidence.
+For a durable, comparable-across-revisions record of one specific run (not the ephemeral
+journal), use `scripts/export-evidence.py <run_id>` — see [docs/evidence/README.md](docs/evidence/README.md).
 
 ## Docs map
 
 [START](START.md) · [AGENTS](AGENTS.md) · [README](README.md) ·
 [DECISIONS](docs/DECISIONS.md) · [PROGRESS](docs/PROGRESS.md) · [HOST](docs/HOST.md) ·
 [MILESTONES](docs/MILESTONES.md) · [backlog](docs/backlog/README.md) ·
-[passes](docs/passes/INDEX.md) · [logging](docs/LOGGING.md)
+[passes](docs/passes/INDEX.md) · [logging](docs/LOGGING.md) · [evidence bundles](docs/evidence/README.md)
