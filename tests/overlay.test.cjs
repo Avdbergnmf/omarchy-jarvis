@@ -25,6 +25,7 @@ const elements={
  '#qa-answer':{value:'',disabled:false,focused:false,focus(){this.focused=true;}},
  '#qa-skip':makeElement(),
  '#console-btn':makeElement(),
+ '#run-id-btn':makeElement(),
  '#meta':makeElement(),
  '#feedback':makeElement(),
  '#feedback-prompt':makeElement(),
@@ -104,6 +105,10 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
  assert.equal(elements['#plan'].hidden,false,'plan panel must be shown while awaiting approval');
  assert.equal(elements['#run-btn'].focused,true,'Run button must receive focus so Enter confirms');
  assert.equal(elements['#console-btn'].disabled,false,'Open console must be enabled for the current run');
+ // A-020: the run id is now visible (not just usable internally for console/feedback),
+ // so a human can attach it as evidence in Validate features without hunting for it.
+ assert.equal(elements['#run-id-btn'].hidden,false,'the run id must be visible, not just usable internally');
+ assert.match(elements['#run-id-btn'].textContent,/test-run/);
 
  await elements['#run-btn'].handlers.click();
  assert(requests.some(r=>r.path==='/v1/runs/test-run/approve'),'Run must approve the pending plan');
@@ -180,7 +185,7 @@ function testRestoreOnLoad(){
   '#run-btn':makeElement(),'#cancel-btn':makeElement(),'#steps':makeElement(),'#step-list':makeElement(),
   '#qa':makeElement(),'#qa-question':makeElement(),
   '#qa-answer':{value:'',disabled:false,focused:false,focus(){this.focused=true;}},
-  '#qa-skip':makeElement(),'#console-btn':makeElement(),'#meta':makeElement(),
+  '#qa-skip':makeElement(),'#console-btn':makeElement(),'#run-id-btn':makeElement(),'#meta':makeElement(),
   '#feedback':makeElement(),'#feedback-prompt':makeElement(),
   '#fb-good':makeElement(),'#fb-neutral':makeElement(),'#fb-bad':makeElement(),
  };

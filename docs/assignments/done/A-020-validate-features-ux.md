@@ -1,6 +1,6 @@
 # A-020 — Validate features: record results, run ids, less manual busywork
 
-- **Status:** in_progress
+- **Status:** done
 - **Area:** area:overlay (+ `area:brain` validation APIs; light chat/overlay automation helpers)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/validation.js`, `overlay/` Training validation UI, `brain/validation.py`, `brain/server.py` (validation + run-id surfacing), `brain/training.py` if shared, `tests/`, `docs/validation/`, `docs/FEATURES.md`, `docs/assignments/`, `docs/SESSION.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `VERSION`, small scripts only if needed to drive overlay for guided tests
@@ -24,11 +24,11 @@ Human validation in Training must actually **persist and reflect** Verify/Fail, 
 - Extend catalog step schema if needed (`kind: auto|human` or similar) and migrate existing guides so busywork isn’t on Alex.
 
 ## Checklist
-- [ ] Reproduce Verify/Fail; confirm whether catalog/FEATURES update; fix persistence + UI list refresh/removal
-- [ ] Include-validated: list validated/failed with readable report history; allow re-test without losing history
-- [ ] Surfacing/pre-fill/optional run id end-to-end (overlay + API)
-- [ ] Auto-drive mechanical guided steps; keep judgment + Run approval human; document which step kinds are auto
-- [ ] Tests + ADR; PROGRESS; SESSION; QUEUE/INDEX → done
+- [x] Reproduce Verify/Fail; confirm whether catalog/FEATURES update; fix persistence + UI list refresh/removal
+- [x] Include-validated: list validated/failed with readable report history; allow re-test without losing history
+- [x] Surfacing/pre-fill/optional run id end-to-end (overlay + API)
+- [x] Auto-drive mechanical guided steps; keep judgment + Run approval human; document which step kinds are auto
+- [x] Tests + ADR; PROGRESS; SESSION; QUEUE/INDEX → done
 
 ## Out of scope
 - Fully unsupervised validation (no human at all)
@@ -38,3 +38,12 @@ Human validation in Training must actually **persist and reflect** Verify/Fail, 
 ## Notes for the coding agent
 - Start at `overlay/validation.js` preview/confirm + `brain/validation.py`.
 - Token discipline: read those once; then diffs.
+
+## Resolution (2026-09-10)
+Persistence itself was already correct (existing tests proved it) — the real bug was that a
+confirmed guide stayed open showing the same checked boxes. Fixed by closing the guide on
+confirm and showing each item's report inline in the list. Run id now visible in chat's
+footer (copy button) and auto-captured by auto-run steps. New `{text,kind,prompt}` step shape
+lets Training submit purely mechanical "type X, press Enter" steps via the same `/v1/run` a
+chat send uses — judgment and Run/Cancel approval stay entirely human. `feat-overlay-chat`
+migrated as the reference guide. See ADR-033 and `docs/PROGRESS.md` for full detail.

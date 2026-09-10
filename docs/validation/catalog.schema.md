@@ -8,7 +8,14 @@ Each feature has:
 
 - `id`: stable unique `feat-...` identifier.
 - `title`, `area`: display name and overlay/brain/actions/skills/docs ownership.
-- `steps`: 1–20 short, concrete instructions that a human performs. They are never executed by the UI.
+- `steps`: 1–20 short, concrete instructions. Each is either a plain string (a `human`
+  step — a UI action or judgment call only Alex can make; Training never performs these)
+  or an object `{"text": "...", "kind": "auto"|"human", "prompt": "..."}`. An `auto` step's
+  `prompt` (1–2000 chars) is a literal chat message Training can submit on Alex's behalf via
+  the same `/v1/run` a chat send uses (A-020) — reserved for pure mechanics ("type X, press
+  Enter"), never for judging the result or approving/denying a plan; the step's checkbox
+  still requires an explicit human tick after reading the observed reply/status. `kind`
+  defaults to `human` when omitted.
 - `expected`: observable success criterion.
 - `jarvis_version_shipped`: version that introduced or last changed these instructions/behavior.
 - `status`: unvalidated, validated or failed. New/changed behavior starts unvalidated.

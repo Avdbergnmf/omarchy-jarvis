@@ -15,6 +15,18 @@ def definition_hash(item):
     return hashlib.sha256(json.dumps(definition,sort_keys=True).encode()).hexdigest()
 
 
+def step_text(step):
+    """A guided step is a plain string (implicit kind='human') or an object with a
+    display 'text' and a 'kind' — 'auto' additionally carries the literal chat 'prompt'
+    Training submits on the human's behalf (A-020: pure mechanics, never judgment or
+    approval, are the only thing automated)."""
+    return step if isinstance(step,str) else step['text']
+
+
+def step_kind(step):
+    return 'human' if isinstance(step,str) else step.get('kind','human')
+
+
 def load(root):
     path = root/CATALOG
     if not path.exists(): return {'version':1,'features':[]}
@@ -34,8 +46,16 @@ def load(root):
             if not isinstance(item.get(field),str) or not 0<len(item[field])<=1500: raise ValueError('Invalid '+field)
         if item.get('area') not in ('overlay','brain','actions','skills','docs'): raise ValueError('Invalid feature area')
         steps=item.get('steps')
-        if not isinstance(steps,list) or not 1<=len(steps)<=20 or any(not isinstance(s,str) or not 0<len(s)<=500 for s in steps):
-            raise ValueError('Each feature needs 1–20 short guided steps')
+        if not isinstance(steps,list) or not 1<=len(steps)<=20: raise ValueError('Each feature needs 1–20 short guided steps')
+        for s in steps:
+            if isinstance(s,str):
+                if not 0<len(s)<=500: raise ValueError('Each feature needs 1–20 short guided steps')
+                continue
+            if not isinstance(s,dict) or not isinstance(s.get('text'),str) or not 0<len(s['text'])<=500:
+                raise ValueError('Each feature needs 1–20 short guided steps')
+            if s.get('kind') not in (None,'human','auto'): raise ValueError('Invalid guided step kind')
+            if s.get('kind')=='auto' and (not isinstance(s.get('prompt'),str) or not 0<len(s['prompt'])<=2000):
+                raise ValueError('An auto step needs a literal chat prompt (1-2000 characters)')
         if item.get('status') not in ('unvalidated','validated','failed'): raise ValueError('Invalid feature status')
         last=item.get('last_run')
         if last is not None and not isinstance(last,dict): raise ValueError('Invalid last_run')
@@ -95,5 +115,5 @@ def report_evidence(root, feature_id, record_id):
         raise ValueError('Failed validation changed or is missing; refresh Training')
     # Include the actual failed definition; refuse altered guides rather than misattribute evidence.
     if last.get('definition_hash')!=definition_hash(item): raise ValueError('Feature definition changed since this test')
-    seed=f'Human validation failed: {item["title"]}\nFeature: {item["id"]}\nTested Jarvis: {last["jarvis_version"]} ({last["git_describe"]})\nExpected: {item["expected"]}\nActual: {last["notes"]}\nSteps: '+ '; '.join(item['steps'])
+    seed=f'Human validation failed: {item["title"]}\nFeature: {item["id"]}\nTested Jarvis: {last["jarvis_version"]} ({last["git_describe"]})\nExpected: {item["expected"]}\nActual: {last["notes"]}\nSteps: '+ '; '.join(step_text(s) for s in item['steps'])
     return item,last,seed

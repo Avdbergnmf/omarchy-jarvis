@@ -414,6 +414,37 @@ validation remains pending because the browser connector exposes no browser on t
 - Automate mechanical guided steps; Alex judges desktop outcome after Run.
 - Filed [A-020](assignments/active/A-020-validate-features-ux.md); queued ahead of A-019.
 
+## 2026-09-10 — A-020 Validate features UX
+- Audited `training.preview`/`confirm` against `tests/test_validation.py`: the write path
+  already persisted correctly end to end (existing `test_result_requires_confirm_and_records_version`
+  proves it). The real bug was UX: a confirmed guide stayed open with the same checked boxes,
+  so a real write looked like nothing had happened.
+- Fixes: (1) `validationSaved()` closes the guide back to the list on a confirmed result;
+  the list itself now prints each item's last report (result/date/version/notes) inline,
+  visible without a click — addresses "not only re-run empty forms." (2) The chat overlay's
+  footer now shows the current run's id (click to copy) — it was already used internally for
+  console/feedback but never shown to a human; the guide's run-id field is relabeled to make
+  "leave it blank" explicit. (3) A guided step can now be `{"text","kind":"auto","prompt"}`
+  in addition to a plain string — an auto step gets a **Run this step** button that submits
+  its literal `prompt` through the same `/v1/run` a chat send uses, polls the same way the
+  overlay's own poll loop does, shows the observed reply/status inline, and captures the run
+  id automatically. It never approves/denies anything — a plan reaching `awaiting_approval`
+  is left exactly there for Alex to decide in chat; the step's checkbox is still a human tick.
+  `feat-overlay-chat`'s three "Type: ..." steps are migrated as the reference case; other
+  guides' mechanical steps are Training-window UI navigation, not a chat prompt, so they have
+  no `auto` candidate under this mechanism yet and stay manual.
+- Evidence: 141 Python tests pass (up from 138 at A-018; 3 new in `test_validation.py` for
+  the auto-step schema and mixed-shape `report_evidence`), all five JS suites pass (extended
+  `validation.test.cjs` for the auto-run/list-report/guide-collapse behavior, `overlay.test.cjs`
+  for the visible run id), `doctor.sh --syntax` passes. VERSION 0.5.6 → 0.5.7; ADR-033 records
+  the design; `feat-overlay-chat` and `feat-validate` both got updated guided steps (and
+  `jarvis_version_shipped` bumps), correctly re-flipping to unvalidated for a fresh pass.
+- Limitation: no live Ollama/Hyprland in this sandbox — the auto-step round trip against
+  `/v1/run` is unit/mocked, not exercised against a real model. Alex should click **Run this
+  step** for real on `feat-overlay-chat` once merged, and confirm the run id shows up both in
+  chat's footer and the guide's evidence field.
+- A-019 (Proposed-action bubble UX) is next in the same overlay area (serial).
+
 ## 2026-09-10 — desk: queue A-021 empty Enter skips report Q&A
 - Alex: Enter on empty “how did that go” report should Skip for fast dismiss.
 - Filed [A-021](assignments/active/A-021-empty-enter-skips-report-qa.md) (`parallel-ok: YES`).

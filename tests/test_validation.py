@@ -98,3 +98,33 @@ class ValidationTest(unittest.TestCase):
         (self.root/validation.CATALOG).write_text((ROOT/validation.CATALOG).read_text())
         with self.assertRaisesRegex(ValueError,'missing'):
             validation.report_evidence(self.root,self.item['id'],'unknown')
+
+    def test_auto_steps_carry_a_literal_prompt_but_stay_optional(self):
+        # A-020: a guided step may be a plain string (human) or {text,kind,prompt}
+        # (auto) — Training submits only an auto step's own prompt on the human's
+        # behalf; it never judges the result or approves/denies anything.
+        catalog=validation.load(self.root)
+        item=catalog['features'][0]
+        item['steps']=['Open Jarvis.',{'text':'Type: hello. Confirm a reply.','kind':'auto','prompt':'hello'}]
+        (self.root/validation.CATALOG).write_text(json.dumps(catalog))
+        loaded=validation.list_features(self.root)[0]
+        self.assertEqual(validation.step_kind(loaded['steps'][0]),'human')
+        self.assertEqual(validation.step_kind(loaded['steps'][1]),'auto')
+        self.assertEqual(validation.step_text(loaded['steps'][1]),'Type: hello. Confirm a reply.')
+
+    def test_auto_step_without_a_prompt_is_rejected(self):
+        catalog=validation.load(self.root)
+        catalog['features'][0]['steps']=[{'text':'Type: hello.','kind':'auto'}]
+        (self.root/validation.CATALOG).write_text(json.dumps(catalog))
+        with self.assertRaisesRegex(ValueError,'literal chat prompt'):
+            validation.load(self.root)
+
+    def test_report_evidence_seed_joins_mixed_step_shapes(self):
+        catalog=validation.load(self.root)
+        item=catalog['features'][0]
+        item['steps']=['Open Jarvis.',{'text':'Type: hello.','kind':'auto','prompt':'hello'}]
+        item['status']='failed'
+        item['last_run']=dict(id='rec1',result='failed',jarvis_version='0.5.1',git_describe='abc',notes='Did not reply',definition_hash=validation.definition_hash(item))
+        (self.root/validation.CATALOG).write_text(json.dumps(catalog))
+        found,last,seed=validation.report_evidence(self.root,item['id'],'rec1')
+        self.assertIn('Open Jarvis.; Type: hello.',seed)

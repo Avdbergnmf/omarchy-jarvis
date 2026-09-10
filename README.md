@@ -142,10 +142,17 @@ queue board lists every assignment's status/area/parallel policy and current wor
 reflecting disk QUEUE/SESSION directly. No connector sends messages or spends credits.
 
 ### Validate features
-In Training, **Validate features** lists unvalidated and failed guides. Select one, perform
-the steps, and check them off. Verify is enabled after all steps; Fail needs a description of
-what actually happened. Add the tested run id if useful. Review and confirm to record the
-result with date, version and notes. A changed guide requires another human test.
+In Training, **Validate features** lists unvalidated and failed guides, each showing its last
+report (date, version, outcome, notes) right in the list — not only after you click in. Select
+one, perform the steps, and check them off. A step marked **Run this step** is mechanical
+(type a prompt, press Enter); clicking it submits that exact prompt through the same chat send
+a human uses, shows the reply/status right there, and fills in the run id for you — Jarvis
+never auto-approves or auto-denies anything, so a step that reaches an approval prompt still
+waits for you in chat. The chat overlay's footer now shows the current run's id (click to
+copy) so you're never asked to attach evidence you were never shown. Verify is enabled after
+all steps; Fail needs a description of what actually happened. Review and confirm to record
+the result with date, version and notes — the guide closes back to the list, where the update
+is immediately visible. A changed guide requires another human test.
 
 A saved failure offers **Draft bug report in chat** with its expected/actual evidence.
 Complete or skip Q&A, review the issue draft, then choose Run to file or Cancel to stop.
