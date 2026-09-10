@@ -2,9 +2,10 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
 function element(){return {value:'',hidden:true,disabled:false,className:'',textContent:'',children:[],handlers:{},
  set innerHTML(value){this.children=[];},addEventListener(event,fn){this.handlers[event]=fn;},appendChild(child){this.children.push(child);},setAttribute(name,value){this[name]=value;},focus(){this.focused=true;},select(){}};}
 const els={},requests=[];const $=id=>els[id]||(els[id]=element());
-const claudeSlot={id:'slot-a1',label:'My coding agent',kind:'claude-code',status:'idle',current_assignment:null,queued_assignment_ids:[],busy:false,last_handoff:null};
+const claudeSlot={id:'slot-a1',label:'My coding agent',kind:'claude-code',status:'idle',current_assignment:null,queued_assignment_ids:[],busy:false,last_handoff:null,effective_reasoning_effort:null,reasoning_effort_source:null};
+const codexSlot={id:'slot-c1',label:'Codex deep',kind:'cursor',status:'idle',current_assignment:null,queued_assignment_ids:[],busy:false,last_handoff:null,reasoning_effort:'xhigh',effective_reasoning_effort:'xhigh',reasoning_effort_source:'slot launch setting'};
 const humanSlot={id:'slot-h1',label:'Alex himself',kind:'human',status:'idle',current_assignment:'A-020',queued_assignment_ids:[],busy:true,last_handoff:'docs/backlog/handoffs/active/x.md'};
-const data={agents:[claudeSlot,humanSlot],assignments:[{id:'A-020',title:'Fix focus',status:'in_progress',area:'overlay',parallel:'NO'},{id:'A-021',title:'Other',status:'queued',area:'skills',parallel:'NO'}]};
+const data={agents:[claudeSlot,codexSlot,humanSlot],assignments:[{id:'A-020',title:'Fix focus',status:'in_progress',area:'overlay',parallel:'NO'},{id:'A-021',title:'Other',status:'queued',area:'skills',parallel:'NO'},{id:'A-022',title:'Waiting',status:'blocked',area:'docs',parallel:'NO'}]};
 const ctx={document:{querySelector:$,createElement:element},trainingData:data,trainEl:id=>$('#train-'+id),
  trainMessage(text){$('#message').textContent=text;},
  trainingLine(parent,text){const p=element();p.textContent=text;parent.children.push(p);return p;},
@@ -14,15 +15,16 @@ const ctx={document:{querySelector:$,createElement:element},trainingData:data,tr
 vm.runInNewContext(fs.readFileSync('overlay/agents.js','utf8'),ctx);
 (async()=>{
  ctx.renderAgents(data);
- assert.equal($('#train-agents').children.length,2,'one tile per slot');
+ assert.equal($('#train-agents').children.length,3,'one tile per slot');
  assert.match($('#train-agents').children[0].textContent,/My coding agent.*claude-code.*idle/);
- assert.equal($('#train-slot').children.length,3,'new + two known slots');
+ assert.equal($('#train-slot').children.length,4,'new + three known slots');
 
  ctx.selectAgent('slot-a1');
  assert.equal($('#agent-detail').hidden,false);assert.equal($('#agent-hint').hidden,true);
  assert.equal($('#agent-heading').textContent,'My coding agent (slot-a1)');
  assert.equal($('#agent-open-window').hidden,false,'claude-code slots can be launched');
- assert.equal($('#agent-toggle-status').textContent,'Preview marking busy');
+ assert.equal($('#agent-toggle-status').textContent,'Mark slot busy');
+ assert.match($('#agent-status-note').textContent,/Local status only/);
  assert.equal($('#train-slot').value,'slot-a1','selecting a tile prepares that slot');
 
  ctx.selectAgent('slot-h1');
@@ -33,15 +35,26 @@ vm.runInNewContext(fs.readFileSync('overlay/agents.js','utf8'),ctx);
  assert.equal(ctx.lastPreview.operation,'slot');assert.equal(ctx.lastPreview.slot_id,'slot-h1');
  assert.equal(ctx.lastPreview.status,'busy','idle status toggles to busy regardless of the separately computed busy flag');
 
+ ctx.selectAgent('slot-c1');
+ assert.match($('#agent-effort-summary').textContent,/Ultra \(xhigh\).*slot launch setting/);
+ assert.equal($('#train-effort').value,'xhigh');assert.equal($('#train-effort').disabled,false);
+ assert.match($('#agent-effort-help').textContent,/new Codex window/);
+
  ctx.selectAgent('slot-a1');
  $('#agent-open-window').handlers.click();await new Promise(resolve=>setTimeout(resolve,0));
  assert.equal(requests[0].path,'/v1/training/agent-window');assert.equal(requests[0].body.slot_id,'slot-a1');
  assert.equal($('#agent-open-window').disabled,false,'button re-enables after the request settles');
 
  $('#agent-board').innerHTML='';ctx.renderAgents(data);
+ const active=$('#agent-active').children.map(c=>c.textContent).join('\n');
+ assert.match(active,/A-020.*Fix focus.*Alex himself.*busy/,'persistent active-work strip names owner and status');
  const board=$('#agent-board').children.map(c=>c.textContent).join('\n');
  assert.match(board,/A-020.*in_progress.*Alex himself/,'queue board names the current worker');
  assert.match(board,/A-021.*queued/,'unworked assignments show with no worker suffix');
+ assert.match(board,/A-022.*blocked.*waiting/,'blocked assignments have a simple waiting hint');
 
- console.log('PASS: agent tiles, detail overview, human slots have no launch, open-window POST, status toggle, queue board worker names');
+ $('#train-mode').value='queue';$('#train-mode').handlers.change();
+ assert.match($('#agent-delivery-help').textContent,/will not open a window or send it/);
+
+ console.log('PASS: agent depth, clear delivery/status controls, visible window launch, active-work strip, queue board');
 })().catch(error=>{console.error(error);process.exitCode=1;});

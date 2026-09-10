@@ -6,6 +6,7 @@
       "label": "Astra 6",
       "kind": "cursor",
       "status": "idle",
+      "reasoning_effort": "medium",
       "current_assignment": null,
       "queued_assignment_ids": [],
       "handoff_dir": "docs/backlog/handoffs/active/"

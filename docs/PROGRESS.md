@@ -596,6 +596,19 @@ validation remains pending because the browser connector exposes no browser on t
   assignment status and `git diff --check` pass. Docs/planning only; VERSION unchanged and no
   shared service restart required.
 
+## 2026-09-10 — A-036 agent monitor usability
+- Training now shows Cursor/Codex launch effort from a slot override or local Codex config and
+  lets Alex save `low`, `medium`, `high`, or `xhigh` for new windows. Existing sessions are
+  focused without claiming their depth changed; launcher arguments come from server-side slot
+  state. See ADR-039.
+- Replaced opaque delivery/status controls with explicit visible-window-now versus local-queue
+  choices and local-metadata wording. Added a persistent Now working strip plus clearer worker
+  and waiting state in the queue board. The exact handoff remains visible and paste-ready.
+- VERSION 0.5.9 → 0.5.10. Evidence: 158 Python tests and all five JavaScript suites pass;
+  ShellCheck, `doctor.sh --syntax`, and `git diff --check` pass. Updated `feat-agent-monitor`
+  validation remains unvalidated pending Alex's live Hyprland/Codex check. Per parallel-work
+  policy, this isolated worktree did not restart the shared service.
+
 ## 2026-09-10 — desk: A-039 cross-worktree claim visibility (P0)
 - Bug: claim+worktree updates QUEUE only on agent branch; main/next CONTINUE re-claims. Evidence: A-036 in_progress on worktree, queued on main.
 - Filed A-039 highest priority, parallel-ok with A-036; desk marked A-036 in_progress on main.

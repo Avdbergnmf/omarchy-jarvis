@@ -38,7 +38,7 @@ class TrainingTest(unittest.TestCase):
         self.assertNotIn('docs/',forbidden,'metadata docs are explicitly allowed, so must not be forbidden')
         committed = training.confirm(self.root,result['preview_id'])
         for path, content in expected.items(): self.assertEqual((self.root/path).read_text(),content)
-        self.assertIn('no agent was contacted',committed['message'])
+        self.assertIn('exact prompt remains ready',committed['message'])
         self.assertTrue(any(a['title']=='Fix focus' for a in training.assignments(self.root)))
         with self.assertRaises(ValueError): training.confirm(self.root,result['preview_id'])
 
@@ -60,7 +60,7 @@ class TrainingTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'busy'): training.preview(self.root,payload)
         payload['mode']='queue'
         queued=training.preview(self.root,payload)
-        self.assertIn('Nothing is sent automatically',queued['message'])
+        self.assertIn('will not open a window or send it automatically',queued['message'])
         training.confirm(self.root,queued['preview_id'])
         self.assertIn(slot['current_assignment'],training.slots(self.root)['agents'][0]['queued_assignment_ids'])
         idle=training.preview(self.root,dict(operation='slot',slot_id=slot['id'],status='idle'))
@@ -69,6 +69,15 @@ class TrainingTest(unittest.TestCase):
         ready=training.preview(self.root,payload)
         training.confirm(self.root,ready['preview_id'])
         self.assertEqual(training.slots(self.root)['agents'][0]['queued_assignment_ids'],[])
+
+    def test_codex_handoff_persists_launch_effort(self):
+        payload = dict(self.payload, kind='cursor', reasoning_effort='xhigh')
+        result = training.preview(self.root, payload)
+        training.confirm(self.root, result['preview_id'])
+        slot = training.slots(self.root)['agents'][0]
+        self.assertEqual(slot['reasoning_effort'], 'xhigh')
+        with self.assertRaisesRegex(ValueError, 'only for Cursor / Codex'):
+            training.preview(self.root, dict(self.payload, reasoning_effort='high'))
 
     def test_dashboard_offline_and_metrics(self):
         with patch.object(training.subprocess,'run',side_effect=OSError('offline')):

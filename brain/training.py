@@ -9,6 +9,7 @@ import secrets
 import subprocess
 import threading
 import time
+import tomllib
 from urllib.request import Request, urlopen
 
 from journal import clean
@@ -17,6 +18,7 @@ import validation
 LOCK = threading.RLock()
 PREVIEWS = {}
 KINDS = ('claude-code', 'cursor', 'human')
+REASONING_EFFORTS = ('low', 'medium', 'high', 'xhigh')
 AREAS = ('overlay', 'brain', 'actions', 'skills', 'docs')
 QUEUE = 'docs/assignments/QUEUE.md'
 INDEX = 'docs/assignments/INDEX.md'
@@ -231,6 +233,9 @@ def slots(root):
         seen.add(sid)
         if slot.get('kind') not in KINDS or slot.get('status') not in ('idle','busy'):
             raise ValueError('Invalid agent kind or status')
+        effort = slot.get('reasoning_effort')
+        if effort is not None and (slot.get('kind') != 'cursor' or effort not in REASONING_EFFORTS):
+            raise ValueError('Invalid agent reasoning effort')
         short(slot.get('label'), 'Agent label', 60)
         queued = slot.get('queued_assignment_ids')
         if not isinstance(queued, list) or len(queued)>200 or any(not isinstance(a,str) or not re.fullmatch(r'A-\d{3,}',a) for a in queued):
@@ -239,6 +244,16 @@ def slots(root):
         if current is not None and (not isinstance(current,str) or not re.fullmatch(r'A-\d{3,}',current)):
             raise ValueError('Invalid current assignment')
     return data
+
+
+def codex_default_reasoning_effort(path=None):
+    """Read only Codex's non-secret launch default. Missing/malformed config is unknown."""
+    target = path or Path(os.environ.get('CODEX_HOME', Path.home()/'.codex'))/'config.toml'
+    try:
+        effort = tomllib.loads(target.read_text()).get('model_reasoning_effort')
+    except (OSError, tomllib.TOMLDecodeError):
+        return None
+    return effort if effort in REASONING_EFFORTS else None
 
 
 def busy(slot, queue):
@@ -384,8 +399,15 @@ def dashboard(root, version, revision):
     validations = validation.list_features(root)
     problems.extend(dict(id='validation:'+v['id'], title=v['title'], source='Failed human test', area=v['area'], version=v.get('jarvis_version'), context=json.dumps(dict(expected=v['expected'], last_run=v.get('last_run')))) for v in validations if v['status']=='failed')
     problems = reconcile_problems(root, problems)
+    codex_default = codex_default_reasoning_effort()
     for slot in registry['agents']:
         slot['busy'] = busy(slot, queue)
+        if slot['kind'] == 'cursor':
+            slot['effective_reasoning_effort'] = slot.get('reasoning_effort') or codex_default
+            slot['reasoning_effort_source'] = 'slot launch setting' if slot.get('reasoning_effort') else ('Codex config' if codex_default else None)
+        else:
+            slot['effective_reasoning_effort'] = None
+            slot['reasoning_effort_source'] = None
     return dict(version=version, revision=revision, metrics=metrics, sampled=sampled, period='Today UTC, current journal only', problems=problems,
                 assignments=queue, agents=registry['agents'], warnings=warnings, validations=validations,
                 context=['START.md','docs/SESSION.md',QUEUE,'docs/DECISIONS.md','docs/LOGGING.md'], session=read(root, 'docs/SESSION.md')[:5000])
@@ -436,9 +458,16 @@ def preview(root, data, version='unknown', revision='unknown'):
             if slot_id != 'new':
                 if data.get('status') not in ('idle','busy'): raise ValueError('Expected idle or busy')
                 slot['status'] = data['status']
-            message = 'Save local agent slot. This does not start or contact an agent.'
+            message = f'Mark {slot["label"]} {slot["status"]} in local slot metadata. This does not start, stop, or inspect an agent process.'
             handoff = ''
         else:
+            requested_effort = data.get('reasoning_effort')
+            if requested_effort not in (None, ''):
+                if slot['kind'] != 'cursor' or requested_effort not in REASONING_EFFORTS:
+                    raise ValueError('Reasoning effort is supported only for Cursor / Codex slots')
+                slot['reasoning_effort'] = requested_effort
+            elif slot['kind'] == 'cursor' and 'reasoning_effort' in data:
+                slot.pop('reasoning_effort', None)
             mode = data.get('mode')
             if mode not in ('queue','now'): raise ValueError('Choose queue or prepare now')
             if mode == 'now' and busy(slot, queue): raise ValueError('Agent slot is busy; queue until free instead')
@@ -500,11 +529,11 @@ Unrelated queue work, unreviewed skills, silent cloud spending.
                     raise ValueError('Select an open assignment')
             if mode == 'queue':
                 if aid not in slot['queued_assignment_ids']: slot['queued_assignment_ids'].append(aid)
-                message = f'{aid} queued locally for {slot["label"]}. Nothing is sent automatically when the slot becomes free.'
+                message = f'{aid} saved in {slot["label"]}\'s local queue. Jarvis will not open a window or send it automatically later.'
             else:
                 slot['queued_assignment_ids'] = [a for a in slot['queued_assignment_ids'] if a != aid]
                 slot['current_assignment'] = aid
-                message = f'Handoff prepared for {slot["label"]}. Paste it yourself; no agent was contacted or started.'
+                message = f'Visible handoff prepared for {slot["label"]}. After confirmation Jarvis opens or focuses its window; the exact prompt remains ready to copy and paste.'
             template = data.get('template', 'NEW_AGENT')
             if template not in ('NEW_AGENT','CONTINUE'): raise ValueError('Unknown prompt template')
             prompt = read(root, f'docs/assignments/prompts/{template}.txt')
