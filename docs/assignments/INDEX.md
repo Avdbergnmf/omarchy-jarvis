@@ -38,7 +38,7 @@
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-036 | Agent monitor usability (depth, delivery, live work) | done | area:overlay | YES | [done/A-036-agent-monitor-usability.md](done/A-036-agent-monitor-usability.md) |
-| A-037 | Release gates + claimability visibility | queued | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
+| A-037 | Release gates + claimability visibility | in_progress | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
 | A-038 | Evidence identity + durable operational bundles v0 | queued | area:brain | NO | [active/A-038-evidence-identity-durable-bundles-v0.md](active/A-038-evidence-identity-durable-bundles-v0.md) |
 | A-039 | Cross-worktree claim visibility (stop double-claiming) | done | area:docs | YES | [done/A-039-cross-worktree-claim-visibility.md](done/A-039-cross-worktree-claim-visibility.md) |
 | A-040 | Test suite optimization (token cost + redundancy) | done | area:docs | NO | [done/A-040-test-suite-token-optimization.md](done/A-040-test-suite-token-optimization.md) |

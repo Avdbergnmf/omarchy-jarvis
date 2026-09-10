@@ -3,17 +3,15 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- No assignment in_progress.
+- **A-037** in_progress — Claude @ `a037-assignment-stages` / `~/Work/omarchy-jarvis-a037-assignment-stages` (claim committed to main first, per ADR-038)
 - **A-040** done — see [done/A-040-test-suite-token-optimization.md](assignments/done/A-040-test-suite-token-optimization.md) / ADR-040
 - **A-039** done — see [done/A-039-cross-worktree-claim-visibility.md](assignments/done/A-039-cross-worktree-claim-visibility.md) / ADR-038
-- **A-036** done — see [done/A-036-agent-monitor-usability.md](assignments/done/A-036-agent-monitor-usability.md) / ADR-039
-- **Next up: A-037** — recommended depth medium (release gates + claimability visibility)
 
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
 - [x] A-036 Agent monitor usability — done
 - [x] A-040 Test suite token optimization — done, merged to main, worktree/branch removed
-- [ ] A-037+ — next claimable
+- [ ] A-037 Release gates + claimability visibility — in_progress, worktree opened
 
 ## Done this session (evidence)
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
@@ -24,7 +22,7 @@
 - Claude: merged to `main` (`44d856c`), pushed, removed the `a040-test-suite-token-optimization` worktree and local+remote branch. `origin/main` confirmed up to date; `./scripts/test-full.sh` green post-merge.
 
 ## Next action (one concrete step)
-- Report to Alex (done). Next up: **A-037** — recommended depth medium (release gates + claimability visibility).
+- In the `a037-assignment-stages` worktree: structured `Blocked-by`/`Gate` frontmatter, `assignment-status.sh` claimability/blocked-reason logic, light Training surfacing, ADR.
 
 ## Parallel agent
 - none
