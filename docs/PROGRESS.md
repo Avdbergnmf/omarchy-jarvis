@@ -607,3 +607,7 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: after merge, delete worktree and return to main
 - Alex: agents should clean up worktrees and sit on main before the next prompt.
 - CONTINUE / NEW_AGENT / PARALLEL / START / prompts README updated.
+
+## 2026-09-10 — desk: queue A-040 test suite optimization
+- Alex: too many tests; token waste concern. Snapshot ~153 Python tests; test_jarvis.py largest.
+- Goal: smoke vs full, cull redundancy, teach agents not to paste full logs.

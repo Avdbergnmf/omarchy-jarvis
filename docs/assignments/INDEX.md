@@ -41,3 +41,4 @@
 | A-037 | Release gates + claimability visibility | queued | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
 | A-038 | Evidence identity + durable operational bundles v0 | queued | area:brain | NO | [active/A-038-evidence-identity-durable-bundles-v0.md](active/A-038-evidence-identity-durable-bundles-v0.md) |
 | A-039 | Cross-worktree claim visibility (stop double-claiming) | in_progress | area:docs | YES | [active/A-039-cross-worktree-claim-visibility.md](active/A-039-cross-worktree-claim-visibility.md) |
+| A-040 | Test suite optimization (token cost + redundancy) | queued | area:docs | NO | [active/A-040-test-suite-token-optimization.md](active/A-040-test-suite-token-optimization.md) |

@@ -6,6 +6,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 |----|-------|--------|------|-------------|------|
 | A-039 | Cross-worktree claim visibility (stop double-claiming) | in_progress | area:docs | YES | [active/A-039-cross-worktree-claim-visibility.md](active/A-039-cross-worktree-claim-visibility.md) |
 | A-036 | Agent monitor usability (depth, delivery, live work) | in_progress | area:overlay | YES | [active/A-036-agent-monitor-usability.md](active/A-036-agent-monitor-usability.md) |
+| A-040 | Test suite optimization (token cost + redundancy) | queued | area:docs | NO | [active/A-040-test-suite-token-optimization.md](active/A-040-test-suite-token-optimization.md) |
 | A-037 | Release gates + claimability visibility | queued | area:docs | NO | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
 | A-038 | Evidence identity + durable operational bundles v0 | queued | area:brain | NO | [active/A-038-evidence-identity-durable-bundles-v0.md](active/A-038-evidence-identity-durable-bundles-v0.md) |
@@ -23,6 +24,8 @@ Recently completed: A-001 … A-025, A-032 (see [done/](done/)).
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
 status and dependency changes below.
+
+**High (Alex):** **A-040** — lean the test suite / smoke vs full so agents waste fewer tokens (after A-039 docs track).
 
 **HIGHEST (Alex):** **A-039** — claims must be visible on shared main/all worktrees so CONTINUE cannot double-claim (parallel-ok with A-036).
 
