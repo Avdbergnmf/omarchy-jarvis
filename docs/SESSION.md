@@ -3,7 +3,7 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- **A-041** done — Agent Manager visible per-agent auto-queues (ADR-043); landing via PR
+- **A-041** done — Agent Manager visible per-agent auto-queues (ADR-043); merged PR #31, version 0.5.11 restarted
 - **A-033** done — latency profiler foundation (ADR-052); merged PR #27
 - **A-031** done — merged PR #25 / ADR-051
 
