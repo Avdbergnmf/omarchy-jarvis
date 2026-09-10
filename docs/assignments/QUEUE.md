@@ -4,7 +4,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| A-015 | I wanna see what the plan is its going to execute with some more details... | queued | area:skills | NO | [active/A-015-training.md](active/A-015-training.md) |
+| A-015 | I wanna see what the plan is its going to execute with some more details... | in_progress | area:skills | NO | [active/A-015-training.md](active/A-015-training.md) |
 
 _(queue empty — all assignments through A-014 are done)_
 

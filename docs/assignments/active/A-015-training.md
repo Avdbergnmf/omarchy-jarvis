@@ -1,6 +1,6 @@
 # A-015 — I wanna see what the plan is its going to execute with some more details...
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:skills
 - **parallel-ok:** NO
 - **Allowed paths:** skills/, tests/, docs/assignments/, docs/SESSION.md, docs/PROGRESS.md, docs/DECISIONS.md
