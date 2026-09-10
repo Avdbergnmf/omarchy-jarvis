@@ -894,3 +894,8 @@ validation remains pending because the browser connector exposes no browser on t
 - Added canonical `origin/main` reconciliation and a 15-second panel-only advance check. When current work leaves the live queue, the first claimable personal item becomes current, its reviewed handoff is redisplayed, and a real agent window opens/focuses. Duplicate advancement to two slots is prevented.
 - Safety choice: auto-advance never pastes or submits a prompt and never creates a hidden/background agent. Missing origin state pauses advancement; launch failures surface as an error tile. Human validation guide updated and remains unvalidated.
 - Version `0.5.11`. Verification: `./scripts/test-full.sh` green (256 Python tests plus all five JavaScript suites); log `logs/tests/full-20260910-180313.log`. Live Hyprland validation remains for Alex after merge/restart.
+
+## 2026-09-10 — A-041 post-merge deployment verification
+- PR #31 merged to protected `main`; required GitHub `test` checks passed for push and pull-request runs.
+- `./scripts/restart.sh` reports Jarvis 0.5.11 healthy. `hyprctl clients -j` / `workspaces -j` succeeded and showed visible agent terminals on workspace 1; no window rules were changed.
+- Re-open Training to load the new Agent Manager. `feat-agent-monitor` remains unvalidated until Alex performs its updated multi-assignment/auto-advance guide.
