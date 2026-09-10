@@ -42,7 +42,7 @@ already-journaled run into a bounded, redacted, content-addressed bundle under
 `$XDG_STATE_HOME/jarvis/evidence/` — the fingerprint (model digest, planner mode, schema/prompt
 hashes) A-026/A-028 need to compare results across revisions. A-026 and A-028 are unblocked.
 
-**A-026 complete (ADR-043):** `docs/ledger/` — Desk-owned, manual, schema-first Improvement
+**A-026 complete (ADR-044):** `docs/ledger/` — Desk-owned, manual, schema-first Improvement
 Ledger; `scripts/ledger-status.py` validates it and allocates the next `IMP-NNN` id the same
 fetch-origin/main-first way A-039 fixed assignment claims. Seeded IMP-001…IMP-006 from
 A-019–A-025/#15/#16. A-029 is unblocked.

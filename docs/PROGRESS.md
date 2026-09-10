@@ -735,7 +735,7 @@ validation remains pending because the browser connector exposes no browser on t
   new); `./scripts/doctor.sh --syntax` and `./scripts/test-full.sh` green. No shared-service
   restart performed from this worktree (out of scope).
 
-## 2026-09-10 — A-026 Improvement Ledger v0 (ADR-043)
+## 2026-09-10 — A-026 Improvement Ledger v0 (ADR-044)
 - `docs/ledger/{README,TEMPLATE,INDEX}.md` + `records/IMP-001`…`IMP-006`: Desk-owned, manual,
   schema-first ledger. Current-summary + append-only-events record shape; informal
   `hypothesis → in_progress → shipped | rejected | abandoned` vocabulary (not an enforced

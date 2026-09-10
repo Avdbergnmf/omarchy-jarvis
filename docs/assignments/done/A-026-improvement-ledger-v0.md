@@ -27,7 +27,7 @@ do not copy Training's branch-local “max + 1” allocation without cross-workt
 - [x] Allow an optional milestone note; do not invent assignment `stage:` integers (A-037 owns gates) — `Milestone:` field in `TEMPLATE.md`, purely informational.
 - [x] Document Desk append/update rules in START + assignments README; Runtime/Training integration gets a later assignment — cross-references added to both; Runtime/Training/Forge writing the ledger stays explicitly out of scope.
 - [x] On acceptance, deliberately unblock A-029 in QUEUE/INDEX — `Blocked-by: none`, `Status: queued`.
-- [x] ADR; PROGRESS; SESSION; QUEUE/INDEX → done — ADR-043.
+- [x] ADR; PROGRESS; SESSION; QUEUE/INDEX → done — ADR-044.
 
 ## Out of scope
 Replacing QUEUE/Training; runtime issue/Training auto-linking; auto-allocating ids from
