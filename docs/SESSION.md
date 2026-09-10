@@ -3,12 +3,10 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- **A-030** done — see [done/A-030-protect-control-plane-paths.md](assignments/done/A-030-protect-control-plane-paths.md) / ADR-050
-- **A-029** done — see [done/A-029-memory-v0-provenance-prefs.md](assignments/done/A-029-memory-v0-provenance-prefs.md) / ADR-047
-- **A-027 cancelled historically; protection restored (ADR-049)** — public `main` ruleset live
-- **ADR-048** parallel-ok default YES (PR #20 port) — no GitHub Pro / no public; ADR-046; do not wait on branch protection
-- **A-041** filed — Agent Monitor tiles + per-agent auto-queue redesign (queued, area:overlay, depth high, gate training-dispatch)
-- **Next:** A-030 (area:docs, now unblocked), A-033 (area:brain), or A-041 (area:overlay, gate training-dispatch) — queued, disjoint areas
+- **A-031** in_progress — Cursor cloud agent (claim via PR; ruleset requires PR to main)
+- **A-030** done — control-plane v1 merged
+- **Next after A-031:** A-033 (brain) or A-041 (overlay) — both parallel-ok YES
+
 
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
