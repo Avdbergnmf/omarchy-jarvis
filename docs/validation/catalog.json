@@ -9,7 +9,8 @@
         "Press Super+Shift+J to open Jarvis.",
         "Type: hello. Confirm a reply appears without a Run button.",
         "Type: switch to workspace 1. Inspect the proposed plan before approving.",
-        "Choose Cancel and confirm the desktop was not changed."
+        "Choose Cancel and confirm the desktop was not changed.",
+        "Type: open my planning in a new workspace. Inspect the plan preview before approving — the reply should describe what the skill actually does (which apps, on a new workspace), not just name the skill."
       ],
       "expected": "Chat replies immediately. Actions wait for approval and Cancel performs no action.",
       "status": "validated",
@@ -24,7 +25,7 @@
         "result": "validated"
       },
       "jarvis_version": "0.5.2",
-      "jarvis_version_shipped": "0.4.1"
+      "jarvis_version_shipped": "0.5.3"
     },
     {
       "id": "feat-open-planning",

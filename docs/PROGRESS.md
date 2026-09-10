@@ -325,6 +325,40 @@ validation remains pending because the browser connector exposes no browser on t
 - VERSION → 0.5.2; QUEUE empty; A-001…A-014 done.
 - Restart jarvis.service still required for live overlay/training.
 
+### 2026-09-10 — A-015: plan/step detail for skill recipes
+- Alex validated feat-overlay-chat on 0.5.2 in Training mode and noted a `run_skill` plan
+  (e.g. "open my planning in a new workspace") only ever showed the bare skill slug, not
+  what it would actually do or the parameters involved — poorly readable for a human.
+  Training generated A-015 from that note; scoped to `skills/` only at first, then
+  expanded to include `brain/server.py` + `brain/system_prompt.md` with Alex's explicit
+  sign-off after tracing the terse text to `action_label()`/`json_plan()`'s reply, since
+  no `skills/`-only change could have altered what's actually displayed.
+- Worked: `action_label()` now appends the skill's own `SKILL.md` description for
+  `run_skill` actions (step list + final "Completed: …" message); `json_plan()`
+  deterministically swaps a run_skill action's model-written reply for that same
+  description, so the pre-approval preview headline names what will run instead of
+  trusting the 3B model's terse guess; a new `summarize_step_result()` turns a finished
+  `run_skill` step's raw JSON stdout into a plain sentence ("Created workspace 3; opened
+  Todoist; opened Google Calendar.") instead of a truncated JSON blob, with a safe
+  fallback to raw (truncated) stdout for every other tool or an unrecognized shape.
+  overlay/, actions/ and every other tool's label/reply path are untouched.
+- Bumped VERSION 0.5.2 → 0.5.3; feat-overlay-chat's `jarvis_version_shipped` bumped to
+  match and given a fifth guided step exercising a skill-based plan preview, which
+  (correctly, via `definition_hash`) flips it back to unvalidated for Alex to re-test.
+- Evidence: 109 Python tests pass (82 in test_jarvis.py, including 5 new ones for
+  `skill_description`/`action_label`/`summarize_step_result`; two pre-existing tests
+  updated to expect the richer text). `doctor.sh --syntax` and both affected skills'
+  `--dry-run` pass. Fixed as a side effect: `test_schema_seed_and_missing_attestation`
+  was failing before this change (the earlier training-authored bookkeeping commit had
+  left feat-overlay-chat "validated" in the real catalog.json, which the test copies
+  into its fixture and asserts is all-unvalidated) — invalidating feat-overlay-chat here
+  restored that invariant without touching the test's fixture-seeding design.
+- Limitation: no live Ollama/Hyprland/overlay in this sandbox, so the deterministic
+  server-side paths were unit-tested but the actual overlay rendering and a real model's
+  `reply` text for non-run_skill tools were not exercised end-to-end. Shared jarvis.service
+  was not restarted (forbidden for this session); Alex should restart from main and
+  re-run the feat-overlay-chat guide (step 5) on 0.5.3.
+
 ## 2026-09-10 — desk: queue A-016 Training window overhaul
 - Alex: Training must be a main self-improve surface; current UI too chaotic.
 - Wanted: separate Hyprland window, top stats bar, feature nav buttons, Problems-first (color-coded list, dismiss/check-off, detail+edit+save, priority, generate assignment).
