@@ -3,9 +3,9 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Assignment: _(none — A-020 and A-021 both done and merged; queue has A-019/A-022/A-023)_
-- Branch: `main` (a020-validate-features-ux merged at 791577d; a021-empty-enter-skips-report-qa merging now; both worktrees/branches removed after)
-- Batch: 1 (default; stop and report after each assignment)
+- Assignment: _(none this session — A-020 and A-021 both done, merged, worktrees/branches removed)_
+- Branch: `main` (a020-validate-features-ux merged at 791577d; a021-empty-enter-skips-report-qa merged at 4a93046)
+- Batch: 1 (default; stopped and reporting after this turn)
 
 ## Checklist
 - [x] A-020: persistence UX (guide closes + inline report on confirm), visible/copyable run
@@ -33,9 +33,8 @@
 - A-023 Simplify path-scope policy (`parallel-ok: YES`, area:docs)
 
 ## Next action (one concrete step)
-- Finish merging A-021, clean up its worktree/branch. Queue then has three open rows
-  (A-019/A-022/A-023), none in_progress — claim the next claimable one per NEW_AGENT rules,
-  report to Alex and stop per default batch size of 1.
+- Queue has three open rows (A-019/A-022/A-023); another session already has a dirty
+  worktree on A-023. A fresh agent should claim A-019 or A-022 per NEW_AGENT rules.
 
 ## Parallel agent
 - none active (A-020 and A-021 both finished)
