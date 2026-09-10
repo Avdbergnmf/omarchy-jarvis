@@ -846,8 +846,8 @@ class Handler(BaseHTTPRequestHandler):
         if self.path in training_assets:
             name, mime = training_assets[self.path]
             return self.reply(200, (ROOT/'overlay'/name).read_text(), mime)
-        if self.path in ('/','/jarvis-overlay','/app.js','/style.css','/commands.js','/training.js','/validation.js'):
-            name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css'),'/commands.js':('commands.js','text/javascript'),'/training.js':('training.js','text/javascript'),'/validation.js':('validation.js','text/javascript')}[self.path]
+        if self.path in ('/','/jarvis-overlay','/app.js','/style.css','/commands.js','/training.js','/validation.js','/latency.js'):
+            name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css'),'/commands.js':('commands.js','text/javascript'),'/training.js':('training.js','text/javascript'),'/validation.js':('validation.js','text/javascript'),'/latency.js':('latency.js','text/javascript')}[self.path]
             return self.reply(200,(ROOT/'overlay'/name).read_text(),mime)
         if self.path == '/v1/session': return self.reply(200, {'token':TOKEN})
         if self.path == '/v1/latency/traces' or self.path.startswith('/v1/latency/traces/'):

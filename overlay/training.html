@@ -12,6 +12,7 @@
 <button id="train-nav-validate" type="button" aria-pressed="false">Validate features</button>
 <button id="train-nav-work" type="button" aria-pressed="false">Assignments</button>
 <button id="train-nav-agents" type="button" aria-pressed="false">Agent manager</button>
+<button id="train-nav-latency" type="button" aria-pressed="false">Latency</button>
 </nav>
 <section id="train-panel-problems">
 <div class="training-header"><h2>Problems to review</h2><button id="train-new" type="button">New observation</button></div>
@@ -96,6 +97,24 @@
 <button type="submit">Preview assignment</button></form>
 </section><aside><h3>Now working</h3><div id="agent-active" class="active-work"></div><h3>Live queue</h3><div id="agent-board" class="training-list"></div></aside></div>
 </section>
+<section id="train-panel-latency" hidden>
+<h2>Latency</h2>
+<p class="muted">How a turn felt: submit → first meaningful paint. Bars are <strong>meaningful_response_latency</strong>, not TTFT. Timings only — no prompts.</p>
+<div class="latency-layout">
+<aside>
+<div class="training-header"><h3>Recent interactions</h3><button id="latency-refresh" type="button">Reload traces</button></div>
+<p id="latency-count" class="muted"></p>
+<div id="latency-list" class="training-list"></div>
+</aside>
+<section>
+<p id="latency-hint" class="muted">Select a bar to see where time went.</p>
+<div id="latency-inspector" hidden>
+<p id="latency-meta" class="muted"></p>
+<div id="latency-waterfall"></div>
+</div>
+</section>
+</div>
+</section>
 <section id="train-preview" hidden><h2>Review changes</h2><p id="train-preview-message"></p><pre id="train-preview-files" tabindex="0"></pre><button id="train-confirm" type="button">Confirm — write these files</button><button id="train-cancel" type="button">Cancel</button></section>
 <section id="train-result" hidden><h2>Prepared locally</h2><p id="train-result-message"></p><textarea id="train-handoff" readonly aria-label="Paste-ready handoff"></textarea><button id="train-copy" type="button">Copy handoff</button><pre id="train-paths"></pre></section>
 <section id="train-panel-validate" hidden><section id="validation-root" aria-label="Validate features">
@@ -111,4 +130,4 @@
 </section></section>
 </section>
 </section>
-</main><script src="/training-api.js"></script><script src="/training.js"></script><script src="/assignments.js"></script><script src="/agents.js"></script><script src="/validation.js"></script></body></html>
+</main><script src="/training-api.js"></script><script src="/training.js"></script><script src="/assignments.js"></script><script src="/agents.js"></script><script src="/validation.js"></script><script src="/latency.js"></script></body></html>

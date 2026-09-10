@@ -1,8 +1,8 @@
 # Latency profiler (A-033)
 
-Text-first diagnostic timings for one submitted overlay message. **Not** a Training UI
-(A-034), not percentiles (A-035), not an SLO. Core emits traces; nothing here auto-stores
-prompts or payloads.
+Text-first diagnostic timings for one submitted overlay message. Training **Latency**
+(A-034) is a history + waterfall on this store. Not percentiles (A-035), not an SLO.
+Core emits traces; nothing here auto-stores prompts or payloads.
 
 Primary metric: **`meaningful_response_latency`** = submit → first *visible meaningful*
 content. "Thinking…" / "Planning your request…" are **ack**, not meaningful. TTFT
@@ -44,8 +44,8 @@ The overlay may POST `ack`/`meaningful` *after* the run has already persisted
 marks rewrite the store instead of 404ing.
 
 GET `/v1/runs/<id>` polls do not write traces (ADR-018). Marks are POST
-`/v1/runs/<id>/latency`. A-034 reads `GET /v1/latency/traces` and
-`GET /v1/latency/traces/<trace_id>` (token-gated).
+`/v1/runs/<id>/latency`. Training **Latency** (A-034) reads `GET /v1/latency/traces`
+and `GET /v1/latency/traces/<trace_id>` (token-gated).
 
 ## On / off
 
@@ -73,14 +73,19 @@ exist, `meaningful_response_latency_ns` uses that wall-clock delta (Enter → fi
 non-placeholder paint). Otherwise it falls back to server monotonic time from
 trace start to `mark_meaningful` (first non-placeholder `announce` / plan reply).
 
-## Blind spots for A-034 / A-035
+## Training UI (A-034)
 
-- No Training panel, waterfall, or history UI — only the store + GET API.
+Training → **Latency**: recent-interaction bars (bar length = MRL) and a click-through
+waterfall. Incomplete and error traces stay listed. No prompt/payload display.
+Distributions / version compare are A-035.
+
+## Blind spots for A-035
+
+- No p50/p90, version compare, or ledger PERF hook (A-035).
 - Approval wait is not a first-class `await_approval` span yet (would dwarf plan
   time and is optional to the product metric).
-- `tools_run` now has `execute`/`tool` spans; the follow-up `model.chat` after
-  the tool batch still parents to the root interaction, not `execute`.
-- No p50/p90, version compare, or ledger PERF hook (A-035).
+- `tools_run` follow-up `model.chat` after the tool batch still parents to the
+  root interaction, not `execute`.
 - Client and server clocks are not NTP-aligned; prefer the client delta when present.
 - Overlay restore-on-load does not emit marks (no submit in that session).
 

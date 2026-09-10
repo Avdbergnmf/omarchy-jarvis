@@ -3,6 +3,7 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
+- **A-034** done — Training Latency Profiler UI (ADR-053); waiting on merge
 - **A-041** done — Agent Manager visible per-agent auto-queues (ADR-043); merged PR #31, version 0.5.11 restarted
 - **A-033** done — latency profiler foundation (ADR-052); merged PR #27
 - **A-031** done — merged PR #25 / ADR-051
@@ -20,6 +21,7 @@
 - [x] A-030 Protect control-plane paths — done (PR + `test` enforced; CODEOWNERS review remains policy)
 - [x] A-031 Stochastic planner evals v0 — done (ADR-051); baseline remains human-unapproved
 - [x] A-033 Latency profiler foundation — done (ADR-052); no Training UI
+- [x] A-034 Training Latency Profiler UI — done (ADR-053); force-parallel with A-041
 - [x] A-041 Agent Monitor redesign — done (ADR-043); human validation remains unvalidated
 
 ## Done this session (evidence)
@@ -38,9 +40,10 @@
 - Cursor/Grok: implemented A-031 (ADR-051) — planner-only stochastic eval runner. 20 `SEVAL-*` cases (14 `json_plan`, 6 `route_prompt`). Fresh child process per trial with execution tripwires; A-038 `kind: eval` bundles; pass@k not reported; baseline unapproved. Router 6/6 and stub-planner 14/14 in `docs/evals/stochastic/summaries/`. Live Ollama N-runs not spent.
 - Cursor/Grok: implemented A-033 (ADR-052) — InteractionTrace + hierarchical spans + local SQLite store. Product metric is `meaningful_response_latency` (Enter → first non-placeholder paint), not TTFT. Overlay stamps `client_submit_ms` / POST ack+meaningful; GET polls stay write-free. Late client marks rewrite the store. No prompts persisted.
 - Codex: implemented A-041 (ADR-043) — Agent Manager status-colored top tiles, per-agent FIFO queues, canonical available-work/auto-advance checks, automatic cold-start-vs-continue, and visible-window prompt preparation without automatic paste/submit. Updated `feat-agent-monitor`; 256 Python tests + five JS suites pass.
+- Cursor/Grok: implemented A-034 (ADR-053) — Training Latency panel: MRL history bars + waterfall inspector on the A-033 store. Incomplete/error traces stay listed. Did not edit `overlay/agents.js`.
 
 ## Next action (one concrete step)
-- Claim A-034 (Training Latency Profiler UI, area:overlay, depth medium).
+- Stop. Waiting on merge of A-034 (PR #30). Next latency row **A-035** (depth **medium**) is claimable after merge; A-041 is done on main.
 
 ## Parallel agent
 - none

@@ -11,7 +11,7 @@ main{max-width:1500px;margin:auto;padding:24px 30px}
 .training-nav button[aria-pressed=true]{background:#22523f;border-color:#5b9d83}
 #training-view h2{font-size:13px;margin:0 0 12px;letter-spacing:.7px}
 #training-view h3{font-size:12px;color:#9dd9d2}
-#train-panel-problems,#train-panel-work,#train-panel-agents,#train-panel-validate{padding:18px}
+#train-panel-problems,#train-panel-work,#train-panel-agents,#train-panel-validate,#train-panel-latency{padding:18px}
 #train-filter{width:220px;margin-top:6px}
 .problem-layout,.work-layout{display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,1.25fr);gap:18px;margin-top:14px;align-items:start}
 #train-problems{max-height:580px;gap:10px;padding:3px}
@@ -71,3 +71,14 @@ a{color:#9dd9d2}
 .agent-manager-grid{display:grid;grid-template-columns:minmax(360px,1.25fr) minmax(260px,.75fr);gap:18px;align-items:start}
 .agent-manager-grid aside{position:sticky;top:14px}.agent-advanced{margin:10px 0}
 @media(max-width:850px){.agent-manager-grid{grid-template-columns:1fr}.agent-manager-grid aside{position:static}.agent-tile{min-width:200px}}
+.latency-layout{display:grid;grid-template-columns:minmax(260px,.9fr) minmax(320px,1.3fr);gap:18px;align-items:start}
+.latency-row{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;padding:10px;background:#141c27;border:1px solid #344253;border-radius:7px}
+.latency-row.selected{outline:2px solid #9dd9d2}
+.latency-row-label{font-size:12px;color:#c7d8ed}
+.latency-track{display:block;height:10px;background:#1b2633;border-radius:4px;overflow:hidden;position:relative}
+.latency-bar,.latency-span-bar{display:block;height:10px;background:#5b9d83;border-radius:4px;min-width:2px}
+.latency-bar.error,.latency-span.error .latency-span-bar{background:#c45c5c}
+.latency-bar.unfinished,.latency-span.unfinished .latency-span-bar{background:#eab972}
+.latency-span{display:grid;grid-template-columns:minmax(140px,1.1fr) minmax(160px,1.4fr);gap:8px;align-items:center;margin:4px 0}
+.latency-span-name{font-size:12px;color:#c7d8ed;overflow-wrap:anywhere}
+@media(max-width:850px){.latency-layout{grid-template-columns:1fr}.latency-span{grid-template-columns:1fr}}
