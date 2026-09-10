@@ -2,7 +2,7 @@
 
 - **Status:** queued
 - **Area:** area:actions
-- **parallel-ok:** NO
+- **parallel-ok:** YES (ADR-046 default — preference records in `actions/core.py` + `~/.config/jarvis/`; `Gate: control-plane` here groups the queue, it does not change the authority surface)
 - **Recommended depth:** high
 - **Soft path hints:** `actions/core.py`, `brain/server.py` only if run provenance is required, `~/.config/jarvis/` schema, `tests/`, `docs/`
 - **Blocked-by:** none

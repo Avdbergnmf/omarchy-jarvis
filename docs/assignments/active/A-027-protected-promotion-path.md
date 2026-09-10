@@ -2,7 +2,7 @@
 
 - **Status:** blocked
 - **Area:** area:docs
-- **parallel-ok:** NO (promotion/control-plane work is serial)
+- **parallel-ok:** NO (control-plane: repository protection rules and the promotion actor — ADR-046)
 - **Recommended depth:** high
 - **Soft path hints:** `docs/`, `START.md`, `scripts/`, `.github/`
 - **Blocked-by:** none

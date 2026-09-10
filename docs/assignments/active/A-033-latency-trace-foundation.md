@@ -2,7 +2,7 @@
 
 - **Status:** queued
 - **Area:** area:brain (+ light `docs/`)
-- **parallel-ok:** NO
+- **parallel-ok:** YES (ADR-046 default — additive diagnostic spans, not a single-writer redesign of approve/execute or planner routing)
 - **Recommended depth:** high
 - **Blocked-by:** none
 - **Gate:** latency

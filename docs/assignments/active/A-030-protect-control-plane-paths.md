@@ -2,7 +2,7 @@
 
 - **Status:** blocked
 - **Area:** area:docs
-- **parallel-ok:** NO (promotion/evaluator ownership is serial Control Plane work)
+- **parallel-ok:** NO (control-plane: CODEOWNERS and the authority-surface classification itself — ADR-046)
 - **Recommended depth:** medium
 - **Soft path hints:** `.github/CODEOWNERS`, `.github/`, `docs/control-plane/`, `docs/evals/`, `START.md`
 - **Blocked-by:** A-027, A-028

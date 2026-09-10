@@ -764,3 +764,52 @@ validation remains pending because the browser connector exposes no browser on t
   green. Manually reproduced and reverted each of `ledger-status.py`'s problem-detection paths
   (duplicate id, missing/orphan record, bad assignment reference) against the real seeded
   ledger before committing. No shared-service restart required (docs + light Training only).
+
+## 2026-09-10 — desk: parallel claimability unstuck (ADR-046)
+- Trigger: a second agent following `prompts/PARALLEL.txt` exactly reported "nothing safely
+  claimable" while A-028 (`area:docs`) was the only `in_progress` row — even though A-029
+  (`area:actions`), A-033 (`area:brain`) and A-041 (`area:overlay`) were all `queued` with
+  `Blocked-by: none` in three areas nobody was touching. Every open row was `parallel-ok: NO`.
+- Diagnosed six compounding causes, not one mistake: `brain/training.py` hardcodes
+  `- **parallel-ok:** NO` into every Training-authored brief *and* its QUEUE/INDEX row while the
+  editor cannot change the flag (ADR-031) — a one-way ratchet; the only written guidance said
+  "NO by default" with no matching "otherwise YES"; the field asks a *pairing* question at
+  *filing* time, before anyone knows what will be in progress; it had silently become a second,
+  unparsed dependency field (A-040 "NO while A-039 is in_progress", A-025 "NO (follows A-024)",
+  A-007, A-004 — all ordering statements that belong in `Blocked-by:` since ADR-041); it is
+  ANDed with the fresh area check, and a stale conservative gate always wins an AND; and
+  `area:docs` is a catch-all that makes Wave 0 nearly single-area.
+- Re-read ADR-034's own evidence: the A-020/A-021 merge pain was entirely in
+  `PROGRESS/SESSION/QUEUE/INDEX`, files every assignment touches regardless of area — a
+  bookkeeping-protocol gap, not a parallelism gap. Confirmed twice since: A-026 renumbered its
+  ADR 043 → 044 because A-041's stub took 043 (`ffde097`), and PR #18 conflicted on the same
+  shared docs with no parallel agent at all, purely from a stale branch base.
+- Decision (ADR-046): claimability is **computed, not declared** — `queued` + all `Blocked-by`
+  done + area disjoint from every `in_progress` row, read from `origin/main`. `parallel-ok`
+  defaults to **YES**; `NO` narrows to a reasoned kill-switch (`control-plane`, `single-writer`,
+  `human-serial`) and stays self-restricting, so an in-progress `NO` never blocks anyone. The
+  algorithm's *shape* is unchanged on purpose, so the existing `assignment-status.sh` and paste
+  prompts produce correct answers the moment the flags are corrected — no code on the critical
+  path.
+- Applied: A-029, A-033, A-034, A-035, A-041 → `YES` in QUEUE, INDEX and each brief; reasons
+  written into A-027/A-030/A-031's `NO`; A-028 left untouched (in flight in a dirty worktree; its
+  `NO` blocks nobody, and re-classifying a live row from another branch is the exact race this
+  ADR is about). Net: **three claimable rows instead of zero** while A-028 runs.
+- Added the shared-bookkeeping protocol (`docs/assignments/README.md`): reserve your ADR number
+  in the claim commit, own-row-only QUEUE/INDEX edits, own-lines-only SESSION, append-only
+  PROGRESS, rebase before merging. This pass follows it — reserved ADR-046, left ADR-045 free for
+  in-flight A-028.
+- Filed **A-042** (`area:docs`, depth medium, `NO (control-plane)`) for the migration the policy
+  still needs: `training.py`'s hardcoded default, a printed reason + stale-`NO` warning + a
+  non-blocking soft-path-hint `HEADS-UP` in `assignment-status.sh`, the paste-prompt rewrites,
+  and `scripts/agent-status.py`'s issue-side rules that still contradict ADR-034. Splitting
+  `area:docs` into `area:docs` + `area:control-plane` was evaluated, judged strictly more precise
+  than any flag, and deferred to Alex inside A-042 rather than taken unilaterally.
+- Evidence: docs and flags only, no product code. Full analysis in
+  `docs/audits/parallel-claimability-2026-09-10.md`. Verified the corrected queue against a
+  synthetic replay of the claim-hint logic (A-028 `in_progress` `area:docs` → A-029, A-033, A-041
+  offered; A-034/A-035 correctly skipped on unmet `Blocked-by`). `./scripts/test-smoke.sh` is
+  unchanged from its pre-existing state on `638c144`, including one flaky failure recorded but
+  not fixed here: `test_write_prunes_journal_archive_on_rotation` (1 of 3 runs on clean `main`) —
+  `journal.prune` sorts by `st_mtime` and two archives written in the same tick sort arbitrarily.
+  Worth its own `area:brain` row.

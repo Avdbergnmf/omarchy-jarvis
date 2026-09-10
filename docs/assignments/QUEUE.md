@@ -1,6 +1,9 @@
 # Assignment queue
 
-Oldest queued at the top among `queued`. At most one non-parallel `in_progress` unless `parallel-ok: YES` and disjoint areas.
+Oldest queued at the top among `queued`. **Claimability is computed, not declared** (ADR-046):
+`queued` + every `Blocked-by` id `done` + `area:` disjoint from every `in_progress` row. `parallel-ok`
+defaults to **YES**; a `NO` must name a reason (`control-plane` / `single-writer` / `human-serial`)
+and only restricts *that* row — an in-progress `NO` never blocks anyone else.
 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
@@ -8,11 +11,12 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | A-028 | Deterministic candidate-eval foundation | in_progress | area:docs | NO | high | [active/A-028-eval-harness-v0.md](active/A-028-eval-harness-v0.md) |
 | A-030 | Protect safety/eval/control-plane paths | blocked | area:docs | NO | medium | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | high | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
-| A-029 | Preference memory v0 (provenance, precedence, revoke) | queued | area:actions | NO | high | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
-| A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | NO | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
-| A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
-| A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
-| A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | NO | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
+| A-029 | Preference memory v0 (provenance, precedence, revoke) | queued | area:actions | YES | high | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
+| A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | YES | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
+| A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
+| A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
+| A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | YES | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
+| A-042 | Parallel claimability: migrate tooling and prompts to ADR-046 | queued | area:docs | NO | medium | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |
 
 Recently completed: A-001 … A-025, A-026, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
 
@@ -62,5 +66,14 @@ A-030. See the [roadmap](../SELF_IMPROVE_ROADMAP.md) and
 **Depth column:** Codex `model_reasoning_effort` recommendation (`low|medium|high|xhigh`). Set it when filing; agents report the **next** row’s depth on closeout.
 
 **A-041 filed:** Agent Monitor tiles + per-agent auto-queue redesign (queued, `area:overlay`, depth high, `Gate: training-dispatch`) — Alex UX 2026-09-10; does not block Wave 0/1 claimability.
+
+**ADR-046 — parallel claimability unstuck (2026-09-10):** every open row was `parallel-ok: NO`, so a
+second agent had nothing to take even with three dependency-free rows in three untouched areas. The
+default is now **YES**; `NO` is a reasoned kill-switch for control-plane/single-writer/human-serial
+rows only. A-029, A-033, A-034, A-035 and A-041 flipped to YES; A-027/A-030/A-031 keep `NO` with
+their reason written in; A-028 was left untouched while in flight. With A-028 in progress, a second
+agent can now claim **A-029, A-033 or A-041**. Analysis:
+[parallel-claimability-2026-09-10](../audits/parallel-claimability-2026-09-10.md). Tooling and
+prompt migration is **A-042**. **ADR-045 is reserved for in-flight A-028** — new ADRs start at 047.
 
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).
