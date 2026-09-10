@@ -4,11 +4,10 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-
-_(queue empty — all assignments through A-018 are done)_
+| A-019 | Proposed-action bubble UX (readable plan in the bubble) | queued | area:overlay | NO | [active/A-019-proposed-action-bubble-ux.md](active/A-019-proposed-action-bubble-ux.md) |
 
 Recently completed: A-001 … A-018 (see [done/](done/)).
 
-**Training track (serial overlay):** A-016 Problems complete → A-017 Assignments complete → A-018 Agent monitor complete.
-**A-015:** Completed and merged into main together with A-016.
+**A-019:** Follow-up to A-015 — put plan detail **inside** the proposed-action bubble(s), human-readable; wrap only if needed.
+
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).

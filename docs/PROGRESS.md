@@ -403,3 +403,7 @@ validation remains pending because the browser connector exposes no browser on t
 - Evidence: 138 Python tests pass (up from 127 at A-017; new `tests/test_agents.py` covering the script's launch/focus/reject paths and the HTTP route's server-side kind resolution), all five `tests/*.cjs` JS suites pass including new `tests/agents.test.cjs`, `doctor.sh --syntax` passes. VERSION 0.5.5 → 0.5.6; ADR-032 records the design; HOST.md documents the window-class/app-id convention and installed CLI mapping; README and `feat-agent-monitor` validation guide (7 guided steps) added, left unvalidated for Alex.
 - Limitation: no live Hyprland/terminal in this sandbox — the launch-or-focus path is unit-tested (mocked `hypr`/`dispatch`/`Popen`) but not verified against a real window; Alex should click Open agent window for real once merged and check `logs/agent-windows/<slot-id>.log` if a window doesn't appear. No auto-typed/pasted prompt into the launched terminal — Copy handoff remains the paste step. No shared-service restart performed.
 - This closes the A-016→A-017→A-018 Training track. Merging into `main`, pushing, and removing the finished worktree/branch next.
+
+## 2026-09-10 — desk: queue A-019 proposed-action bubble UX
+- Alex: plan info still lands as hard-to-read text below the proposed bubble; wants it inside the bubble, intuitive, wrap only if needed.
+- Follow-up to A-015 (brain labels). Filed [A-019](assignments/active/A-019-proposed-action-bubble-ux.md).
