@@ -137,7 +137,7 @@ in logs/issues, ask before persisting new skills, keep IPC local, and prepare ha
 For every user-visible feature, add/update [human validation steps](docs/validation/catalog.schema.md) and [FEATURES](docs/FEATURES.md); only the human can mark validation.
 Run doctor and CI checks, update PROGRESS with results and limitations, link the PR, check
 INDEX statuses and keep active passes small. Document journal schema changes.
-On a version bump or big behavior change, change VERSION and restart the service:
+On a version bump or big behavior change, change VERSION and restart the service (`./scripts/restart.sh`):
 the first journal write archives CURRENT and starts a fresh file. Record the reset in
 PROGRESS; see [LOGGING](docs/LOGGING.md) for recovery and matching old code to evidence.
 

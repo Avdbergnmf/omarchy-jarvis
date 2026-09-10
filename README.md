@@ -27,9 +27,24 @@ After report/feature intake, you still hit **Run** to file the GitHub issue (or 
 cd ~/Work/omarchy-jarvis
 ./scripts/start.sh          # Ollama + Jarvis (http://127.0.0.1:7421)
 ./scripts/start.sh --console
+./scripts/restart.sh        # reload brain after code changes (then re-open overlay)
 ./scripts/stop.sh           # stops Jarvis; leaves Ollama up
 ./scripts/doctor.sh         # health check
 ```
+
+
+## Reload after pulling code
+
+Assignment / docs-only changes on disk need **no** restart.
+
+After **brain** or **overlay** code changes (or a VERSION bump), run:
+
+```bash
+cd ~/Work/omarchy-jarvis && ./scripts/restart.sh
+```
+
+Then open the overlay again (`Super+Shift+J`) or Training so the window loads fresh JS/HTML. Equivalent: `systemctl --user restart jarvis.service`.
+
 
 Hotkey install (once per machine): `./scripts/install-hotkey.sh`  
 First-time Ollama/model/service: `./scripts/install-ollama.sh` then `./scripts/install-service.sh`
