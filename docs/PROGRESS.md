@@ -417,3 +417,7 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: queue A-021 empty Enter skips report Q&A
 - Alex: Enter on empty “how did that go” report should Skip for fast dismiss.
 - Filed [A-021](assignments/active/A-021-empty-enter-skips-report-qa.md) (`parallel-ok: YES`).
+
+## 2026-09-10 — desk: queue A-023 simplify assignment path scope
+- Alex: hard Allowed/Forbidden paths cause constant expansion asks; worktrees already isolate.
+- Prefer area + worktree; paths as optional soft hints. Filed [A-023](assignments/active/A-023-simplify-assignment-path-scope.md).

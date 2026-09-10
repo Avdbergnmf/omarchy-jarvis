@@ -24,3 +24,4 @@
 | A-020 | Validate features: record results, run ids, less busywork | in_progress | area:overlay | NO | [active/A-020-validate-features-ux.md](active/A-020-validate-features-ux.md) |
 | A-021 | Empty Enter skips report / how-did-that-go Q&A | queued | area:overlay | YES | [active/A-021-empty-enter-skips-report-qa.md](active/A-021-empty-enter-skips-report-qa.md) |
 | A-022 | Fix open cliamp plan/tooling (issue #15) | queued | area:brain | NO | [active/A-022-training.md](active/A-022-training.md) |
+| A-023 | Simplify assignment scope (area + worktree, soft paths) | queued | area:docs | YES | [active/A-023-simplify-assignment-path-scope.md](active/A-023-simplify-assignment-path-scope.md) |

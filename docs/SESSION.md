@@ -24,6 +24,7 @@
 - Claimed A-020; setting up isolated worktree next
 
 ## Also queued
+- A-023 Simplify path-scope policy (`parallel-ok: YES`, area:docs)
 - A-021 Empty Enter → Skip on report Q&A (`parallel-ok: YES`)
 
 ## Next action (one concrete step)
