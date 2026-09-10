@@ -699,3 +699,19 @@ validation remains pending because the browser connector exposes no browser on t
   (A-036, in A-037's own brief) as still unmet — switched the status lookup to `INDEX.md`, which
   retains every id including `done`, and verified against all 10 migrated briefs by hand before
   and after the fix.
+
+## 2026-09-10 — desk: A-041 Agent Monitor tiles + per-agent auto-queue redesign filed
+- Alex product intent (2026-09-10): current Agent Manager (A-018/A-036) not useful yet — no
+  glanceable tile status, no visible per-agent queue, "local queue" only stores handoffs and
+  doesn't auto-run work.
+- A-041 filed: horizontal color-coded tiles (idle/working/waiting/blocked/error) at top, each
+  with under-tile personal queue (ordered A-### list); clear "available work" panel using existing
+  claimability rules (A-037 Blocked-by/Gate, area disjointness); system chooses NEW_AGENT vs
+  CONTINUE automatically from slot state; auto-advance when agent finishes and next queued item
+  becomes claimable (open/focus visible window + prepare handoff); policy: must preserve
+  no-hidden-agent / no-silent-spend (ADR-032/036/039); open design choice whether auto-submit
+  requires human paste or system-driven continue is safe — Alex prefers system-driven, but agent
+  must not weaken safety without explicit ADR + Alex confirmation at implement time.
+- Status: queued, area:overlay, parallel-ok NO (may conflict with A-034 latency UI if that goes
+  in_progress), depth high, gate training-dispatch, Blocked-by none.
+- QUEUE.md / INDEX.md updated; SESSION.md notes filed assignment.

@@ -6,6 +6,7 @@
 - No assignment in_progress.
 - **A-037** done — see [done/A-037-assignment-stages.md](assignments/done/A-037-assignment-stages.md) / ADR-041
 - **A-040** done — see [done/A-040-test-suite-token-optimization.md](assignments/done/A-040-test-suite-token-optimization.md) / ADR-040
+- **A-041** filed — Agent Monitor tiles + per-agent auto-queue redesign (queued, area:overlay, depth high, gate training-dispatch)
 - **Next up: A-038** — recommended depth high (evidence identity + durable operational bundles v0)
 
 ## Checklist
@@ -24,7 +25,7 @@
 - Claude: implemented A-037 (ADR-041) — `Blocked-by`/`Gate` structured metadata replace free-text dependency prose; `assignment-status.sh` computes real unmet blockers (via `INDEX.md`, not `QUEUE.md` — a `done` id is delisted from QUEUE's open rows) and the claim hint skips functionally-blocked `queued` rows; `brain/training.py`/`overlay/agents.js`/`assignments.js` show real blocked reasons + gate instead of a generic hint; editor gained matching fields. Migrated all 10 blocked/queued Wave 0/1 briefs. Found and fixed a real bug pre-commit: the first cut used QUEUE.md for status lookup, which falsely reported a done-and-delisted blocker as still unmet.
 
 ## Next action (one concrete step)
-- Merge `a037-assignment-stages` into `main`, push, remove the worktree/branch, then report to Alex. Next claimable: A-038 (area:brain, recommended depth high, `Blocked-by: none`).
+- A-041 filed and queued. Merge `cursor/agent-monitor-auto-queue-1b51` into `main`, push. Next claimable: A-038 (area:brain, recommended depth high, `Blocked-by: none`).
 
 ## Parallel agent
 - none
