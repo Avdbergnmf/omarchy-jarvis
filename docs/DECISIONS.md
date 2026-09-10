@@ -128,3 +128,6 @@ Format: **ADR-NNN — Title** (date). Context → Decision → Consequences.
 
 ## A-014 hygiene — bounded honesty guard (2026-09-10)
 Empty plans use one conservative lexical guard for both planners. The fallback says only that no actions ran, without inferring that a capability is missing. Tools execution reports completed labels rather than model-written completion prose. This does not verify arbitrary natural-language claims or desktop effects. VERSION 0.4.2 deployment/restart is deferred to the shared-service owner so isolated hygiene work does not disrupt the overlay track.
+
+## A-014 hygiene — experimental tools approval boundary (2026-09-10)
+The opt-in tools executor now executes only the initial reviewed calls. If the follow-up model response asks for more tools, it stops with a partial/error result and asks for a new request; it cannot silently expand the approved plan. The old six-turn execution loop is removed. Both planner validators also reject report_bug/report_feature even if the model returns them despite their exclusion from its schema; deterministic intake still produces those reviewed actions. This is a fail-closed restriction, not a new approval protocol.

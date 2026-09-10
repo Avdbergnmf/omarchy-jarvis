@@ -201,6 +201,8 @@ def json_plan(prompt):
         raise ValueError('Invalid JSON action plan')
     for action in plan['actions']:
         if not isinstance(action,dict) or set(action)!={'tool','arguments'}: raise ValueError('Invalid plan action')
+        if action['tool'] in LLM_EXCLUDED_TOOLS:
+            raise ValueError('Issue filing requires the reviewed intake flow')
         tool_argv(action['tool'],action['arguments'])
     if not plan['actions']:
         plan['reply'] = empty_plan_reply(plan['reply'])
@@ -286,6 +288,8 @@ def calls_to_actions(calls):
     for call in calls:
         name = call['function']['name']; args = call['function'].get('arguments', {})
         if isinstance(args, str): args = json.loads(args)
+        if name in LLM_EXCLUDED_TOOLS:
+            raise ValueError('Issue filing requires the reviewed intake flow')
         tool_argv(name, args)  # validate before showing the plan to the user
         actions.append({'tool': name, 'arguments': args})
     return actions
@@ -326,38 +330,36 @@ def execute_tools_plan(run_id, target, messages):
         restore_target(target)
         seen = set(); total = 0
         pending_calls = messages[-1].get('tool_calls') or []
-        for _ in range(6):
-            for call in pending_calls:
-                name = call['function']['name']; args = call['function'].get('arguments', {})
-                if isinstance(args, str): args = json.loads(args)
-                argv = tool_argv(name, args)
-                signature = json.dumps([name,args],sort_keys=True)
-                if signature in seen: raise ValueError('Model repeated a completed action; stopped to prevent duplicate work')
-                seen.add(signature); total += 1
-                if total > 10: raise ValueError('Action limit reached')
-                label = action_label(name, args)
-                step = {'tool': name, 'arguments': args, 'label': label, 'status': 'running'}
-                with STATE_LOCK: RUNS[run_id]['steps'].append(step)
-                log(run_id, 'tool-call', json.dumps({'name':name,'arguments':args}))
-                announce(run_id, 'Running ' + label + '…')
-                result = subprocess.run(argv, capture_output=True, text=True, timeout=160)
-                log(run_id, 'stdout', result.stdout)
-                if result.stderr: log(run_id, 'stderr', result.stderr)
-                if result.returncode:
-                    with STATE_LOCK: step.update(status='error', summary=result.stdout.strip()[:300])
-                    raise RuntimeError('Action failed: ' + result.stdout.strip())
-                with STATE_LOCK: step.update(status='done', summary=result.stdout.strip()[:300])
-                messages.append({'role':'tool','tool_name':name,'content':result.stdout[:16000]})
-            msg = ollama_chat({'model':MODEL,'messages':messages,'tools':TOOLS_FOR_MODEL,'stream':False,'options':{'temperature':0,'num_ctx':8192}})
-            msg = {k:v for k,v in msg.items() if k in ('role','content','tool_calls')}
-            messages.append(msg)
-            pending_calls = msg.get('tool_calls') or []
-            if not pending_calls:
-                reply = 'Completed: ' + ', '.join(step['label'] for step in RUNS[run_id]['steps']) + '.'
-                announce(run_id, reply[:250])
-                with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
-                return
-        raise RuntimeError('Model exceeded the six-turn limit')
+        for call in pending_calls:
+            name = call['function']['name']; args = call['function'].get('arguments', {})
+            if isinstance(args, str): args = json.loads(args)
+            argv = tool_argv(name, args)
+            signature = json.dumps([name,args],sort_keys=True)
+            if signature in seen: raise ValueError('Model repeated a completed action; stopped to prevent duplicate work')
+            seen.add(signature); total += 1
+            if total > 10: raise ValueError('Action limit reached')
+            label = action_label(name, args)
+            step = {'tool': name, 'arguments': args, 'label': label, 'status': 'running'}
+            with STATE_LOCK: RUNS[run_id]['steps'].append(step)
+            log(run_id, 'tool-call', json.dumps({'name':name,'arguments':args}))
+            announce(run_id, 'Running ' + label + '…')
+            result = subprocess.run(argv, capture_output=True, text=True, timeout=160)
+            log(run_id, 'stdout', result.stdout)
+            if result.stderr: log(run_id, 'stderr', result.stderr)
+            if result.returncode:
+                with STATE_LOCK: step.update(status='error', summary=result.stdout.strip()[:300])
+                raise RuntimeError('Action failed: ' + result.stdout.strip())
+            with STATE_LOCK: step.update(status='done', summary=result.stdout.strip()[:300])
+            messages.append({'role':'tool','tool_name':name,'content':result.stdout[:16000]})
+        msg = ollama_chat({'model':MODEL,'messages':messages,'tools':TOOLS_FOR_MODEL,'stream':False,'options':{'temperature':0,'num_ctx':8192}})
+        msg = {k:v for k,v in msg.items() if k in ('role','content','tool_calls')}
+        messages.append(msg)
+        pending_calls = msg.get('tool_calls') or []
+        if pending_calls:
+            raise ValueError('Additional model actions were not approved; submit a new request to review them')
+        reply = 'Completed: ' + ', '.join(step['label'] for step in RUNS[run_id]['steps']) + '.'
+        announce(run_id, reply[:250])
+        with STATE_LOCK: RUNS[run_id].update(status='done', reply=reply)
     except Exception as e:
         reply = redact(str(e)); announce(run_id, 'Stopped: ' + reply[:200])
         with STATE_LOCK: RUNS[run_id].update(status='error', reply=reply)

@@ -156,6 +156,26 @@ class JsonPlanTest(unittest.TestCase):
   with patch.object(server,'restore_target'),patch.object(server,'announce'),patch.object(server,'log'),patch.object(server.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'{"ok":true}','')),patch.object(server,'ollama_chat',return_value={'content':'I opened Spotify and YouTube.'}):
    server.execute_tools_plan(rid,None,messages)
   self.assertEqual(server.RUNS[rid]['reply'],'Completed: scratch toggle.')
+ def test_tools_followup_cannot_execute_unreviewed_actions(self):
+  rid='tools-followup-unit'; server.RUNS[rid]={'steps':[]}; server.BUSY.acquire()
+  messages=[{'role':'assistant','tool_calls':[{'function':{'name':'scratch_toggle','arguments':{}}}]}]
+  followup={'tool_calls':[{'function':{'name':'workspace_switch','arguments':{'workspace':2}}}]}
+  with patch.object(server,'restore_target'),patch.object(server,'announce'),patch.object(server,'log'),patch.object(server.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'{"ok":true}','')) as run,patch.object(server,'ollama_chat',return_value=followup):
+   server.execute_tools_plan(rid,None,messages)
+  self.assertEqual(run.call_count,1)
+  self.assertEqual(server.RUNS[rid]['status'],'error')
+  self.assertIn('not approved',server.RUNS[rid]['reply'])
+  self.assertEqual(server.RUNS[rid]['steps'][0]['status'],'done')
+  self.assertFalse(server.BUSY.locked())
+ def test_both_planners_reject_model_generated_issue_filing(self):
+  for name in ('report_bug','report_feature'):
+   args={'title':'Test','body':'Test body','difficulty':'S'}
+   with self.subTest(name=name):
+    plan={'actions':[{'tool':name,'arguments':args}],'reply':'Filing issue.'}
+    with patch.object(server,'ollama_chat',return_value={'content':json.dumps(plan)}),self.assertRaisesRegex(ValueError,'intake flow'):
+     server.json_plan('file issue')
+    with self.assertRaisesRegex(ValueError,'intake flow'):
+     server.calls_to_actions([{'function':{'name':name,'arguments':args}}])
  def test_honest_empty_reply_is_left_alone(self):
   plan={'actions':[],'reply':'Hello! How can I help?'}
   with patch.object(server,'urlopen',return_value=self.response(plan)):
