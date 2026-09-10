@@ -8,6 +8,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 QUEUE_REL="docs/assignments/QUEUE.md"
+INDEX_REL="docs/assignments/INDEX.md"
 SESSION_REL="docs/SESSION.md"
 
 extract_rows() {
@@ -114,8 +115,17 @@ brief_meta() {
   # when this is called as `VAR=$(brief_meta ...)` — no match just means "field absent".
   printf '%s\n' "$1" | grep -E "^- \*\*$2:\*\*" | head -1 | sed -E "s/^- \*\*$2:\*\* ?//" || true
 }
+# INDEX.md (not QUEUE.md) is the status source for Blocked-by lookups: done assignments are
+# removed from QUEUE's open rows entirely, but INDEX keeps every id ever filed with its real
+# status — an id genuinely absent from INDEX (typo, not yet filed) must stay conservatively
+# "unmet", which a QUEUE-only lookup could not distinguish from "done and delisted".
+INDEX_TEXT=""
+if ((FETCH_OK)) && INDEX_TEXT=$(git show "origin/main:$INDEX_REL" 2>/dev/null); then :; else
+  INDEX_TEXT=$(cat "$INDEX_REL" 2>/dev/null || true)
+fi
+mapfile -t INDEX_ROWS < <(printf '%s\n' "$INDEX_TEXT" | extract_rows)
 declare -A STATUS_BY_ID=()
-for row in "${ROWS[@]+"${ROWS[@]}"}"; do
+for row in "${INDEX_ROWS[@]+"${INDEX_ROWS[@]}"}"; do
   STATUS_BY_ID["$(row_id "$row")"]="$(row_status "$row")"
 done
 declare -A UNMET_BY_ID=()

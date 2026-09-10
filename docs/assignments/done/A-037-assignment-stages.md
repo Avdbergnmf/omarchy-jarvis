@@ -1,13 +1,13 @@
 # A-037 — Release gates + claimability visibility (not a second wave counter)
 
-- **Status:** queued
+- **Status:** done
 - **Area:** area:docs (+ light `area:overlay` / `brain/training.py` for surfacing)
 - **parallel-ok:** NO (after **A-036**; coordinate with **A-026**)
 - **Recommended depth:** medium
 - **Soft path hints:** `docs/assignments/`, `START.md`, `scripts/assignment-status.sh`, Training panels, `docs/MILESTONES.md`, ledger docs when present
-- **Blocked-by:** none (A-036 done)
+- **Blocked-by:** none
 - **Gate:** training-dispatch
-- **Links:** Alex stages/waves idea; desk review vs roadmap/ledger; do not invent a parallel ID space vs A-026
+- **Links:** Alex stages/waves idea; desk review vs roadmap/ledger; do not invent a parallel ID space vs A-026; A-036 (prerequisite) is done
 
 ## Decision (why not “stage: 0/1/2” algebra)
 
@@ -31,11 +31,11 @@ In Training Agent monitor / Assignments, Alex sees:
 Optional cheap: confirmable “add gate” that offers to attach `blocked-by` — **not** global stage shift.
 
 ## Checklist
-- [ ] ADR: gates + blocked-by + QUEUE order; relate to A-026 / MILESTONES; reject stage integers unless A-032 demands them
-- [ ] Frontmatter: `blocked-by`, optional `gate:`; migrate Wave prose into gate labels
-- [ ] `assignment-status.sh`: claimability + blocked reasons
-- [ ] Training: show gate + blocked reasons (on A-036 board)
-- [ ] Editor/generate + README/START; PROGRESS; SESSION; QUEUE/INDEX → done
+- [x] ADR: gates + blocked-by + QUEUE order; relate to A-026 / MILESTONES; reject stage integers unless A-032 demands them — ADR-041.
+- [x] Frontmatter: `blocked-by`, optional `gate:`; migrate Wave prose into gate labels — `TEMPLATE.md` + all 10 blocked/queued Wave 0/1 briefs migrated.
+- [x] `assignment-status.sh`: claimability + blocked reasons — reads Blocked-by/Gate from `origin/main`, computes unmet ids via `INDEX.md`, claim hint skips functionally-blocked `queued` rows.
+- [x] Training: show gate + blocked reasons (on A-036 board) — `overlay/agents.js` board + `overlay/assignments.js` list show real unmet ids and gate; `brain/training.py` exposes `blocked_by`/`gate`/`unmet_blocked_by`.
+- [x] Editor/generate + README/START; PROGRESS; SESSION; QUEUE/INDEX → done — `overlay/training.html` gained Blocked by/Gate fields; `docs/assignments/README.md` documents the model.
 
 ## Out of scope
 Global stage shift-up; auto-start next gate; replace QUEUE with ledger; latency profiler.

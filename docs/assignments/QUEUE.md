@@ -4,7 +4,6 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
-| A-037 | Release gates + claimability visibility | in_progress | area:docs | NO | medium | [active/A-037-assignment-stages.md](active/A-037-assignment-stages.md) |
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | high | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
 | A-038 | Evidence identity + durable operational bundles v0 | queued | area:brain | NO | high | [active/A-038-evidence-identity-durable-bundles-v0.md](active/A-038-evidence-identity-durable-bundles-v0.md) |
 | A-026 | Improvement Ledger v0 (Desk-owned audit wrapping QUEUE) | blocked | area:docs | NO | high | [active/A-026-improvement-ledger-v0.md](active/A-026-improvement-ledger-v0.md) |
@@ -16,7 +15,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 
-Recently completed: A-001 … A-025, A-032, A-036, A-039, A-040 (see [done/](done/)).
+Recently completed: A-001 … A-025, A-032, A-036, A-037, A-039, A-040 (see [done/](done/)).
 
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
@@ -35,7 +34,13 @@ docs-only/small changes; full before landing to main or touching brain/overlay/a
 **A-036 complete:** Agent monitor now shows launch effort and active work, explains local-only
 status, and offers explicit visible-window-now versus local-queue delivery.
 
-**Next up: A-037** — recommended depth medium (release gates + claimability visibility).
+**A-037 complete (ADR-041):** `Blocked-by`/`Gate` replace prose dependency notes — structured,
+parsed by `assignment-status.sh` and Training (Agent monitor board + Assignments editor), which
+now show *why* a row isn't claimable instead of a generic "see brief" hint. No global `stage:`
+integers; QUEUE.md keeps its existing columns.
+
+**Next up: A-038** — recommended depth high (evidence identity + durable operational bundles v0;
+first claimable Wave 0 assignment — `Blocked-by: none`, `Gate: control-plane`).
 
 **Revised Wave 0:** A-027 is externally blocked (private-repo protection unavailable until
 Alex chooses a supported plan/visibility/host). A-038 is the first self-improve foundation;
