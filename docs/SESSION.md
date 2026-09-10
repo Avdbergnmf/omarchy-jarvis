@@ -4,7 +4,8 @@
 
 ## Active goal
 - **A-046** queued — Validate features overhaul (simple cards; Alex JARVIS)
-- **A-044** / **A-045** queued — Agent copy handoff fix + opt-in auto-send (Alex JARVIS)
+- **A-044** in_progress — Agent manager: Copy handoff fix (Claude, worktree omarchy-jarvis-a044-agent-copy-handoff-fix)
+- **A-045** queued — Agent manager: opt-in auto-send prompt (blocked-by gate:training-ux via A-044)
 - **A-043** queued — Training Problems whole-row bubble click (Alex JARVIS)
 - **A-042** done — Parallel claimability tooling migration (ADR-048 tooling)
 - **A-035** done — Latency distributions, version compare, ledger hooks (ADR-054)
@@ -52,7 +53,7 @@
 - Cursor/Grok: implemented A-042 (ADR-048 tooling) on `cursor/a042-parallel-claimability-tooling-967e` from `origin/main`. Training new-brief default YES (workflow-owned, not META_FIELDS); assignment-status reasons/warnings/HEADS-UP; paste prompts match the script; agent-status dropped the path-fence rule. `area:docs` vs `area:control-plane` written, not executed. Queue empty after this row.
 
 ## Next action (one concrete step)
-- Stop. Queue is empty. Do not invent work.
+- Reproduce the Copy handoff clipboard failure in `overlay/training.js` `#train-copy`, then fix the write path + fallback per A-044 brief.
 
 ## Parallel agent
 - none
