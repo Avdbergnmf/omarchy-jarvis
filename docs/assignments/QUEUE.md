@@ -4,7 +4,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | path |
 |----|-------|--------|------|-------------|------|
-| A-020 | Validate features: record results, run ids, less busywork | queued | area:overlay | NO | [active/A-020-validate-features-ux.md](active/A-020-validate-features-ux.md) |
+| A-020 | Validate features: record results, run ids, less busywork | in_progress | area:overlay | NO | [active/A-020-validate-features-ux.md](active/A-020-validate-features-ux.md) |
 | A-019 | Proposed-action bubble UX (readable plan in the bubble) | queued | area:overlay | NO | [active/A-019-proposed-action-bubble-ux.md](active/A-019-proposed-action-bubble-ux.md) |
 
 Recently completed: A-001 … A-018 (see [done/](done/)).

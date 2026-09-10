@@ -21,4 +21,4 @@
 | A-017 | Training Assignments panel (list/edit/generate/handoff) | done | area:overlay | NO | [done/A-017-training-assignments-panel.md](done/A-017-training-assignments-panel.md) |
 | A-018 | Training Agent monitor (tiles + visible windows) | done | area:overlay | NO | [done/A-018-training-agent-monitor.md](done/A-018-training-agent-monitor.md) |
 | A-019 | Proposed-action bubble UX (readable plan in the bubble) | queued | area:overlay | NO | [active/A-019-proposed-action-bubble-ux.md](active/A-019-proposed-action-bubble-ux.md) |
-| A-020 | Validate features: record results, run ids, less busywork | queued | area:overlay | NO | [active/A-020-validate-features-ux.md](active/A-020-validate-features-ux.md) |
+| A-020 | Validate features: record results, run ids, less busywork | in_progress | area:overlay | NO | [active/A-020-validate-features-ux.md](active/A-020-validate-features-ux.md) |

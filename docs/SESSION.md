@@ -3,19 +3,28 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Assignment: _(desk queued **A-020** priority, then A-019; claim A-020 with NEW_AGENT)_
+- Assignment: **A-020 — Validate features UX** (in_progress)
+- Owner: claude-code (this session)
+- Branch: `a020-validate-features-ux`
 - Area: area:overlay
-- Branch: main
+- Batch: 1 (default; stop and report after this assignment)
 
 ## Checklist
-- [ ] A-020 Validate features UX — queued (priority)
-- [ ] A-019 Proposed-action bubble UX — queued
+- [x] Read START, SESSION, QUEUE; claimed A-020 (priority row)
+- [ ] Reproduce Verify/Fail; confirm catalog/FEATURES persistence; fix list refresh/removal
+- [ ] Include-validated: readable report history; re-test without losing history
+- [ ] Surface/pre-fill/optional run id end-to-end (overlay + API)
+- [ ] Auto-drive mechanical guided steps; keep judgment + Run approval human
+- [ ] Tests + ADR; PROGRESS; SESSION; QUEUE/INDEX → done
+- [ ] A-019 Proposed-action bubble UX — still queued, after A-020 (same area, serial)
 
 ## Done this session (evidence)
 - Desk (Firsty): filed A-020 from Alex Validate-features feedback (persist results, run ids, automate mechanical steps)
+- Committed a live bug report (bug-open-cliamp) that was sitting uncommitted in the canonical checkout
+- Claimed A-020; setting up isolated worktree next
 
 ## Next action (one concrete step)
-- Coding agent: NEW_AGENT → claim **A-020**
+- Read `overlay/validation.js` + `brain/validation.py` once, then reproduce whether Verify/Fail actually persists to docs/validation/catalog.json today.
 
 ## Parallel agent
 - none (overlay serial)

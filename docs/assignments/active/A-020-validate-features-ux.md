@@ -1,6 +1,6 @@
 # A-020 — Validate features: record results, run ids, less manual busywork
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:overlay (+ `area:brain` validation APIs; light chat/overlay automation helpers)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/validation.js`, `overlay/` Training validation UI, `brain/validation.py`, `brain/server.py` (validation + run-id surfacing), `brain/training.py` if shared, `tests/`, `docs/validation/`, `docs/FEATURES.md`, `docs/assignments/`, `docs/SESSION.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `VERSION`, small scripts only if needed to drive overlay for guided tests
