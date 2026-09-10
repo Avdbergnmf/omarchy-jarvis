@@ -413,3 +413,7 @@ validation remains pending because the browser connector exposes no browser on t
 - Run id requested but never shown by Jarvis.
 - Automate mechanical guided steps; Alex judges desktop outcome after Run.
 - Filed [A-020](assignments/active/A-020-validate-features-ux.md); queued ahead of A-019.
+
+## 2026-09-10 — desk: queue A-021 empty Enter skips report Q&A
+- Alex: Enter on empty “how did that go” report should Skip for fast dismiss.
+- Filed [A-021](assignments/active/A-021-empty-enter-skips-report-qa.md) (`parallel-ok: YES`).

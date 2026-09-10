@@ -23,6 +23,9 @@
 - Committed a live bug report (bug-open-cliamp) that was sitting uncommitted in the canonical checkout
 - Claimed A-020; setting up isolated worktree next
 
+## Also queued
+- A-021 Empty Enter → Skip on report Q&A (`parallel-ok: YES`)
+
 ## Next action (one concrete step)
 - Read `overlay/validation.js` + `brain/validation.py` once, then reproduce whether Verify/Fail actually persists to docs/validation/catalog.json today.
 
