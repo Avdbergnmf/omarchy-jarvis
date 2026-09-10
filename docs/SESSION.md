@@ -5,7 +5,8 @@
 ## Active goal
 - **A-030** in_progress — Codex @ `main` / `~/Work/omarchy-jarvis` (serial assignment; claim committed to main before implementation)
 - **A-029** done — see [done/A-029-memory-v0-provenance-prefs.md](assignments/done/A-029-memory-v0-provenance-prefs.md) / ADR-047
-- **A-027 cancelled** — no GitHub Pro / no public; ADR-046; do not wait on branch protection
+- **A-027 cancelled historically; protection restored (ADR-049)** — public `main` ruleset live
+- **ADR-048** parallel-ok default YES (PR #20 port) — no GitHub Pro / no public; ADR-046; do not wait on branch protection
 - **A-041** filed — Agent Monitor tiles + per-agent auto-queue redesign (queued, area:overlay, depth high, gate training-dispatch)
 - **Next:** A-030 (area:docs, now unblocked), A-033 (area:brain), or A-041 (area:overlay, gate training-dispatch) — queued, disjoint areas
 

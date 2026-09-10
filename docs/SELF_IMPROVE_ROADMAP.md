@@ -61,7 +61,7 @@ remain queued ahead of self-improve implementation. They make Training dispatch 
 reasons usable; they do not replace the dependency graph or authorize later work. A-037 must
 represent sequencing with `blocked-by` and gate labels, not a second numeric stage system.
 
-## Branch protection: unavailable for now (A-027 cancelled)
+## Branch protection: enabled on public `main` (ADR-049; A-027 cancelled brief stays closed)
 
 The repository stays **private** on GitHub Free. Ruleset/branch-protection APIs return HTTP 403
 without Pro or public visibility. On 2026-09-10 Alex decided: **no Pro, no public** for now

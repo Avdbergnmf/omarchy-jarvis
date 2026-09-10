@@ -843,3 +843,11 @@ validation remains pending because the browser connector exposes no browser on t
   `python3 -m unittest discover -s tests` — 223/223 pass (204 + 19 new); `./scripts/test-full.sh`
   green. No shared-service restart required (actions/ CLI tools only, no brain/server.py
   behavior change).
+
+## 2026-09-10 — Parallel claimability (ADR-048) + main ruleset (ADR-049)
+- Ported PR #20 intent onto current main after conflicts with A-029/A-030: default `parallel-ok: YES`,
+  flipped A-033/A-034/A-035/A-041 to YES; A-030/A-031 keep reasoned NO; filed A-042.
+- Alex made repo public and enabled ruleset `main` (PR required, `test` check, no force-push/deletion).
+  ADR-049 supersedes ADR-046's "no protection" guidance. Unattended Forge remains parked in FUTURE.md.
+- Left A-030 `in_progress` claim untouched aside from the parallel-ok reason line.
+

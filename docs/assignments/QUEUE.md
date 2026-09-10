@@ -6,10 +6,11 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 |----|-------|--------|------|-------------|-------|------|
 | A-030 | Protect safety/eval/control-plane paths | in_progress | area:docs | NO | medium | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | high | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
-| A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | NO | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
-| A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
-| A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
-| A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | NO | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
+| A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | YES | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
+| A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
+| A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
+| A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | YES | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
+| A-042 | Parallel claimability tooling migration (default YES + status hints) | queued | area:docs | NO | medium | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |
 
 Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
 
@@ -61,12 +62,9 @@ cross-process locking, and bounded growth (oldest revoked pruned first). IMP-001
 **Next up:** A-033 (area:brain) and A-041 (area:overlay, `Gate: training-dispatch`) are both
 `queued` and disjoint-area; either is a valid next claim.
 
-**A-027 cancelled (ADR-046):** Alex will not buy GitHub Pro or make the repo public for now.
-Private Free cannot do branch protection — agents must **not** wait on it or invent a fake gate.
-Unattended Forge/auto-merge stay off; human-reviewed merges continue.
+**A-027 / branch protection (ADR-049):** repo is **public**; `main` ruleset requires PR + `test` check, blocks force-push/deletion. ADR-046's "no protection" stance is superseded. Unattended Forge stays parked ([FUTURE.md](../FUTURE.md)). Parallel claimability: **ADR-048** (`parallel-ok` defaults YES).
 
-**Revised Wave 0:** A-030 is claimable (docs/control-plane ownership map without enforceable
-GitHub protection). A-031 still waits on A-030. See the [roadmap](../SELF_IMPROVE_ROADMAP.md)
+**Revised Wave 0:** A-030 is in_progress (control-plane ownership map; GitHub ruleset now enforces PR+`test` on `main`). A-031 still waits on A-030. See the [roadmap](../SELF_IMPROVE_ROADMAP.md)
 and [A-032 review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md).
 
 **Wave 1 (after Wave 0):** A-033 → A-034 → A-035 text latency profiler. Brief: [chatgpt-latency-profiler-brief](../audits/chatgpt-latency-profiler-brief-2026-09-10.md).

@@ -2,7 +2,7 @@
 
 - **Status:** queued
 - **Area:** area:overlay
-- **parallel-ok:** NO
+- **parallel-ok:** YES
 - **Recommended depth:** medium
 - **Blocked-by:** A-033
 - **Gate:** latency

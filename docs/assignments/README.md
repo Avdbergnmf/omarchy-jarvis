@@ -96,7 +96,7 @@ recovery](../../START.md#recovering-a-stale-claim), not silently reclaimed.
 - Checklist items must be **verifiable**.
 - Explicit **out of scope** to stop mega-passes.
 - Link existing ADRs/passes instead of pasting novels.
-- Mark `parallel-ok: NO` for `area:brain` / control-plane by default.
+- Leave `parallel-ok: YES` (default, ADR-048) unless a reasoned kill-switch applies (`control-plane` / `single-writer` / `human-serial`). Do not encode ordering in the flag — use `Blocked-by:`.
 - Closing behavior work needs a relevant regression artifact (a `tests/` case, and a
   [`docs/evals/`](../evals/README.md) entry when it names a capability/regression worth
   pinning) or a documented reason only human/VM validation is possible (A-028).
