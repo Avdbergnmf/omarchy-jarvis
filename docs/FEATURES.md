@@ -16,4 +16,4 @@ Agents must update definitions when shipping user-visible behavior. Automated te
 | feat-validate | Guided human validation | overlay | unvalidated | — |
 | feat-open-by-name | Open any installed app by name | actions | unvalidated | — |
 | feat-training-assignments | Training assignment editing, generation and handoff | overlay | unvalidated | — |
-| feat-agent-monitor | Agent monitor: visible handoff, depth and active work | overlay | unvalidated | — |
+| feat-agent-monitor | Agent manager: visible agents and personal auto-queues | overlay | unvalidated | — |

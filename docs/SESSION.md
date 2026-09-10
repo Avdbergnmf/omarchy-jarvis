@@ -3,8 +3,8 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- **A-041** in_progress — Codex @ `a041-agent-monitor-auto-queue` / `~/Work/omarchy-jarvis-a041-agent-monitor-auto-queue` (parallel area:overlay; ADR-043 reserved)
-- **A-033** done — latency profiler foundation (ADR-052); landing via rebase of PR #27
+- **A-041** done — Agent Manager visible per-agent auto-queues (ADR-043); landing via PR
+- **A-033** done — latency profiler foundation (ADR-052); merged PR #27
 - **A-031** done — merged PR #25 / ADR-051
 
 ## Checklist
@@ -20,7 +20,7 @@
 - [x] A-030 Protect control-plane paths — done (PR + `test` enforced; CODEOWNERS review remains policy)
 - [x] A-031 Stochastic planner evals v0 — done (ADR-051); baseline remains human-unapproved
 - [x] A-033 Latency profiler foundation — done (ADR-052); no Training UI
-- [ ] A-041 Agent Monitor redesign — in_progress (isolated worktree; area:overlay)
+- [x] A-041 Agent Monitor redesign — done (ADR-043); human validation remains unvalidated
 
 ## Done this session (evidence)
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
@@ -37,9 +37,10 @@
 - Codex: implemented A-030 (ADR-050) — Control Plane boundary v1, CODEOWNERS, `check-control-plane.py`. A-031 unblocked.
 - Cursor/Grok: implemented A-031 (ADR-051) — planner-only stochastic eval runner. 20 `SEVAL-*` cases (14 `json_plan`, 6 `route_prompt`). Fresh child process per trial with execution tripwires; A-038 `kind: eval` bundles; pass@k not reported; baseline unapproved. Router 6/6 and stub-planner 14/14 in `docs/evals/stochastic/summaries/`. Live Ollama N-runs not spent.
 - Cursor/Grok: implemented A-033 (ADR-052) — InteractionTrace + hierarchical spans + local SQLite store. Product metric is `meaningful_response_latency` (Enter → first non-placeholder paint), not TTFT. Overlay stamps `client_submit_ms` / POST ack+meaningful; GET polls stay write-free. Late client marks rewrite the store. No prompts persisted.
+- Codex: implemented A-041 (ADR-043) — Agent Manager status-colored top tiles, per-agent FIFO queues, canonical available-work/auto-advance checks, automatic cold-start-vs-continue, and visible-window prompt preparation without automatic paste/submit. Updated `feat-agent-monitor`; 256 Python tests + five JS suites pass.
 
 ## Next action (one concrete step)
-- A-041: redesign Agent Monitor tiles/available-work/per-agent queues in the isolated worktree; preserve visible-window and no-silent-spend policy. Next latency UI: **A-034** (depth medium) once claimed.
+- Claim A-034 (Training Latency Profiler UI, area:overlay, depth medium).
 
 ## Parallel agent
 - none

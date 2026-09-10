@@ -33,7 +33,7 @@ main{max-width:1500px;margin:auto;padding:24px 30px}
 #train-save,#train-generate{background:#22523f}
 .work-layout{grid-template-columns:1fr 1fr;margin-bottom:18px}
 #train-assignments{max-height:300px}
-#train-agents{max-height:260px}
+#train-agents{margin-bottom:18px}
 .training-fields{display:grid;grid-template-columns:minmax(120px,1fr) 3fr;align-items:center}
 #train-preview,#train-result{border-color:#6aa891;margin-top:18px}
 #train-preview-files{max-height:400px!important}
@@ -61,3 +61,13 @@ a{color:#9dd9d2}
 #agent-detail{border:1px solid #3b4b60;border-radius:6px;padding:12px;margin-bottom:14px}
 #agent-open-window{background:#22523f}
 .field-help{margin:0 0 8px;line-height:1.45}
+.agent-tiles{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 12px}
+.agent-tile{min-width:230px;text-align:left;border-left:5px solid #718096;background:#141c27;padding:12px}
+.agent-tile.status-idle{border-left-color:#68d391}.agent-tile.status-working{border-left-color:#63b3ed}
+.agent-tile.status-waiting{border-left-color:#ecc94b}.agent-tile.status-blocked{border-left-color:#ed8936}
+.agent-tile.status-error{border-left-color:#fc8181}.agent-tile strong,.agent-tile span{display:block}
+.agent-tile .agent-state{text-transform:uppercase;font-size:10px;letter-spacing:.8px;margin:5px 0;color:#b7c5d6}
+.agent-personal-queue{margin:8px 0 0;padding:8px 0 0;border-top:1px solid #344253;font-size:11px;line-height:1.55}
+.agent-manager-grid{display:grid;grid-template-columns:minmax(360px,1.25fr) minmax(260px,.75fr);gap:18px;align-items:start}
+.agent-manager-grid aside{position:sticky;top:14px}.agent-advanced{margin:10px 0}
+@media(max-width:850px){.agent-manager-grid{grid-template-columns:1fr}.agent-manager-grid aside{position:static}.agent-tile{min-width:200px}}

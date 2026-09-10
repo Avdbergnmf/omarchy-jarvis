@@ -871,7 +871,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.host_ok() or self.headers.get('Origin') not in (None,'http://127.0.0.1:7421') or self.headers.get('X-Jarvis-Token') != TOKEN:
             return self.reply(403, {'error':'Invalid origin or token'})
-        if self.path in ('/v1/training/preview', '/v1/training/confirm', '/v1/training/report', '/v1/training/problem', '/v1/training/open', '/v1/training/assignment', '/v1/training/generate', '/v1/training/agent-window'):
+        if self.path in ('/v1/training/preview', '/v1/training/confirm', '/v1/training/report', '/v1/training/problem', '/v1/training/open', '/v1/training/assignment', '/v1/training/generate', '/v1/training/agent-window', '/v1/training/agent-advance'):
             try:
                 length = int(self.headers.get('Content-Length', '0'))
                 if not 0 < length <= 16384: raise ValueError('Invalid request size')
@@ -891,6 +891,19 @@ class Handler(BaseHTTPRequestHandler):
                                             capture_output=True, text=True, timeout=15)
                     if launch.returncode: raise RuntimeError(launch.stderr.strip() or 'Agent window could not open')
                     result = {'ok': True}
+                elif self.path.endswith('/agent-advance'):
+                    advanced = training.advance_slots(ROOT)
+                    for item in advanced:
+                        if item['kind'] == 'human':
+                            continue
+                        slot = training.find_slot(ROOT, item['slot_id'])
+                        command = [sys.executable, str(ROOT/'scripts/open-agent.py'), '--slot-id', slot['id'], '--kind', slot['kind']]
+                        if slot.get('reasoning_effort'): command += ['--reasoning-effort', slot['reasoning_effort']]
+                        launch = subprocess.run(command, capture_output=True, text=True, timeout=15)
+                        if launch.returncode:
+                            item['launch_error'] = launch.stderr.strip() or 'Agent window could not open'
+                            training.record_slot_error(ROOT, item['slot_id'], item['launch_error'])
+                    result = {'advanced': advanced, 'submitted': False}
                 elif self.path.endswith('/assignment'):
                     result = training.assignment_detail(ROOT, body.get('assignment_id'))
                 elif self.path.endswith('/generate'):

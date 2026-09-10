@@ -95,7 +95,7 @@ Type `/` for command suggestions. Use ↑/↓ to select, Tab/Enter to complete, 
 Choose **Open Training** in chat or type `/train` to open a separate, resizable Hyprland
 floating window. Reopening focuses that window; chat and its pending plan remain intact.
 With Jarvis already running, `./scripts/open-training.py` opens the same window directly.
-No new global hotkey is installed. Problems, Validate features, Assignments, and Agent monitor
+No new global hotkey is installed. Problems, Validate features, Assignments, and Agent manager
 have separate navigation panels beneath the version and metric cards.
 
 Refresh imports issues, backlog, bad/neutral feedback, journal flags and failed human tests
@@ -127,23 +127,24 @@ result in the form before saving. Alternatively choose **On-machine coding agent
 prompt to copy yourself. Your selected agent may use paid services; Jarvis does not launch
 or contact it. Paste its JSON response into the import box to fill the draft, then review it.
 
-After a confirmed save, **Hand off to agent** opens **Agent monitor** with that assignment
-selected. Choose a slot and preview the NEW_AGENT/CONTINUE handoff, then confirm to save it.
-Copy/paste the handoff into the target chat yourself. Cancelling a handoff creates no files;
+After a confirmed save, **Hand off to agent** opens **Agent manager** with that assignment
+selected. Choose an existing tile or **+ New agent**; cold-start versus continue is automatic,
+with a manual override under Advanced. Confirm to save the reviewable handoff. Cancelling creates no files;
 it does not undo an earlier problem or assignment Save.
 
-The agent monitor combines QUEUE/SESSION with local slots; it cannot detect live chats.
-Each slot is a tile — click one for its overview (status, current/queued assignments,
+The agent manager combines the canonical assignment state with local slots; it cannot detect live chats.
+Each slot is a color-coded tile (idle, working, waiting, blocked or error) with its ordered
+personal assignment queue directly underneath. Click one for its overview (status, current/queued assignments,
 last handoff) and, for a Claude Code or Cursor/Codex slot, **Open agent window**: a real,
 individually focusable terminal window running that agent's own CLI, never a hidden
 background job. A second click focuses the same window instead of opening another one.
 Human slots have no automated window — those are worked in your own terminal. Mark a slot
-busy/idle through a confirmation preview. Prepare now rejects busy slots and, once
-confirmed, opens the agent's window automatically; Queue until free records intent locally
-and does not send or launch anything automatically. Once free, select the queued assignment
-and prepare its handoff. New slots are created with their first confirmed handoff. The
-queue board lists every assignment's status/area/parallel policy and current worker,
-reflecting disk QUEUE/SESSION directly. No connector sends messages or spends credits.
+busy/idle through a confirmation preview. **Available work** reuses Blocked-by, area and
+parallel claimability; it does not invent a second scheduler. Start visibly now rejects busy
+slots and opens the agent window after confirmation. Personal queues retain multiple reviewed
+handoffs in FIFO order. While Agent manager is open, completion on `origin/main` advances the
+next claimable personal item, opens/focuses the visible window and displays its prompt. Jarvis
+never pastes or submits that prompt, and no connector silently spends credits.
 
 ### Validate features
 In Training, **Validate features** lists unvalidated and failed guides, each showing its last

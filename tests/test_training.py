@@ -60,7 +60,8 @@ class TrainingTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'busy'): training.preview(self.root,payload)
         payload['mode']='queue'
         queued=training.preview(self.root,payload)
-        self.assertIn('will not open a window or send it automatically',queued['message'])
+        self.assertIn('personal queue',queued['message'])
+        self.assertIn('never pastes or submits',queued['message'])
         training.confirm(self.root,queued['preview_id'])
         self.assertIn(slot['current_assignment'],training.slots(self.root)['agents'][0]['queued_assignment_ids'])
         idle=training.preview(self.root,dict(operation='slot',slot_id=slot['id'],status='idle'))
@@ -69,6 +70,44 @@ class TrainingTest(unittest.TestCase):
         ready=training.preview(self.root,payload)
         training.confirm(self.root,ready['preview_id'])
         self.assertEqual(training.slots(self.root)['agents'][0]['queued_assignment_ids'],[])
+
+    def test_claimability_and_personal_queue_status_reuse_assignment_data(self):
+        queue = [
+            dict(id='A-100', title='Brain work', status='in_progress', area='brain', parallel='YES', unmet_blocked_by=[]),
+            dict(id='A-101', title='Overlay work', status='queued', area='overlay', parallel='YES', unmet_blocked_by=[]),
+            dict(id='A-102', title='Blocked work', status='queued', area='docs', parallel='YES', unmet_blocked_by=['A-099']),
+        ]
+        self.assertTrue(training.claimable(queue[1], queue))
+        self.assertFalse(training.claimable(queue[2], queue))
+        slot = dict(id='slot-test', label='Test', kind='human', status='idle',
+            current_assignment=None, queued_assignment_ids=['A-101', 'A-102'])
+        training.decorate_slot(slot, queue)
+        self.assertEqual(slot['computed_status'], 'waiting')
+        self.assertEqual([item['queue_status'] for item in slot['personal_queue']], ['ready-next', 'blocked-waiting'])
+
+    def test_auto_advance_is_visible_handoff_only_and_preserves_fifo(self):
+        registry = {'version': 1, 'agents': [dict(id='slot-test', label='Test', kind='human', status='idle',
+            current_assignment='A-099', queued_assignment_ids=['A-102', 'A-101'],
+            queued_handoffs={'A-101': 'docs/backlog/handoffs/active/a101.md'}),
+            dict(id='slot-other', label='Other', kind='human', status='idle', current_assignment=None,
+                queued_assignment_ids=['A-101'])]}
+        target = self.root/training.SLOTS
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(registry))
+        queue = [
+            dict(id='A-101', title='Ready', status='queued', area='overlay', parallel='YES', unmet_blocked_by=[]),
+            dict(id='A-102', title='Blocked', status='queued', area='docs', parallel='YES', unmet_blocked_by=['A-099']),
+        ]
+        with patch.object(training, 'assignments', return_value=queue):
+            advanced = training.advance_slots(self.root)
+        self.assertEqual(advanced[0]['assignment_id'], 'A-101')
+        self.assertEqual(advanced[0]['handoff'], 'docs/backlog/handoffs/active/a101.md')
+        self.assertNotIn('submitted', advanced[0])
+        slot = training.slots(self.root)['agents'][0]
+        self.assertEqual(slot['current_assignment'], 'A-101')
+        self.assertEqual(slot['queued_assignment_ids'], ['A-102'])
+        self.assertIsNone(training.slots(self.root)['agents'][1]['current_assignment'],
+            'one assignment cannot auto-advance into two slots before its canonical claim changes')
 
     def test_codex_handoff_persists_launch_effort(self):
         payload = dict(self.payload, kind='cursor', reasoning_effort='xhigh')
