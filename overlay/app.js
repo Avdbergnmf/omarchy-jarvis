@@ -14,6 +14,7 @@ const qaQuestion=document.querySelector('#qa-question');
 const qaAnswer=document.querySelector('#qa-answer');
 const qaSkip=document.querySelector('#qa-skip');
 const consoleBtn=document.querySelector('#console-btn');
+const runIdBtn=document.querySelector('#run-id-btn');
 const feedbackSection=document.querySelector('#feedback');
 const feedbackPrompt=document.querySelector('#feedback-prompt');
 const fbGood=document.querySelector('#fb-good');
@@ -67,7 +68,16 @@ function saveLastRun(id){try{localStorage.setItem('jarvis:lastRun',id);}catch(e)
 function setConsoleTarget(id){
  if(id!==currentRunId)lastRenderKey=null;  // a genuinely different run must always render fresh
  currentRunId=id;consoleBtn.disabled=!id;if(id)saveLastRun(id);
+ // A-020: Jarvis never showed a human the run id it just asked them to attach as
+ // "evidence" in Validate features — expose it right where they're already looking.
+ runIdBtn.hidden=!id;
+ if(id)runIdBtn.textContent='Run: '+id.slice(0,8)+'… (copy)';
 }
+runIdBtn.addEventListener('click',async()=>{
+ if(!currentRunId)return;
+ try{await navigator.clipboard.writeText(currentRunId);runIdBtn.textContent='Copied: '+currentRunId.slice(0,8)+'…';}
+ catch(error){runIdBtn.textContent=currentRunId;}
+});
 
 async function post(path,body){
  const {token}=await session;

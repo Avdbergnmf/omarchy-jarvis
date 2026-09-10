@@ -7,10 +7,22 @@
       "area": "overlay",
       "steps": [
         "Press Super+Shift+J to open Jarvis.",
-        "Type: hello. Confirm a reply appears without a Run button.",
-        "Type: switch to workspace 1. Inspect the proposed plan before approving.",
+        {
+          "text": "Type: hello. Confirm a reply appears without a Run button.",
+          "kind": "auto",
+          "prompt": "hello"
+        },
+        {
+          "text": "Type: switch to workspace 1. Inspect the proposed plan before approving.",
+          "kind": "auto",
+          "prompt": "switch to workspace 1"
+        },
         "Choose Cancel and confirm the desktop was not changed.",
-        "Type: open my planning in a new workspace. Inspect the plan preview before approving — the reply should describe what the skill actually does (which apps, on a new workspace), not just name the skill."
+        {
+          "text": "Type: open my planning in a new workspace. Inspect the plan preview before approving — the reply should describe what the skill actually does (which apps, on a new workspace), not just name the skill.",
+          "kind": "auto",
+          "prompt": "open my planning in a new workspace"
+        }
       ],
       "expected": "Chat replies immediately. Actions wait for approval and Cancel performs no action.",
       "status": "validated",
@@ -25,7 +37,7 @@
         "result": "validated"
       },
       "jarvis_version": "0.5.2",
-      "jarvis_version_shipped": "0.5.3"
+      "jarvis_version_shipped": "0.5.7"
     },
     {
       "id": "feat-open-planning",
@@ -146,16 +158,19 @@
       "title": "Guided human validation",
       "area": "overlay",
       "steps": [
-        "Open Training and choose Validate features.",
-        "Start a feature test, follow its steps, and record an actual outcome note.",
-        "Use Verify only after completing the steps; inspect the confirmation and Cancel first.",
-        "If you really completed the test, repeat and confirm. For a real failure, choose Fail, confirm, then Draft bug report."
+        "Open Training and choose Validate features. Pick any pending feature.",
+        "For a step marked with a Run this step button, click it and confirm it submits the prompt for you and shows the reply, without you retyping anything in chat.",
+        "Confirm the evidence run id field fills in automatically from that Run this step click, without you having to find or type one yourself.",
+        "Complete the remaining steps and record an actual outcome note, then Verify; inspect the confirmation preview and Cancel first.",
+        "If you really completed the test, repeat and confirm. Confirm the guide closes and the feature disappears from the default pending list.",
+        "Check Include previously validated features. Confirm the feature you just verified shows its result (date, version, outcome, notes) directly in the list, without clicking in.",
+        "For a real failure on a different feature, choose Fail, confirm, then Draft bug report."
       ],
       "expected": "Unconfirmed results do not persist. Confirmed results carry date/version/notes; failure can enter reviewed bug intake.",
       "status": "unvalidated",
       "last_run": null,
       "jarvis_version": null,
-      "jarvis_version_shipped": "0.5.1"
+      "jarvis_version_shipped": "0.5.7"
     },
     {
       "id": "feat-open-by-name",

@@ -39,7 +39,8 @@ output{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white
 output.error{color:#ffb3a8}
 footer{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:10px;color:#8994a7}
 footer #meta.warn{color:#ffcf8f}
-footer #console-btn{padding:5px 10px;font-size:11px}
+footer #console-btn,footer #run-id-btn{padding:5px 10px;font-size:11px}
+footer #run-id-btn{background:transparent;border-color:#343c4b;color:#8994a7;font-family:monospace}
 
 [hidden]{display:none!important}
 #command-list{margin-top:8px;border:1px solid #343c4b;border-radius:6px;max-height:180px}
@@ -68,10 +69,16 @@ textarea{min-height:80px;resize:vertical}
 #train-preview,#train-result{margin-top:14px}
 #train-message.error{color:#ffb3a8}
 #validation-root{margin-top:20px}
-.validation-toggle,.validation-step{display:flex;align-items:flex-start;gap:10px;margin:10px 0;font-size:13px;line-height:1.5}
+.validation-toggle,.validation-step label{display:flex;align-items:flex-start;gap:10px;margin:10px 0;font-size:13px;line-height:1.5}
+.validation-step{margin:10px 0}
+.validation-step label{margin:0}
 #training-view input[type=checkbox]{width:auto;flex:0 0 auto;margin-top:3px}
 .validation-step span{color:#e8edf5}
+.validation-step-result{margin:4px 0 0 26px!important}
 .validation-buttons{display:flex;gap:8px;margin-top:10px}
 #validation-guide{margin-top:12px}
 #validation-guide h3{font-size:12px;color:#9dd9d2}
 #validation-guide p{font-size:13px;line-height:1.5}
+.validation-row{border:1px solid #2a3543;border-radius:6px;padding:8px 10px;margin-bottom:8px}
+.validation-row button{border:0;background:transparent;padding:0;text-align:left;width:100%;font-size:13px}
+.validation-row p{margin:4px 0 0;font-size:12px}
