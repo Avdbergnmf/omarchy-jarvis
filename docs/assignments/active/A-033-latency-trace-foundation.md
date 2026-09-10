@@ -3,6 +3,7 @@
 - **Status:** queued
 - **Area:** area:brain (+ light `docs/`)
 - **parallel-ok:** NO
+- **Recommended depth:** high
 - **Wave:** **1** — only after **A-032** and **Wave 0** (A-026…A-031 / A-029) unless Alex reorders
 - **Soft path hints:** `brain/`, `docs/LOGGING.md`, new `docs/LATENCY.md`, `tests/`, optional SQLite under XDG/`logs/` (gitignored)
 - **Links:** `docs/audits/chatgpt-latency-profiler-brief-2026-09-10.md`

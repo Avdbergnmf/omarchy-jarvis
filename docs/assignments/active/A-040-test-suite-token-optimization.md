@@ -3,6 +3,7 @@
 - **Status:** queued
 - **Area:** area:docs (+ `tests/` maintenance; no product behavior changes unless a test is wrong)
 - **parallel-ok:** NO while A-039 (docs) is in_progress; claim after A-039 (or PARALLEL only if A-039 done)
+- **Recommended depth:** medium
 - **Priority:** high — agents burn context running/reading a bloated suite
 - **Soft path hints:** `tests/`, `START.md` / prompts (what agents must run), optional `scripts/` smoke target, `docs/DECISIONS.md`
 - **Links:** Alex 2026-09-10 — ridiculous number of tests; worry they waste tokens

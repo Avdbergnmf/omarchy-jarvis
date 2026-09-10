@@ -3,6 +3,7 @@
 - **Status:** queued
 - **Area:** area:overlay (+ light brain/docs)
 - **parallel-ok:** NO
+- **Recommended depth:** medium
 - **Wave:** **1**
 - **Blocks / blocked-by:** **Blocked by A-034** (graceful if A-026 ledger missing)
 - **Links:** chatgpt-latency-profiler-brief §§12–18

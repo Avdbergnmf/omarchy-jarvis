@@ -3,6 +3,7 @@
 - **Status:** queued
 - **Area:** area:brain
 - **parallel-ok:** NO (journal/evidence Control Plane is a single-writer surface)
+- **Recommended depth:** high
 - **Soft path hints:** `brain/journal.py`, `brain/server.py`, `scripts/`, `docs/LOGGING.md`, `docs/evidence/`, `tests/`
 - **Blocks / blocked-by:** First claimable assignment after A-032. Blocks A-026 and A-028.
 - **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review · ADR-018/021

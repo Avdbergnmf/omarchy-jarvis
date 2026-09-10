@@ -3,6 +3,7 @@
 - **Status:** blocked
 - **Area:** area:docs
 - **parallel-ok:** NO (promotion/evaluator ownership is serial Control Plane work)
+- **Recommended depth:** medium
 - **Soft path hints:** `.github/CODEOWNERS`, `.github/`, `docs/control-plane/`, `docs/evals/`, `START.md`
 - **Blocks / blocked-by:** After **A-027 + A-028**. Blocks A-031 and unattended Forge.
 - **Links:** SELF_IMPROVE_ROADMAP · ChatGPT Q7 · A-032 review

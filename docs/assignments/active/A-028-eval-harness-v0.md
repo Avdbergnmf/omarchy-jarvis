@@ -3,6 +3,7 @@
 - **Status:** blocked
 - **Area:** area:docs
 - **parallel-ok:** NO (candidate evaluation is Control Plane work)
+- **Recommended depth:** high
 - **Soft path hints:** `docs/evals/`, `.github/workflows/ci.yml`, `tests/`, `scripts/`, `START.md`
 - **Blocks / blocked-by:** After A-038. Blocks A-030 and A-031.
 - **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review · ADR-028 (human validation remains separate)

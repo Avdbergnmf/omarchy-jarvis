@@ -640,3 +640,6 @@ validation remains pending because the browser connector exposes no browser on t
   (uncommitted status edit in one worktree's local `QUEUE.md`) and confirmed
   `assignment-status.sh` reports the `MISMATCH`, then reverted the test edit. Docs/scripts only;
   no shared service restart required.
+
+## 2026-09-10 — desk: QUEUE depth column + closeout next-depth
+- Added Recommended depth to TEMPLATE/briefs; QUEUE `depth` column; prompts/START closeout must name next depth.
