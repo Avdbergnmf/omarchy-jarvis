@@ -33,9 +33,9 @@ isolation; A-030 owns the first enforceable boundary inventory.
 | Ledger vs QUEUE | **Wrap/evolve** QUEUE. Ledger is durable improvement audit (`improvement_id`); QUEUE is operational work (`assignment_id`). One improvement may spawn multiple assignments. |
 | Gitignored journals? | **Three tiers:** ephemeral scratch may be ignored; selected operational evidence must have a durable private home and identity; decisions, accepted improvements, eval definitions and behavioral rules are versioned in git. Raw private prompts do not belong in git. |
 | Eval investment | Deterministic tests and human acceptance first; planner consistency next; targeted disposable-VM E2E only for dangerous Omarchy/system boundaries. |
-| Unattended PRs? | **Parked** ([FUTURE.md](FUTURE.md)) — cool idea; no credits/budget and no branch protection for now. Prerequisites live under Wave 2; do not build the loop yet. |
+| Unattended PRs? | **Parked** ([FUTURE.md](FUTURE.md)) — the PR + `test` rule exists, but there is no agent budget or required human/code-owner approval. Prerequisites live under Wave 2; do not build the loop yet. |
 | Memory now? | A narrow preference-memory schema with provenance and explicit-over-inferred authority. No generic episodic/vector platform yet. |
-| Safety/eval in feature PRs? | Ordinary feature tests may ride with a feature. Existing protected regression oracles, authorization, trusted-skill, ledger-integrity and promotion policy changes require separate/explicit Alex review enforced by repository rules. |
+| Safety/eval in feature PRs? | Ordinary feature tests may ride with a feature. Existing protected regression oracles, authorization, trusted-skill, ledger-integrity and promotion policy changes require separate/explicit Alex review. The ruleset enforces PR + `test`, but not approving or code-owner review. |
 | Omarchy snapshots? | Snapshot before system-affecting deployment only. Repo-only `/home` changes use git rollback; a root snapshot is never described as `/home` backup. |
 
 ## Evidence model
@@ -63,13 +63,13 @@ represent sequencing with `blocked-by` and gate labels, not a second numeric sta
 
 ## Branch protection: enabled on public `main` (ADR-049; A-027 cancelled brief stays closed)
 
-The repository stays **private** on GitHub Free. Ruleset/branch-protection APIs return HTTP 403
-without Pro or public visibility. On 2026-09-10 Alex decided: **no Pro, no public** for now
-([ADR-046](DECISIONS.md#adr-046--no-github-branch-protection-for-now-a-027-cancelled-2026-09-10)).
+The repository is now **public**. Its active default-branch ruleset requires a PR plus the
+`test` check and blocks bypass, deletion and force-push. It requires zero approvals and no
+code-owner review ([ADR-049](DECISIONS.md#adr-049--github-main-ruleset-enabled-public-repo-a-027-outcome-revisited-2026-09-10)).
 
-**Agents and humans must not** wait on A-027, change visibility/billing, or pretend CODEOWNERS /
-hooks are enforcement. Unattended Forge / auto-merge / auto-deploy stay **off**. Merges are
-human-reviewed under the normal workflow. A future hosting/plan change gets a **new** assignment.
+**Agents and humans must not** wait on A-027 or mistake CODEOWNERS for required human review.
+Unattended Forge / auto-merge / auto-deploy stay **off**. Merges are human-reviewed by policy
+and CI-gated by the ruleset. Stronger approval enforcement gets a **new** assignment.
 
 ## Revised Wave 0 dependency order
 
@@ -113,7 +113,7 @@ all named prerequisites are accepted; queue order alone is not dependency enforc
 
 Wave 0 is complete only when:
 
-- Accepted: no API-verified GitHub protection on this private Free remote (ADR-046); unattended Forge stays off;
+- Accepted: the public remote enforces PR + `test` but not approval/code-owner review (ADR-049); unattended Forge stays off;
 - deterministic CI covers every current suite and its check is required;
 - selected operational evidence has durable private identity, while raw prompts stay private;
 - ledger records distinguish observations, assignments, evidence, Alex decisions and outcomes;
@@ -139,9 +139,9 @@ Brief: `docs/audits/chatgpt-latency-profiler-brief-2026-09-10.md`.
 ## Wave 2 — bounded autonomy prerequisites (parked / not funded)
 
 Unattended Forge itself is a **future idea**, not an active goal — see [FUTURE.md](FUTURE.md).
-Alex parked it (2026-09-10): interesting to write down, no credits for an unattended loop now,
-and no branch protection on this remote (ADR-046). Do **not** start Wave 2 work unless Alex
-explicitly reopens it.
+Alex parked it (2026-09-10): interesting to write down, no credits for an unattended loop now.
+ADR-049 later added PR + `test` protection, but not required human/code-owner approval. Do **not**
+start Wave 2 work unless Alex explicitly reopens it.
 
 If/when revisited, prerequisites would include:
 

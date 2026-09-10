@@ -4,8 +4,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
-| A-030 | Protect safety/eval/control-plane paths | in_progress | area:docs | NO | medium | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
-| A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | high | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
+| A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | queued | area:docs | NO | high | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
 | A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | YES | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | YES | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
@@ -59,8 +58,8 @@ outrank any amount of `inferred` repetition), inspect/revoke/restore, byte-ident
 migration with one-time backup, quarantine for unreadable/unknown-version files, `fcntl.flock`
 cross-process locking, and bounded growth (oldest revoked pruned first). IMP-001 updated.
 
-**Next up:** A-033 (area:brain) and A-041 (area:overlay, `Gate: training-dispatch`) are both
-`queued` and disjoint-area; either is a valid next claim.
+**Next up:** A-031 (area:docs, depth high) is unblocked now that A-030 is complete. A-033
+(area:brain) and A-041 (area:overlay, `Gate: training-dispatch`) remain queued alternatives.
 
 **A-027 / branch protection (ADR-049):** repo is **public**; `main` ruleset requires PR + `test` check, blocks force-push/deletion. ADR-046's "no protection" stance is superseded. Unattended Forge stays parked ([FUTURE.md](../FUTURE.md)). Parallel claimability: **ADR-048** (`parallel-ok` defaults YES).
 
