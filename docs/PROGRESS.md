@@ -899,3 +899,13 @@ validation remains pending because the browser connector exposes no browser on t
 - PR #31 merged to protected `main`; required GitHub `test` checks passed for push and pull-request runs.
 - `./scripts/restart.sh` reports Jarvis 0.5.11 healthy. `hyprctl clients -j` / `workspaces -j` succeeded and showed visible agent terminals on workspace 1; no window rules were changed.
 - Re-open Training to load the new Agent Manager. `feat-agent-monitor` remains unvalidated until Alex performs its updated multi-assignment/auto-advance guide.
+
+## 2026-09-10 — A-034 Training Latency Profiler UI (ADR-053)
+- Training → **Latency** panel: recent-interaction bars scaled to `meaningful_response_latency`
+  (not TTFT); click opens a waterfall inspector (parent indent, overlapping parallel tool
+  spans). Incomplete/error traces stay listed (`no MRL` / unfinished spans).
+- New `overlay/latency.js` plus a nav/section in `training.html` / `training.js` / `training.css`.
+  Serves `/latency.js`. Did not edit `overlay/agents.js` (A-041 landed in parallel on overlay).
+- Tests: `tests/latency-panel.test.cjs`. No FEATURES catalog entry; A-035 still owns
+  distributions/compare/ledger.
+

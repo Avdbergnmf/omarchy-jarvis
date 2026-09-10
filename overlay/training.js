@@ -3,10 +3,11 @@ let trainingData=null,trainingPreview=null,lastPreviewPayload=null;
 let previewLoad=0,trainingLoad=0,activeProblem=null,problemDirty=false;
 function trainMessage(text,error=false){trainEl('message').textContent=text;trainEl('message').className=error?'error':'';}
 function trainingPanel(name){
- for(const panel of ['problems','validate','work','agents']){
+ for(const panel of ['problems','validate','work','agents','latency']){
   trainEl('panel-'+panel).hidden=panel!==name;
   trainEl('nav-'+panel).setAttribute('aria-pressed',String(panel===name));
  }
+ if(name==='latency'&&typeof refreshLatency==='function')refreshLatency();
 }
 function trainingLine(parent,text){const p=document.createElement('p');p.textContent=text;parent.appendChild(p);return p;}
 function trainingOption(parent,value,label){const option=document.createElement('option');option.value=value;option.textContent=label;parent.appendChild(option);}
@@ -51,7 +52,7 @@ async function previewTraining(payload){
   trainEl('preview').hidden=false;trainEl('confirm').focus();trainMessage('Review the exact file contents. Nothing has been written yet.');
  }catch(error){trainMessage(error.message,true);}
 }
-for(const name of ['problems','validate','work','agents'])trainEl('nav-'+name).addEventListener('click',()=>trainingPanel(name));
+for(const name of ['problems','validate','work','agents','latency'])trainEl('nav-'+name).addEventListener('click',()=>trainingPanel(name));
 trainEl('filter').addEventListener('change',renderProblems);
 trainEl('new').addEventListener('click',()=>newAssignment());
 trainEl('refresh').addEventListener('click',refreshTraining);
