@@ -1,6 +1,6 @@
 # A-036 — Agent monitor usability (depth, delivery clarity, live work visibility)
 
-- **Status:** in_progress
+- **Status:** done
 - **Area:** area:overlay (+ light `area:brain` / scripts for depth + handoff launch)
 - **parallel-ok:** YES (overlay; disjoint from pure docs Wave 0 if careful on shared Training files — prefer after A-032, before relying on Training to dispatch Wave 0)
 - **Wave / stage:** **0** (usability gate for dispatching from Training) — ahead of latency Wave 1
@@ -31,11 +31,11 @@ Today’s options (`Prepare now if idle — paste yourself` / `Queue locally unt
 - Prefer a persistent “Now working” strip: assignment id, title, stage, agent slot, busy/idle.
 
 ## Checklist
-- [ ] Depth display + launch-time selector (Codex/Cursor); honest limits documented in UI
-- [ ] Delivery options rewritten; immediate prompt-to-visible-window path
-- [ ] Busy/idle control clarified or removed
-- [ ] In-progress / active-work visibility even when queue filter excludes them
-- [ ] Tests + ADR; PROGRESS; SESSION; QUEUE/INDEX → done
+- [x] Depth display + launch-time selector (Codex/Cursor); honest limits documented in UI
+- [x] Delivery options rewritten; immediate prompt-to-visible-window path
+- [x] Busy/idle control clarified or removed
+- [x] In-progress / active-work visibility even when queue filter excludes them
+- [x] Tests + ADR; PROGRESS; SESSION; QUEUE/INDEX → done
 
 ## Also (light, for dispatch)
 - Surface simple blocked/waiting hints from QUEUE when known; full gates = **A-037**.
@@ -45,3 +45,15 @@ Formal gate schema (A-037); auto-detecting arbitrary third-party chats with perf
 
 ## Notes
 Align with ADR-032 (visible windows). Store per-slot `reasoning_effort` in agent registry if needed.
+
+## Resolution
+- Cursor/Codex slots now display their saved launch effort or the local Codex config default,
+  accept `low`/`medium`/`high`/`xhigh`, and pass a server-owned setting only when a new Codex
+  window starts. The UI explains that focusing an existing session cannot change its depth.
+- Handoff choices now state whether they open a visible window immediately or save only to the
+  local queue. The exact prompt remains reviewable and paste-ready; Jarvis does not submit it.
+- Busy/idle controls explicitly update local slot metadata only. A persistent Now working strip
+  and queue board expose in-progress assignments, owners where known, and waiting rows.
+- Evidence: 158 Python tests and all five JavaScript suites pass; ShellCheck, `doctor.sh --syntax`,
+  and `git diff --check` pass. The `feat-agent-monitor` human guide was updated and remains
+  unvalidated pending Alex's live Hyprland/Codex window check. No shared service was restarted.
