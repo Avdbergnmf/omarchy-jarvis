@@ -3,34 +3,45 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Assignment: **A-023 — Simplify assignment scope (area + worktree, soft paths)** (in_progress)
-- Owner: claude-code (this session)
-- Branch: `a023-simplify-assignment-path-scope`
-- Worktree: `~/Work/omarchy-jarvis-a023-simplify-assignment-path-scope`
-- Area: area:docs (parallel-ok: YES; docs-only, disjoint from every other open row's product-code area)
-- Batch: 1 by default, but Alex asked to keep going after A-021 — may continue to the next claimable row after this one, stopping if tokens are tight or nothing claimable
+- Assignment: **A-019 — Proposed-action bubble UX** (in_progress)
+- Owner: claude-code (another session; unchanged by this merge)
+- Branch: `a019-proposed-action-bubble-ux`
+- Area: area:overlay
+- Batch: 1 (default; stop and report after this assignment)
 
 ## Checklist
-- [x] Read QUEUE/SESSION (canonical main); claimed A-023 in an isolated worktree off origin/main
-- [ ] Audit START, assignment README/TEMPLATE, prompts, Training handoff text for hard Allowed/Forbidden requirements
-- [ ] Rewrite policy: worktree isolation + area; paths optional soft hints; remove "required if parallel-ok YES"
-- [ ] parallel-ok = disjoint areas + own worktree (not path lists)
-- [ ] ADR + PROGRESS; tweak assignment-status hint text if it mentions path fences
-- [ ] SESSION; QUEUE/INDEX → done
+- [x] Read START, SESSION, QUEUE; claimed A-019 (first queued row, nothing in_progress)
+- [ ] Reproduce current approve UI (bubble + below-bubble text); note A-015 vs overlay-only gaps
+- [ ] Redesign `#plan`/`#plan-actions` so each action is a readable bubble/card
+- [ ] Show human labels + important args; truncate long values with tooltip
+- [ ] Wrapping: CSS allows wrap; content prefers compact chips; no horizontal scroll
+- [ ] Live step list stays consistent with new labels where applicable
+- [ ] Overlay tests updated
+- [ ] ADR + PROGRESS; FEATURES/validation touch if user-visible; SESSION; QUEUE/INDEX → done
 
 ## Done this session (evidence)
-- Claimed A-023; created worktree/branch off origin/main (5767339)
+- A-020 done: persistence UX (guide closes + inline report on confirm), visible/copyable run
+  id, auto-run mechanical guided steps (`kind:"auto"`). 141 Python tests + all 5 JS suites
+  pass. VERSION 0.5.6 → 0.5.7; ADR-033. Merged into main at 791577d.
+- A-021 (separate parallel session): empty Enter in report Q&A now acts like Skip. Merged
+  into main at 4a93046.
+- A-023 (separate parallel session, area:docs, disjoint from this A-019 overlay work): dropped
+  hard Allowed/Forbidden path gates — parallel safety is now area disjointness + worktree, not
+  a path allowlist; `scripts/assignment-status.sh`'s claim hint now actually checks area
+  disjointness (previously only filtered on `parallel-ok: YES`, which is exactly what let this
+  same set of sessions mis-claim A-021 alongside A-020, both `area:overlay`, earlier today).
+  142 Python tests + all 6 JS suites pass. ADR-034. Merged into main by that session after
+  reconciling this file's conflict with the A-019 claim below.
 
 ## Also queued
-- A-019 Proposed-action bubble UX — queued, area:overlay (unclaimed)
-- A-021 Empty Enter skips report Q&A — queued in canonical main's QUEUE.md, but this is stale: it's actually already done and pushed on branch `a021-empty-enter-skips-report-qa`. A **separate concurrent session** already attempted `git merge a021-empty-enter-skips-report-qa` into the canonical `~/Work/omarchy-jarvis` main checkout and left it mid-merge with unresolved conflicts on docs/PROGRESS.md, docs/SESSION.md, docs/assignments/INDEX.md, docs/assignments/QUEUE.md (MERGE_HEAD 442deae, MERGE_MSG references a different Claude-Session id). **Do not touch that canonical checkout's merge state** — it belongs to that other session to finish or abandon.
-- A-022 Fix open cliamp plan/tooling (issue #15) — queued, area:brain
+- A-022 Fix open cliamp plan/tooling, issue #15 (area:brain)
 
 ## Next action (one concrete step)
-- Read START.md, docs/assignments/{README,TEMPLATE}.md, docs/assignments/prompts/*.txt, and Training's assignment-generation code/strings for hard Allowed-paths/Forbidden-paths language to rewrite per the A-023 brief.
+- Set up isolated worktree for A-019, read `overlay/app.js`'s `renderPlan`/`describeAction`
+  and `#plan`/`#plan-actions`/`#draft-preview` markup once, then design the bubble redesign.
 
 ## Parallel agent
-- None currently in_progress elsewhere (per origin/main's committed QUEUE); the canonical checkout has an unrelated unfinished merge from another session (see note above), not a product claim.
+- none currently in_progress besides A-019 itself; A-022 (area:brain) remains queued and unclaimed
 
 ## Blockers
 - none

@@ -449,6 +449,12 @@ validation remains pending because the browser connector exposes no browser on t
 - Alex: Enter on empty “how did that go” report should Skip for fast dismiss.
 - Filed [A-021](assignments/active/A-021-empty-enter-skips-report-qa.md) (`parallel-ok: YES`).
 
+## 2026-09-10 — A-021 empty Enter skips report Q&A
+- Reproduced: `answer()` early-returns on falsy text, so Enter on an empty report-intake answer silently did nothing (not "submits blank" as suspected, just a dead keypress) — Alex had to click Skip or type the word.
+- Fix: `#qa-form` submit now sends `'skip'` when the trimmed answer is empty, reusing the existing `answer()`/Skip path; a non-empty answer still sends verbatim. The emoji-only feedback row (`#fb-good`/`#fb-neutral`/`#fb-bad`) is a separate `<section>` outside any form, so Enter there was never a blank-run footgun and needed no change.
+- Evidence: new `tests/overlay.test.cjs` case posts an empty Enter and asserts the `/answer` request body is `{text:'skip'}`; all six existing `tests/*.cjs` suites still pass. `scripts/doctor.sh` shows the same single pre-existing failure (`report-last-failure` example skill) on unmodified `origin/main`, confirming it's unrelated.
+- Done in isolated worktree `~/Work/omarchy-jarvis-a021-empty-enter-skips-report-qa` (branch `a021-empty-enter-skips-report-qa`), parallel to in-progress A-020 (disjoint files: `overlay/app.js` vs `overlay/validation.js`).
+
 ## 2026-09-10 — desk: queue A-023 simplify assignment path scope
 - Alex: hard Allowed/Forbidden paths cause constant expansion asks; worktrees already isolate.
 - Prefer area + worktree; paths as optional soft hints. Filed [A-023](assignments/active/A-023-simplify-assignment-path-scope.md).

@@ -1,6 +1,6 @@
 # A-019 — Proposed-action bubble UX (readable plan in the bubble)
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:overlay (+ light `area:brain` only if structured plan fields are missing)
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/` (`app.js`, `index.html`, `style.css`, related tests), `brain/server.py` / plan payload **only if** overlay cannot render without structured fields, `tests/`, `docs/assignments/`, `docs/SESSION.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `docs/FEATURES.md`, `docs/validation/`, `VERSION`
