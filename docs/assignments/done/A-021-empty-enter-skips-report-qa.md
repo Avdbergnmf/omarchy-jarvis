@@ -1,6 +1,6 @@
 # A-021 — Empty Enter skips report / “how did that go” Q&A
 
-- **Status:** queued
+- **Status:** in_progress
 - **Area:** area:overlay
 - **parallel-ok:** YES
 - **Allowed paths:** `overlay/app.js`, `overlay/index.html` (copy only if needed), `tests/overlay.test.cjs` (or equivalent), `docs/assignments/`, `docs/SESSION.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md` (short note OK)
@@ -14,11 +14,11 @@ When Jarvis is in the post-run **report / clarifying Q&A** flow (the “how did 
 If Enter on empty during the emoji-only “How did that go?” strip is also a footgun (e.g. submits a blank new prompt), dismiss/skip that strip in the least surprising way (prefer neutral dismiss / hide feedback without starting a new run) — document the choice in PROGRESS.
 
 ## Checklist
-- [ ] Reproduce: empty Enter in report Q&A today (likely submits `""` instead of skip)
-- [ ] Empty Enter → same path as Skip button; non-empty Enter still sends the answer
-- [ ] Don’t start a new chat run from Enter while Q&A/feedback is focused and empty
-- [ ] Overlay test for empty-Enter → skip
-- [ ] PROGRESS one-liner; SESSION; QUEUE/INDEX → done
+- [x] Reproduce: empty Enter in report Q&A today (likely submits `""` instead of skip) — actually a silent no-op: `answer()` early-returns on falsy `text`
+- [x] Empty Enter → same path as Skip button; non-empty Enter still sends the answer
+- [x] Don’t start a new chat run from Enter while Q&A/feedback is focused and empty — already true (separate `#qa-form`/`#prompt-form`); feedback row is plain buttons outside any form, so no change needed there either
+- [x] Overlay test for empty-Enter → skip
+- [x] PROGRESS one-liner; SESSION; QUEUE/INDEX → done
 
 ## Out of scope
 - Redesigning RLHF buttons

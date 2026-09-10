@@ -251,7 +251,7 @@ async function answer(text){
  catch(error){status.textContent=error.message;status.className='error';}
 }
 document.querySelector('#qa-form').addEventListener('submit',async event=>{
- event.preventDefault();await answer(qaAnswer.value.trim());
+ event.preventDefault();const text=qaAnswer.value.trim();await answer(text||'skip');
 });
 qaSkip.addEventListener('click',()=>answer('skip'));
 

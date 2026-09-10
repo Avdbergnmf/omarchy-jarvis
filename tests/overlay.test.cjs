@@ -36,6 +36,7 @@ const elements={
 const store={};
 let runState='awaiting_approval';
 let qaRunState='fresh'; // 'fresh' -> 'answered' -> 'finished'
+let qaEmptyAnswered=false;
 const context={
  document:{
   querySelector(selector){
@@ -74,6 +75,11 @@ const context={
    return {status:'awaiting_approval',reply:'Draft ready — review before filing.',plan:{actions:[{tool:'report_bug',arguments:{title:'Bug: x',body:'y',difficulty:'M'}}]},draft:{title:'Bug: x',body:'y'},steps:[]};
   }};
   if(path==='/v1/runs/qa-run/answer'){qaRunState='answered';return {ok:true,json:async()=>({status:'awaiting_approval'})};}
+  if(path==='/v1/runs/qa-empty-run')return {ok:true,json:async()=>{
+   if(qaEmptyAnswered)return {status:'done',reply:'Skipped.',plan:null,steps:[]};
+   return {status:'awaiting_answer',reply:'Anything else?',plan:null,steps:[]};
+  }};
+  if(path==='/v1/runs/qa-empty-run/answer'){qaEmptyAnswered=true;return {ok:true,json:async()=>({status:'done'})};}
   return {ok:true,json:async()=>({ok:true})};
  },
 };
@@ -167,6 +173,17 @@ vm.runInNewContext(fs.readFileSync('overlay/app.js','utf8'),context);
  assert.equal(elements['#draft-preview'].hidden,false,'draft preview must show for report_bug plans');
  assert.equal(elements['#draft-title'].textContent,'Bug: x');
  qaRunState='finished'; // let any still-orphaned background poll settle to a terminal status
+
+ // A-021: Enter with an empty answer in the report Q&A must act like the Skip button,
+ // not silently no-op (the pre-fix `answer()` early-returns on falsy text).
+ context.setConsoleTarget('qa-empty-run');
+ context.render(await context.get('/v1/runs/qa-empty-run'));
+ assert.equal(elements['#qa'].hidden,false,'qa panel must show for the empty-Enter regression run');
+ elements['#qa-answer'].value='';
+ await handlers['qaFormsubmit']({preventDefault(){}});
+ const emptyAnswerReq=requests.find(r=>r.path==='/v1/runs/qa-empty-run/answer');
+ assert(emptyAnswerReq,'empty Enter must still post an answer (skip), not no-op');
+ assert.equal(JSON.parse(emptyAnswerReq.options.body).text,'skip','empty Enter in report Q&A must skip, matching the Skip button');
 
  console.log('PASS: overlay plan/approve, step completion, Escape, always-available Open console, intake Q&A + draft preview');
 })().then(testRestoreOnLoad);
