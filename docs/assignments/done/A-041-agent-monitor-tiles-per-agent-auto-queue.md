@@ -1,6 +1,6 @@
 # A-041 — Agent Monitor tiles + per-agent auto-queue redesign
 
-- **Status:** in_progress
+- **Status:** done
 - **Area:** area:overlay
 - **parallel-ok:** YES
 - **Recommended depth:** high
@@ -23,52 +23,52 @@ Done means Alex can:
 ## Checklist
 
 ### Layout & glanceability
-- [ ] Agent tiles are the **main feature**: horizontal stack at the **top** of the panel, interactive
-- [ ] Each tile is **color-coded** by agent status: idle / working / waiting / blocked / error (document the status labels/colors clearly)
-- [ ] Under each tile: that agent's **personal assignment queue** (ordered list of A-### with status), neatly visualized
-- [ ] Tile click → detail view with tile-specific actions (as today, but adapted to new layout)
+- [x] Agent tiles are the **main feature**: horizontal stack at the **top** of the panel, interactive
+- [x] Each tile is **color-coded** by agent status: idle / working / waiting / blocked / error (document the status labels/colors clearly)
+- [x] Under each tile: that agent's **personal assignment queue** (ordered list of A-### with status), neatly visualized
+- [x] Tile click → detail view with tile-specific actions (as today, but adapted to new layout)
 
 ### Available work panel
-- [ ] Clear panel/section showing **currently claimable assignments**
-- [ ] Use existing claimability rules from `assignment-status.sh` / Training's `unmet_blocked_by` (Blocked-by / parallel-ok / area disjointness — do NOT invent a second claimability model)
-- [ ] From available work: pick assignment → pick existing bot tile (optionally tweak properties) OR hit **+** to create new agent tile with properties
-- [ ] Selected assignment can be enqueued to agent's personal queue or started immediately
+- [x] Clear panel/section showing **currently claimable assignments**
+- [x] Use existing claimability rules from `assignment-status.sh` / Training's `unmet_blocked_by` (Blocked-by / parallel-ok / area disjointness — do NOT invent a second claimability model)
+- [x] From available work: pick assignment → pick existing bot tile (optionally tweak properties) OR hit **+** to create new agent tile with properties
+- [x] Selected assignment can be enqueued to agent's personal queue or started immediately
 
 ### Auto cold-start vs Continue
-- [ ] System chooses NEW_AGENT vs CONTINUE automatically from slot state (no window / new slot → cold start; existing busy/idle session with prior handoff → continue)
-- [ ] Hide template choice behind **dev/advanced foldout** for rare manual overrides only
-- [ ] Template selection UI must not be prominent in normal workflow
+- [x] System chooses NEW_AGENT vs CONTINUE automatically from slot state (no window / new slot → cold start; existing busy/idle session with prior handoff → continue)
+- [x] Hide template choice behind **dev/advanced foldout** for rare manual overrides only
+- [x] Template selection UI must not be prominent in normal workflow
 
 ### Per-agent queue with auto-advance
-- [ ] Each agent tile can have **multiple** future assignments queued to it (not just one handoff saved locally)
-- [ ] When agent finishes current work (detect via QUEUE/INDEX/claim change on `origin/main` — align with A-039's claim protocol), Jarvis:
+- [x] Each agent tile can have **multiple** future assignments queued to it (not just one handoff saved locally)
+- [x] When agent finishes current work (detect via QUEUE/INDEX/claim change on `origin/main` — align with A-039's claim protocol), Jarvis:
   - Refreshes claimability (re-check `Blocked-by`/area/parallel rules)
   - Picks the next item in **that agent's** queue that is now free/claimable
   - **Auto-starts** it: open/focus visible window + prepare handoff (see safety note)
-- [ ] Queue UI lives directly under the agent tile (not in a separate panel)
-- [ ] Queue shows assignment id, title, status (queued-to-this-agent / blocked-waiting / ready-next)
+- [x] Queue UI lives directly under the agent tile (not in a separate panel)
+- [x] Queue shows assignment id, title, status (queued-to-this-agent / blocked-waiting / ready-next)
 
 ### Safety / policy (must be explicit — see ADR-032/036/039)
-- [ ] **Visible window path:** auto-advance must keep a visible window (no hidden background agents)
-- [ ] **No silent spend:** Jarvis must not silently spend cloud credits or pretend a hidden agent is running
-- [ ] **"Send" meaning:** visible window + reviewable handoff the user can see
-- [ ] **Open design choice (document in brief + add ADR stub checklist item):** whether auto-advance:
+- [x] **Visible window path:** auto-advance must keep a visible window (no hidden background agents)
+- [x] **No silent spend:** Jarvis must not silently spend cloud credits or pretend a hidden agent is running
+- [x] **"Send" meaning:** visible window + reviewable handoff the user can see
+- [x] **Open design choice (document in brief + add ADR stub checklist item):** whether auto-advance:
   - Requires one human paste into the visible window (safe default: auto-open/focus + auto-prepare, but human pastes), OR
   - May auto-submit into an already-open agent window (system-driven continue — Alex prefers this, but do NOT weaken no-hidden-agent / no-silent-spend without clear ADR + Alex confirmation at implement time)
-- [ ] **Prefer:** auto-open/focus + auto-prepare next handoff; paste/submit automation only if already supported safely for that backend
-- [ ] Document this policy choice clearly in the assignment and the implementing ADR
+- [x] **Prefer:** auto-open/focus + auto-prepare next handoff; paste/submit automation only if already supported safely for that backend
+- [x] Document this policy choice clearly in the assignment and the implementing ADR
 
 ### Kill/repurpose confusing UI
-- [ ] Retire or relabel the confusing "Save in local queue for later" delivery dropdown (per-agent queue **is** the queue now)
-- [ ] "Open visible window now" path becomes the normal start action (or is implicit in tile-based assignment)
-- [ ] Existing delivery dropdown terminology should not persist in the redesigned UI
+- [x] Retire or relabel the confusing "Save in local queue for later" delivery dropdown (per-agent queue **is** the queue now)
+- [x] "Open visible window now" path becomes the normal start action (or is implicit in tile-based assignment)
+- [x] Existing delivery dropdown terminology should not persist in the redesigned UI
 
 ### Standard closeout
-- [ ] Update docs/SESSION.md Next action as you go
-- [ ] docs/PROGRESS.md note
-- [ ] ADR (new ADR-### documenting the per-agent queue semantics, auto-advance policy, and safety invariants)
-- [ ] Tests (overlay JS, Python backend if queue advancement logic lives in `brain/`)
-- [ ] QUEUE/INDEX → done; move this file to docs/assignments/done/
+- [x] Update docs/SESSION.md Next action as you go
+- [x] docs/PROGRESS.md note
+- [x] ADR (new ADR-### documenting the per-agent queue semantics, auto-advance policy, and safety invariants)
+- [x] Tests (overlay JS, Python backend if queue advancement logic lives in `brain/`)
+- [x] QUEUE/INDEX → done; move this file to docs/assignments/done/
 
 ## Out of scope
 - Full multi-agent orchestration / dependency graph beyond per-agent FIFO queue
@@ -99,3 +99,12 @@ Done means Alex can:
 - Must demonstrate assigning 2+ future assignments to one agent tile
 - Must demonstrate (or document how to test) auto-advance when the agent finishes and the next queued item becomes claimable
 - Must document the chosen auto-submit policy in the ADR and this brief before closeout
+
+## Resolution
+Agent manager now leads with horizontal status-colored tiles and each slot's personal FIFO.
+Available work and queue states reuse Training's Blocked-by/area/parallel model, with canonical
+`origin/main` used for advancement. Confirmed future handoffs auto-advance while the panel is
+open by focusing/opening a visible agent window and redisplaying the prompt; ADR-043 deliberately
+forbids automatic paste/submit. NEW_AGENT versus CONTINUE is automatic with an Advanced override.
+Evidence: 256 Python tests plus all five JavaScript suites pass via `./scripts/test-full.sh`;
+human validation `feat-agent-monitor` is updated and remains unvalidated for Alex.

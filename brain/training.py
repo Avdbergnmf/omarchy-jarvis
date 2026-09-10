@@ -497,7 +497,12 @@ def reconcile_problems(root, evidence):
 
 def dashboard(root, version, revision):
     # Invoked only when Training opens or Refresh is pressed, never by run polls.
-    queue = assignments(root)
+    warnings = []
+    try:
+        queue = assignments(root, 'origin/main')
+    except (OSError, RuntimeError, subprocess.SubprocessError):
+        queue = assignments(root)
+        warnings.append('origin/main unavailable; assignment state is from this checkout and auto-advance is paused.')
     registry = slots(root)
     records, sampled = tail_json(root, 'logs/journal/CURRENT.jsonl')
     today = datetime.datetime.now(datetime.timezone.utc).date().isoformat()
@@ -518,7 +523,7 @@ def dashboard(root, version, revision):
             happened = r.get('happened', {})
             if happened.get('status') == 'denied': metrics['denied'] += 1
             if happened.get('steps'): metrics['executed'] += 1
-    problems, warnings = [], []
+    problems = []
     try:
         response = subprocess.run(['gh','issue','list','--repo','Avdbergnmf/omarchy-jarvis','--state','open','--limit','100','--json','number,title,url'], capture_output=True, text=True, timeout=5, check=True)
         for i in json.loads(response.stdout):

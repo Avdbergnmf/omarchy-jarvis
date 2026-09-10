@@ -887,3 +887,10 @@ validation remains pending because the browser connector exposes no browser on t
 - Tests: `tests/test_latency.py` (nested/parallel, MRL vs TTFT, client clock, late marks,
   incomplete/error, privacy, off, prune, thread-local, announce, config) + overlay submit/
   ack/meaningful and restore-on-load silence.
+
+## 2026-09-10 — A-041 Agent Manager visible auto-queues (ADR-043)
+- Rebuilt Training's Agent manager around horizontal, interactive status tiles (idle/working/waiting/blocked/error), with each slot's ordered personal queue and `queued-to-this-agent` + `ready-next`/`blocked-waiting` state directly under the tile.
+- Added Available work using Training's existing Blocked-by/area/parallel calculation. Assignments can start visibly now or join a slot's FIFO; NEW_AGENT versus CONTINUE is automatic from slot history and manual selection moved under Advanced.
+- Added canonical `origin/main` reconciliation and a 15-second panel-only advance check. When current work leaves the live queue, the first claimable personal item becomes current, its reviewed handoff is redisplayed, and a real agent window opens/focuses. Duplicate advancement to two slots is prevented.
+- Safety choice: auto-advance never pastes or submits a prompt and never creates a hidden/background agent. Missing origin state pauses advancement; launch failures surface as an error tile. Human validation guide updated and remains unvalidated.
+- Version `0.5.11`. Verification: `./scripts/test-full.sh` green (256 Python tests plus all five JavaScript suites); log `logs/tests/full-20260910-180313.log`. Live Hyprland validation remains for Alex after merge/restart.

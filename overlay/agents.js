@@ -28,7 +28,7 @@ function renderAgents(data){
   const status=document.createElement('span');status.className='agent-state';status.textContent=state+' · '+slot.kind+effort;row.appendChild(status);
   const current=document.createElement('span');current.textContent=slot.current_assignment?'Working: '+slot.current_assignment:'No current assignment';row.appendChild(current);
   const queue=document.createElement('span');queue.className='agent-personal-queue';
-  const items=personalQueue(slot,data);queue.textContent=items.length?items.map(item=>item.id+' · '+item.queue_status).join('\n'):'Queue empty';row.appendChild(queue);
+  const items=personalQueue(slot,data);queue.textContent=items.length?items.map(item=>item.id+' · queued-to-this-agent · '+item.queue_status).join('\n'):'Queue empty';row.appendChild(queue);
   row.setAttribute('aria-pressed',String(!!(selectedAgent&&selectedAgent.id===slot.id)));
   row.addEventListener('click',()=>selectAgent(slot.id));list.appendChild(row);
  }
@@ -79,7 +79,7 @@ function fillAgentDetail(slot,setPreparedFor=true){
   ?'Reasoning depth: '+(slot.effective_reasoning_effort?(effortLabels[slot.effective_reasoning_effort]||slot.effective_reasoning_effort)+' · '+slot.reasoning_effort_source:'unknown — choose a launch setting below')
   :'Reasoning depth: unavailable for this launcher.';
  agentEl('current').textContent='Current assignment: '+(slot.current_assignment||'none');
- agentEl('queued').textContent='Personal queue: '+(personalQueue(slot,trainingData).map(item=>item.id+' ('+item.queue_status+')').join(', ')||'empty');
+ agentEl('queued').textContent='Personal queue: '+(personalQueue(slot,trainingData).map(item=>item.id+' (queued-to-this-agent · '+item.queue_status+')').join(', ')||'empty');
  agentEl('handoff').textContent=slot.last_handoff?'Last handoff: '+slot.last_handoff:'No handoff prepared yet.';
  agentEl('open-window').hidden=slot.kind==='human';
  agentEl('toggle-status').textContent='Mark slot '+(slot.status==='busy'?'idle':'busy');

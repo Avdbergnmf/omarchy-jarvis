@@ -17,7 +17,7 @@ vm.runInNewContext(fs.readFileSync('overlay/agents.js','utf8'),ctx);
  ctx.renderAgents(data);
  assert.equal($('#train-agents').children.length,3,'one tile per slot');
  assert.equal($('#train-agents').children[0].className,'agent-tile status-waiting');
- assert.match($('#train-agents').children[0].children.map(c=>c.textContent).join(' '),/My coding agent.*waiting.*A-021.*ready-next/);
+ assert.match($('#train-agents').children[0].children.map(c=>c.textContent).join(' '),/My coding agent.*waiting.*A-021.*queued-to-this-agent.*ready-next/);
  assert.equal($('#train-slot').children.length,4,'new + three known slots');
  assert.match($('#agent-available').children[0].textContent,/A-021[\s\S]*Other[\s\S]*ready/);
  $('#agent-available').children[0].handlers.click();assert.equal($('#train-assignment').value,'A-021');
