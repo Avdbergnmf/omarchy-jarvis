@@ -603,3 +603,7 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: require merge to main at batch end
 - Alex: agents forget to merge; causes conflicts and wasted tokens.
 - CONTINUE / NEW_AGENT / PARALLEL / START / prompts README: land on main before stop; report BLOCKED ON MERGE if needed.
+
+## 2026-09-10 — desk: after merge, delete worktree and return to main
+- Alex: agents should clean up worktrees and sit on main before the next prompt.
+- CONTINUE / NEW_AGENT / PARALLEL / START / prompts README updated.

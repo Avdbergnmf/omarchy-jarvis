@@ -118,14 +118,18 @@ git fetch origin && git checkout main && git pull origin main
 Do not report "done" while the only copy of the work lives on a feature branch.
 If merge is blocked, say **BLOCKED ON MERGE** with the PR URL.
 
-After merge, from a remaining checkout, verify the task tree is clean
-and its work is merged before removing it (substitute the actual path/branch):
+After merge, **remove your worktree, delete the merged branch, and return to the canonical `main` checkout before stopping or taking a new CONTINUE/NEW_AGENT prompt** (substitute your slug/branch):
 
 ```bash
 git -C "$HOME/Work/omarchy-jarvis-a014-example" status --short
 git worktree remove "$HOME/Work/omarchy-jarvis-a014-example"
 git branch -d a014-example
+cd "$HOME/Work/omarchy-jarvis"
+git checkout main
+git pull origin main
 ```
+
+Do not claim the next assignment while still inside a finished feature worktree.
 
 Never force removal; retain trees with WIP or an active owner. Squash merges may
 make `branch -d` refuse: leave the branch for human review. No helper script is
