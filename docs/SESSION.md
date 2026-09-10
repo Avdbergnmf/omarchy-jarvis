@@ -3,6 +3,7 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
+- **A-046** queued — Validate features overhaul (simple cards; Alex JARVIS)
 - **A-044** / **A-045** queued — Agent copy handoff fix + opt-in auto-send (Alex JARVIS)
 - **A-043** queued — Training Problems whole-row bubble click (Alex JARVIS)
 - **A-042** done — Parallel claimability tooling migration (ADR-048 tooling)
