@@ -47,13 +47,14 @@ assignment, then `git push -u origin HEAD`.
 Leaving finished work only on a feature branch causes forgotten merges, conflicts, and wasted tokens.
 
 After your batch is accepted (default: one assignment):
-1. Ensure QUEUE/INDEX/SESSION/PROGRESS for this work are correct on **this branch**, then push the branch with `git push -u origin HEAD`.
-2. **Merge into `main` and push `main`** before reporting done:
+1. Run `./scripts/test-smoke.sh` by default; `./scripts/test-full.sh` before this merge, or if you touched `brain`/`overlay`/`actions` (A-040/ADR-039). Never paste `-v`/full output — quote only the printed `FAIL:`/`ERROR:` lines.
+2. Ensure QUEUE/INDEX/SESSION/PROGRESS for this work are correct on **this branch**, then push the branch with `git push -u origin HEAD`.
+3. **Merge into `main` and push `main`** before reporting done:
    - Preferred: create a PR with `gh pr create --title "..." --body "..."` if needed, then `gh pr merge --merge` (or squash if that is the repo norm), then `git fetch origin && git checkout main && git pull`.
    - If PRs are not required / you have push access: merge your branch into local `main`, resolve bookkeeping conflicts without wiping other claims, then `git push origin main`.
-3. Reconcile shared bookkeeping on **main** so the next CONTINUE sees `done` / released claims (same spirit as cross-worktree claim visibility).
-4. Only then remove your worktree/branch per START cleanup rules.
-5. Your final report to Alex must include: merged yes/no, PR URL if any, and confirmation that `origin/main` has the update.
+4. Reconcile shared bookkeeping on **main** so the next CONTINUE sees `done` / released claims (same spirit as cross-worktree claim visibility).
+5. Only then remove your worktree/branch per START cleanup rules.
+6. Your final report to Alex must include: merged yes/no, PR URL if any, and confirmation that `origin/main` has the update.
 
 If merge is blocked (permissions, failed checks, conflicts you cannot safely resolve): open/update the PR, say **BLOCKED ON MERGE**, and do not claim you finished landing.
 

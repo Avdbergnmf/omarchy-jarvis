@@ -640,3 +640,28 @@ validation remains pending because the browser connector exposes no browser on t
   (uncommitted status edit in one worktree's local `QUEUE.md`) and confirmed
   `assignment-status.sh` reports the `MISMATCH`, then reverted the test edit. Docs/scripts only;
   no shared service restart required.
+
+## 2026-09-10 — A-040 test suite optimization (ADR-040)
+- Audited all 158 Python `unittest` cases + 5 `.cjs` suites for redundancy: found none safe to
+  cull (no duplicate py/cjs coverage — different layers; `subTest` already table-driven in 5
+  places). Kept every test; the real token cost was `-v`/full-suite pasting and reflexive full
+  runs on tiny docs edits, not test count.
+- Correction found while auditing: `tests/overlay.test.cjs` already `require()`s
+  `training/validation/assignments/agents.test.cjs` (added long before A-032's review), so CI's
+  single `node tests/overlay.test.cjs` step already runs all five suites — the "only one of five
+  ran" finding in `docs/audits/chatgpt-plan-vs-codebase-review-2026-09-10.md` was stale even at
+  the time it was written. Left that dated audit file as-is (historical snapshot); recorded the
+  correction in ADR-040 instead.
+- Added `scripts/test-smoke.sh` (curated critical-path subset: honesty/plan-approve, open-app,
+  journal, training, validation — 71 of 158 py cases + all 5 cjs suites, ~0.4s) and
+  `scripts/test-full.sh` (mirrors CI, ~1.5s). Both write full output to `logs/tests/*.log`
+  (gitignored) and print only a one-line-per-step summary, with a bounded (30-line) tail on
+  failure — never the whole run.
+- `START.md` Token & context discipline + all three paste prompts' Land-on-main steps: smoke by
+  default, full before landing to main or touching brain/overlay/actions, never paste `-v`/full
+  output into agent context.
+- Evidence: both scripts pass cleanly; injected a false assertion into `test_journal.py`,
+  confirmed `test-smoke.sh` reports the failure with a correct bounded tail and non-zero exit,
+  reverted. `./scripts/doctor.sh --syntax` passes (covers the two new scripts). No product
+  behavior changed; `.github/workflows/ci.yml` untouched (its own `-v` output serves a human
+  reading Actions logs, a different tradeoff, out of scope).

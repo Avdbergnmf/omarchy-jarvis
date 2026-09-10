@@ -37,6 +37,12 @@ Desk agents (Firsty or anyone authoring work) follow [docs/assignments/README.md
   After each chunk, check off boxes, commit, and flush SESSION “Next action”.
 - No drive-by refactors; keep `logs/` out of context unless a specific run_id; don’t re-echo huge tool outputs.
 - Prefer Sonnet-class models for implementation unless stuck.
+- **Tests (A-040/ADR-039):** default to `./scripts/test-smoke.sh` (critical-path subset: honesty/
+  plan-approve, open-app, journal, training, validation, ~0.4s) for docs-only or small changes.
+  Run `./scripts/test-full.sh` (mirrors CI) before landing to `main` or when touching
+  `brain`/`overlay`/`actions`. Both write a full log under `logs/tests/` and print only a
+  pass/fail summary — **never** paste `-v`/full suite output into context; quote at most the
+  `FAIL:`/`ERROR:` lines the script already extracts, or point at the log path.
 
 ## Resumable session
 
