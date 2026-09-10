@@ -1,9 +1,9 @@
 const trainEl=id=>document.querySelector('#train-'+id);
-let trainingData=null,trainingPreview=null,trainingSource='Manual training observation';
-let previewLoad=0,trainingLoad=0,activeProblem=null,assignmentProblem=null,problemDirty=false;
+let trainingData=null,trainingPreview=null;
+let previewLoad=0,trainingLoad=0,activeProblem=null,problemDirty=false;
 function trainMessage(text,error=false){trainEl('message').textContent=text;trainEl('message').className=error?'error':'';}
 function trainingPanel(name){
- for(const panel of ['problems','validate','work']){
+ for(const panel of ['problems','validate','work','agents']){
   trainEl('panel-'+panel).hidden=panel!==name;
   trainEl('nav-'+panel).setAttribute('aria-pressed',String(panel===name));
  }
@@ -31,11 +31,12 @@ function renderTraining(data){
  trainEl('period').textContent=data.period+(data.sampled?' · bounded recent sample, not complete totals':'');
  trainEl('context').textContent=data.context.join(' · ');trainEl('session').textContent=data.session;
  renderProblems();
- const assignmentList=trainEl('assignments');assignmentList.innerHTML='';const selection=trainEl('assignment');selection.innerHTML='';
+ if(typeof renderAssignments==='function')renderAssignments(data);
+ const selection=trainEl('assignment'),previousAssignment=selection.value;selection.innerHTML='';
  for(const item of data.assignments){
-  trainingLine(assignmentList,item.id+' · '+item.status+' · '+item.title);
   if(['queued','in_progress','blocked'].includes(item.status))trainingOption(selection,item.id,item.id+' — '+item.title);
  }
+ if(data.assignments.some(a=>a.id===previousAssignment))selection.value=previousAssignment;
  const agentList=trainEl('agents');agentList.innerHTML='';const picker=trainEl('slot');const previous=picker.value;picker.innerHTML='';trainingOption(picker,'new','New agent slot');
  for(const slot of data.agents){
   trainingOption(picker,slot.id,slot.label+' ('+(slot.busy?'busy':'idle')+')');
@@ -59,17 +60,10 @@ async function previewTraining(payload){
   trainEl('preview').hidden=false;trainEl('confirm').focus();trainMessage('Review the exact file contents. Nothing has been written yet.');
  }catch(error){trainMessage(error.message,true);}
 }
-for(const name of ['problems','validate','work'])trainEl('nav-'+name).addEventListener('click',()=>trainingPanel(name));
+for(const name of ['problems','validate','work','agents'])trainEl('nav-'+name).addEventListener('click',()=>trainingPanel(name));
 trainEl('filter').addEventListener('change',renderProblems);
-trainEl('new').addEventListener('click',()=>{
- assignmentProblem=null;trainingSource='Manual training observation';trainEl('selected-source').textContent=trainingSource;
- for(const key of ['title','comments','area','priority'])trainEl(key).disabled=false;
- trainEl('title').value='';trainEl('comments').value='';trainEl('priority').value='P2';trainingPanel('work');trainEl('title').focus();
-});
+trainEl('new').addEventListener('click',()=>newAssignment());
 trainEl('refresh').addEventListener('click',refreshTraining);
-document.querySelector('#assignment-form').addEventListener('submit',event=>{
- event.preventDefault();previewTraining({...trainingTarget(),operation:'assignment',title:trainEl('title').value,comments:trainEl('comments').value,area:trainEl('area').value,source:trainingSource,priority:trainEl('priority').value,...(assignmentProblem?{problem_id:assignmentProblem.id,problem_revision:assignmentProblem.revision}:{})});
-});
 document.querySelector('#work-form').addEventListener('submit',event=>{
  event.preventDefault();previewTraining({...trainingTarget(),operation:'work',assignment_id:trainEl('assignment').value});
 });
@@ -83,6 +77,7 @@ trainEl('confirm').addEventListener('click',async()=>{
   trainEl('paths').textContent=result.paths.join('\n');trainEl('result').hidden=false;
   trainEl('copy').hidden=!result.handoff;trainEl('handoff').hidden=!result.handoff;
   await refreshTraining();
+  if(result.assignment&&typeof assignmentSaved==='function')await assignmentSaved(result.assignment);
   if(result.validation&&typeof validationSaved==='function')validationSaved(result.validation);
  }catch(error){trainMessage(error.message,true);}
  finally{trainEl('confirm').disabled=false;}
@@ -160,12 +155,7 @@ document.querySelector('#problem-form').addEventListener('input',()=>{problemDir
 document.querySelector('#problem-form').addEventListener('submit',event=>{event.preventDefault();saveProblem();});
 trainEl('generate').addEventListener('click',async()=>{
  const problem=await saveProblem();if(!problem)return;
- assignmentProblem=problem;trainingSource=problem.id;
- trainEl('selected-source').textContent='From '+problem.source+' · '+problem.id+' · saved details and original evidence will be included';
- for(const [field,key] of [['title','title'],['comments','notes'],['area','area'],['priority','priority']]){
-  trainEl(field).value=problem[key];trainEl(field).disabled=true;
- }
- trainingPanel('work');trainEl('slot').focus();trainMessage('Choose the agent slot and preview the assignment. To edit the problem, return to Problems.');
+ newAssignment(problem);
 });
 
 trainEl('discard').addEventListener('click',async()=>{problemDirty=false;await refreshTraining();});

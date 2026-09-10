@@ -713,7 +713,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.host_ok(): return self.reply(403, {'error':'Invalid host'})
         if self.path == '/health': return self.reply(200, {'service':'omarchy-jarvis','model':MODEL,'ollama':ollama_health(),'approval_mode':CONFIG['approval_mode']})
-        training_assets = {'/jarvis-training': ('training.html', 'text/html'),
+        training_assets = {'/assignments.js': ('assignments.js', 'text/javascript'), '/jarvis-training': ('training.html', 'text/html'),
                            '/training.css': ('training.css', 'text/css'),
                            '/training-api.js': ('training-api.js', 'text/javascript'),
                            '/training-launch.js': ('training-launch.js', 'text/javascript')}
@@ -738,10 +738,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.host_ok() or self.headers.get('Origin') not in (None,'http://127.0.0.1:7421') or self.headers.get('X-Jarvis-Token') != TOKEN:
             return self.reply(403, {'error':'Invalid origin or token'})
-        if self.path in ('/v1/training/preview', '/v1/training/confirm', '/v1/training/report', '/v1/training/problem', '/v1/training/open'):
+        if self.path in ('/v1/training/preview', '/v1/training/confirm', '/v1/training/report', '/v1/training/problem', '/v1/training/open', '/v1/training/assignment', '/v1/training/generate'):
             try:
                 length = int(self.headers.get('Content-Length', '0'))
-                if not 0 < length <= 8192: raise ValueError('Invalid request size')
+                if not 0 < length <= 16384: raise ValueError('Invalid request size')
                 if self.headers.get('Content-Type') != 'application/json': raise ValueError('Expected application/json')
                 body = json.loads(self.rfile.read(length))
                 if not isinstance(body, dict): raise ValueError('Expected an object')
@@ -750,6 +750,10 @@ class Handler(BaseHTTPRequestHandler):
                                             capture_output=True, text=True, timeout=15)
                     if launch.returncode: raise RuntimeError(launch.stderr.strip() or 'Training window could not open')
                     result = {'ok': True}
+                elif self.path.endswith('/assignment'):
+                    result = training.assignment_detail(ROOT, body.get('assignment_id'))
+                elif self.path.endswith('/generate'):
+                    result = training.generate_assignment(ROOT, body, MODEL)
                 elif self.path.endswith('/problem'):
                     result = training.update_problem(ROOT, body)
                 elif self.path.endswith('/report'):
@@ -814,7 +818,7 @@ class Handler(BaseHTTPRequestHandler):
         expire_stale()
         try:
             length = int(self.headers.get('Content-Length','0'))
-            if not 0 < length <= 8192: raise ValueError('Invalid request size')
+            if not 0 < length <= 16384: raise ValueError('Invalid request size')
             if self.headers.get('Content-Type') != 'application/json': raise ValueError('Expected application/json')
             body = json.loads(self.rfile.read(length)); prompt = body.get('prompt')
             if not isinstance(prompt,str) or not prompt.strip() or len(prompt)>2000: raise ValueError('Prompt must be 1–2000 characters')

@@ -1,25 +1,24 @@
-# Session — A-016 completion and branch integration
+# Session — A-017 done, moving to A-018
 
 ## Active goal
-- Assignment: none — **A-016 done**, default batch complete
-- Owner: none — Codex completed the authorized merge/cleanup handoff
-- Branch: `main`
-- Worktree: `/home/omarchy/Work/omarchy-jarvis`
-- Batch: 1; no A-017/A-018 claim
+- Assignment: _(none yet claimed this session — A-017 just finished)_
+- Owner: claude-code (picked up Codex's out-of-tokens `a017-assignments-panel` mid-flight)
+- Branch: `a017-assignments-panel` (finished, merging into main and removing)
+- Batch: 2 — finish A-017, then claim/complete A-018 per Alex's "move on to the next assignment"
 
-## Checklist
-- [x] Separate Training window, panel navigation and persistent Problems triage
-- [x] Priority/evidence in confirmed assignment generation; stale edits and deletes guarded
-- [x] Tests, HTTP checks, ADR-030, README and unvalidated human guide
-- [x] A-016 committed and pushed; A-015 integrated with current queue preserved
-- [x] Fast-forward main, push integration, remove all five merged local/remote branches and clean worktrees
+## Checklist (A-017)
+- [x] Assignment list/detail and confirmed create/edit of real brief/QUEUE/INDEX
+- [x] Optional problem context and local Ollama / manual on-machine-agent generation
+- [x] Dedicated Agent monitor panel and selected-assignment handoff
+- [x] Tests, docs, human guide, commit/push and authorized merge/cleanup
 
-## Evidence and limits
-- 116 combined Python tests passed; merged checks recorded in PROGRESS.
-- All JS/UI checks, ShellCheck, Doctor syntax and isolated HTTP flow pass.
-- Live Doctor's known report-last-failure fresh-checkout dry-run failure remains outside scope.
-- No browser connector available: real window launch and visual validation await Alex.
-- No shared-service restart; deployment remains coordinated with the service owner.
+## Done this session (evidence)
+- Found A-017 (not A-016 as first described) as the actual mid-flight work: dirty worktree
+  `a017-assignments-panel`, uncommitted, feature-complete but unfinished bookkeeping.
+- Verified the diff against every A-017 checklist item; 127 Python tests + all 4 JS suites pass.
+- Added PROGRESS entry, ticked checklist, flipped status to done, moved assignment file to
+  done/, updated QUEUE/INDEX. Committing, pushing, and merging into main next.
 
-## Next action
-Alex/service owner: coordinate jarvis.service restart for 0.5.4 and perform feat-train / feat-overlay-chat human validation. Next coding assignment is A-017; A-018 follows.
+## Next action (one concrete step)
+- Merge `a017-assignments-panel` into `main`, push, remove the finished worktree/branch, then
+  claim A-018 (Training Agent monitor) in a fresh isolated worktree.

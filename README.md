@@ -76,7 +76,7 @@ Type `/` for command suggestions. Use ↑/↓ to select, Tab/Enter to complete, 
 Choose **Open Training** in chat or type `/train` to open a separate, resizable Hyprland
 floating window. Reopening focuses that window; chat and its pending plan remain intact.
 With Jarvis already running, `./scripts/open-training.py` opens the same window directly.
-No new global hotkey is installed. Problems, Validate features, and Assignments / Agents
+No new global hotkey is installed. Problems, Validate features, Assignments, and Agent monitor
 have separate navigation panels beneath the version and metric cards.
 
 Refresh imports issues, backlog, bad/neutral feedback, journal flags and failed human tests
@@ -89,13 +89,29 @@ a local deletion for confirmation and keeps a tombstone to prevent re-import. It
 close GitHub issues or delete source evidence. Refresh keeps unsaved detail edits; use
 **Discard edits / reload** to abandon them or recover from a stale-edit conflict.
 
-**Save & generate agent assignment** saves the problem, then selects its saved fields in
-the Assignments / Agents panel. Choose an agent slot and **Preview assignment & handoff**.
-The brief includes saved priority, expected outcome and original evidence. Review the exact
-file contents and **Confirm — write these files**. Cancelling the preview creates no
-assignment or handoff; it does not undo an earlier problem Save. **New observation** prepares
-a manual assignment. Work on an existing assignment similarly prepares a NEW_AGENT or
-CONTINUE prompt. Copy/paste the handoff into the target chat yourself.
+**Save & generate agent assignment** saves the problem and opens a linked new draft in
+**Assignments**. The form inherits its title, notes, area and priority; the original evidence
+is included when saved. You can edit the draft independently of the original problem.
+**New assignment** starts a manual draft with an optional linked problem.
+
+The Assignments queue shows status, area, priority and parallel policy. Select a row to
+inspect the full brief and edit title, goal, checklist, comments, scope and priority.
+Queued/blocked briefs are editable; owned or closed work is read-only. Status and parallel
+policy stay with the owning workflow. **Preview Save / Add** shows exact changes to the
+brief, QUEUE, INDEX and a preparation note in SESSION. Only **Confirm** writes them, and it
+rejects intervening source or ownership changes. Unknown sections and ownership notes are
+preserved. Refresh keeps unsaved edits; **Discard edits / reload** fetches current disk state.
+
+**Generate draft** uses the configured downloaded local Ollama model with the selected scope
+and problem context. It writes nothing, and rejects remote/cloud model metadata. Review the
+result in the form before saving. Alternatively choose **On-machine coding agent** to get a
+prompt to copy yourself. Your selected agent may use paid services; Jarvis does not launch
+or contact it. Paste its JSON response into the import box to fill the draft, then review it.
+
+After a confirmed save, **Hand off to agent** opens **Agent monitor** with that assignment
+selected. Choose a slot and preview the NEW_AGENT/CONTINUE handoff, then confirm to save it.
+Copy/paste the handoff into the target chat yourself. Cancelling a handoff creates no files;
+it does not undo an earlier problem or assignment Save.
 
 The agent monitor combines QUEUE/SESSION with local slots; it cannot detect live chats.
 Mark a slot busy/idle through a confirmation preview. Prepare now rejects busy slots;

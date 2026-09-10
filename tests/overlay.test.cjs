@@ -224,3 +224,5 @@ function testRestoreOnLoad(){
 // Keep Training's browser-free UI smoke in the existing CI entrypoint.
 require('./training.test.cjs');
 require('./validation.test.cjs');
+
+require('./assignments.test.cjs');

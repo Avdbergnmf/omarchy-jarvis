@@ -10,7 +10,8 @@
 <nav class="training-nav" aria-label="Training sections">
 <button id="train-nav-problems" type="button" aria-pressed="true">Problems</button>
 <button id="train-nav-validate" type="button" aria-pressed="false">Validate features</button>
-<button id="train-nav-work" type="button" aria-pressed="false">Assignments / Agents</button>
+<button id="train-nav-work" type="button" aria-pressed="false">Assignments</button>
+<button id="train-nav-agents" type="button" aria-pressed="false">Agent monitor</button>
 </nav>
 <section id="train-panel-problems">
 <div class="training-header"><h2>Problems to review</h2><button id="train-new" type="button">New observation</button></div>
@@ -32,26 +33,44 @@
 </form></section></div>
 </section>
 <section id="train-panel-work" hidden>
-<div class="work-layout"><section>
-<form id="assignment-form">
-<h2>Generate agent assignment</h2><p id="train-selected-source" class="muted">Manual observation</p>
-<label for="train-title">Problem / title</label><input id="train-title" maxlength="140" required placeholder="What should improve?">
-<label for="train-comments">Comments and acceptance</label><textarea id="train-comments" maxlength="1200" placeholder="What did you expect? What should the agent check?"></textarea>
-<label for="train-area">Area</label><select id="train-area"><option>overlay</option><option>brain</option><option>actions</option><option>skills</option><option>docs</option></select>
-<label for="train-priority">Priority (P0 urgent → P3 low)</label><select id="train-priority"><option>P0</option><option>P1</option><option selected>P2</option><option>P3</option></select><button type="submit">Preview assignment &amp; handoff</button>
-</form>
-</section><section><h2>Assignments</h2><div id="train-assignments" class="training-list"></div>
-<form id="work-form"><label for="train-assignment">Work on assignment</label><select id="train-assignment"></select>
-<label for="train-template">Prompt</label><select id="train-template"><option value="NEW_AGENT">New agent — cold start</option><option value="CONTINUE">Continue an existing chat</option></select>
-<button type="submit">Preview work handoff</button></form>
-</section></div><section><h2>Agent monitor</h2><p class="muted">Local slots describe intended work. They do not detect live chats or send messages.</p><div id="train-agents" class="training-list"></div>
+<div class="training-header"><h2>Assignments</h2><button id="assign-new" type="button">New assignment</button></div>
+<p class="muted">Review the queue, refine a brief, then hand it off. Saving prepares work; it does not claim an assignment.</p>
+<div class="assignment-layout"><aside><label for="assign-filter">Queue status</label><select id="assign-filter"><option value="all">All queued work</option><option value="queued">Queued</option><option value="in_progress">In progress</option><option value="blocked">Blocked</option></select><p id="assign-count" class="muted"></p><div id="train-assignments" class="training-list"></div></aside>
+<section><p id="assign-hint" class="muted">Select an assignment to inspect its brief, or start a new draft.</p>
+<form id="assignment-form" hidden>
+<h2 id="assign-heading">New assignment</h2><p id="assign-status" class="muted"></p>
+<fieldset id="assign-fields">
+<label for="assign-problem">Linked problem (new assignments)</label><select id="assign-problem"><option value="">No linked problem</option></select>
+<p id="assign-source" class="muted"></p>
+<label for="assign-title">Title</label><input id="assign-title" maxlength="140" required>
+<div class="problem-fields"><label>Area<select id="assign-area"><option>overlay</option><option>brain</option><option>actions</option><option>skills</option><option>docs</option></select></label><label>Priority<select id="assign-priority"><option>P0</option><option>P1</option><option selected>P2</option><option>P3</option></select></label></div>
+<label for="assign-goal">Goal / expected outcome</label><textarea id="assign-goal" maxlength="1400" required></textarea>
+<label for="assign-notes">Human comments / evidence</label><textarea id="assign-notes" maxlength="1200"></textarea>
+<label for="assign-checklist">Verification checklist (one - [ ] step per line)</label><textarea id="assign-checklist" maxlength="1400" required></textarea>
+<label for="assign-allowed_paths">Allowed paths</label><input id="assign-allowed_paths" maxlength="600" required>
+<label for="assign-forbidden_paths">Forbidden paths</label><input id="assign-forbidden_paths" maxlength="600" required>
+<label for="assign-out_of_scope">Out of scope</label><textarea id="assign-out_of_scope" maxlength="1200" required></textarea>
+<div id="assign-generation"><h3>Draft assistance</h3>
+<label for="assign-generator">Generate with</label><select id="assign-generator"><option value="local">Local Ollama model</option><option value="agent">On-machine coding agent — copy / paste</option></select>
+<p id="assign-generation-note" class="muted">Generate uses the configured downloaded local model. Review its draft before saving.</p>
+<button id="assign-generate" type="button">Generate draft</button>
+<div id="assign-agent-import" hidden><label for="assign-agent-prompt">Prompt to paste into your chosen agent</label><textarea id="assign-agent-prompt" readonly></textarea><button id="assign-copy-prompt" type="button">Copy prompt</button>
+<label for="assign-import-json">Paste the agent’s JSON draft</label><textarea id="assign-import-json" maxlength="8000"></textarea><button id="assign-import" type="button">Import into form</button></div></div>
+<button id="assign-save" type="submit">Preview Save / Add</button>
+</fieldset>
+<div class="problem-actions"><button id="assign-reload" type="button">Discard edits / reload</button><button id="assign-handoff" type="button" disabled>Hand off to agent</button></div>
+<details><summary>Current full brief and original context</summary><pre id="assign-body"></pre></details>
+</form></section></div></section>
+<section id="train-panel-agents" hidden><h2>Agent monitor</h2><p class="muted">Local slots describe intended work. They do not detect live chats or send messages.</p><div id="train-agents" class="training-list"></div>
 <div class="training-fields">
 <label for="train-slot">Prepare for</label><select id="train-slot"><option value="new">New agent slot</option></select>
 <label for="train-agent-label">New slot name</label><input id="train-agent-label" maxlength="60" value="My coding agent">
 <label for="train-kind">New slot type</label><select id="train-kind"><option value="claude-code">Claude Code</option><option value="cursor">Cursor / Codex</option><option value="human">Human</option></select>
 <label for="train-mode">Delivery</label><select id="train-mode"><option value="now">Prepare now if idle — paste yourself</option><option value="queue">Queue locally until free — no automatic send</option></select>
 </div>
-</section></section>
+<form id="work-form"><label for="train-assignment">Work on assignment</label><select id="train-assignment"></select>
+<label for="train-template">Prompt</label><select id="train-template"><option value="NEW_AGENT">New agent — cold start</option><option value="CONTINUE">Continue an existing chat</option></select>
+<button type="submit">Preview work handoff</button></form></section>
 <section id="train-preview" hidden><h2>Review changes</h2><p id="train-preview-message"></p><pre id="train-preview-files" tabindex="0"></pre><button id="train-confirm" type="button">Confirm — write these files</button><button id="train-cancel" type="button">Cancel</button></section>
 <section id="train-result" hidden><h2>Prepared locally</h2><p id="train-result-message"></p><textarea id="train-handoff" readonly aria-label="Paste-ready handoff"></textarea><button id="train-copy" type="button">Copy handoff</button><pre id="train-paths"></pre></section>
 <section id="train-panel-validate" hidden><section id="validation-root" aria-label="Validate features">
@@ -67,4 +86,4 @@
 </section></section>
 </section>
 </section>
-</main><script src="/training-api.js"></script><script src="/training.js"></script><script src="/validation.js"></script></body></html>
+</main><script src="/training-api.js"></script><script src="/training.js"></script><script src="/assignments.js"></script><script src="/validation.js"></script></body></html>
