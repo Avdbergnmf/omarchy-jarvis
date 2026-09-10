@@ -14,7 +14,7 @@
 - [x] Chunk 3 dead code
 - [x] Chunk 4 honesty
 - [x] Chunk 5 logging
-- [ ] Chunk 6 docs drift
+- [x] Chunk 6 docs drift
 - [ ] Chunk 7 micro-fixes
 
 ## Done this session (evidence)
@@ -22,7 +22,7 @@
 - Morning: desk relaunched keep-going Codex from chunk 2
 
 ## Next action (one concrete step)
-- Continue A-014 Chunk 6: reconcile feature/validation and logging documentation with shipped code.
+- Continue A-014 Chunk 7: fix a narrowly scoped remaining correctness defect, then run final checks.
 
 ## Parallel agent
 - `codex/training-track` — overlay A-007→A-009 — **do not touch**

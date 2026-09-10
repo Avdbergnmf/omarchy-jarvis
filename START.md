@@ -32,7 +32,8 @@ Desk agents (Firsty or anyone authoring work) follow [docs/assignments/README.md
 
 - Continue from the **repo**: QUEUE, [SESSION](docs/SESSION.md), git status/diff, PROGRESS, active assignments/passes — **never** paste Codex/Claude/Cursor session logs.
 - Read large files once; afterward prefer diffs.
-- One assignment chunk per session; check off boxes; stop at acceptance; commit; flush SESSION “Next action”.
+- Default: one assignment chunk per session; explicit batch/keep-going overrides this.
+  After each chunk, check off boxes, commit, and flush SESSION “Next action”.
 - No drive-by refactors; keep `logs/` out of context unless a specific run_id; don’t re-echo huge tool outputs.
 - Prefer Sonnet-class models for implementation unless stuck.
 

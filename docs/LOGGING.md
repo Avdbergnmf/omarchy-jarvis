@@ -77,14 +77,16 @@ no git calls occur during runs or polls. To investigate old behavior, use the ar
 journal's git_describe to find the producing commit (a dirty suffix means uncommitted
 changes were present). Git history retains code/schema, **not** ignored private logs;
 keep local archives if old run evidence is needed. Per-run console projections survive rotation. A malformed or missing version in the first
-record also rotates CURRENT to an `vunknown-<timestamp>.jsonl` archive, preserving its
+record also rotates CURRENT to a `vunknown-<timestamp>.jsonl` archive, preserving its
 bytes so later runs can log again; ordinary I/O failures still report to service stderr.
 
 ## Retention and temp cleanup (A-006)
 
 All of `logs/` is gitignored — nothing here is ever tracked or pushed (`git ls-files logs/`
 is always empty; verify with `git check-ignore -v logs/journal/CURRENT.jsonl` after touching
-`.gitignore`). Two separate mechanisms keep it from growing forever:
+`.gitignore`). Retention bounds selected file counts, not total disk usage: CURRENT grows until a
+version change or damaged-header recovery, and individual files have no byte cap.
+Two mechanisms reduce accumulated files:
 
 **Automatic retention** — `brain/journal.py`'s `prune(directory, pattern, keep)` deletes the
 oldest files (by mtime) beyond a cap, checked once per *new run* (the `prompt` phase), never

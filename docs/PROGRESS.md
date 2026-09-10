@@ -263,3 +263,6 @@ Claimed by Codex on `a014-hygiene` in the assigned absolute worktree; desk and t
 
 ## 2026-09-10 — A-014 Chunk 5
 - Worked: malformed CURRENT headers now archive byte-for-byte instead of blocking all later evidence; removed redundant plan cleaning before Journal.write. 91 tests pass, including quiet access logging and damaged-header recovery; existing debug/retention/version-rotation tests stay green. No live journal reset.
+
+## 2026-09-10 — A-014 Chunk 6
+- Worked: clarified batch override, default approval behavior, planned overlay features vs shipped code, partial validation catalog, lexical honesty limits, and file-count retention vs unbounded CURRENT bytes. Human validation remains unvalidated; no overlay assignment bodies or UI changed. Checked edited docs against implementation and git diff whitespace.
