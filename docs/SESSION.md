@@ -13,7 +13,7 @@
 - [x] A-036 Agent monitor usability — done
 - [x] A-040 Test suite token optimization — done, merged to main, worktree/branch removed
 - [x] A-037 Release gates + claimability visibility — done, merged to main
-- [x] A-038 Evidence identity + durable operational bundles v0 — done, merging to main
+- [x] A-038 Evidence identity + durable operational bundles v0 — done, merged to main, worktree/branch removed
 - [ ] A-026 / A-028 — next claimable (both unblocked)
 
 ## Done this session (evidence)
@@ -26,7 +26,7 @@
 - Claude: implemented A-038 (ADR-042) — `brain/evidence.py` (fingerprint + tiered envelope + content-addressed atomic bundle writer) and `scripts/export-evidence.py`, the bounded callable exporter. `brain/server.py` now records `mode`/`model` per run so the fingerprint is derivable from the journal. `docs/evidence/README.md` (new), `docs/LOGGING.md`/`START.md` updated. A-026/A-028 unblocked (`Blocked-by: none`, `Status: queued`) since A-038 was their only listed blocker. 20 new tests (`tests/test_evidence.py`); verified end-to-end against a synthetic run-log and the real local Ollama daemon (live model digest resolved). 180/180 tests pass.
 
 ## Next action (one concrete step)
-- Merge `a038-evidence-identity-durable-bundles-v0` into `main`, push, remove the worktree/branch, then report to Alex. Next claimable: A-026 or A-028 (both area:docs, recommended depth high, `Blocked-by: none`).
+- Report to Alex (done). Next claimable: A-026 or A-028 (both area:docs, recommended depth high, `Blocked-by: none`).
 
 ## Parallel agent
 - none
