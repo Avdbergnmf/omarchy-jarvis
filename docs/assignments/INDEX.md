@@ -49,3 +49,4 @@
 | A-045 | Agent manager: opt-in auto-send prompt | queued | area:overlay | YES | [active/A-045-agent-auto-send-prompt-option.md](active/A-045-agent-auto-send-prompt-option.md) |
 | A-046 | Validate features overhaul (simple cards) | queued | area:overlay | YES | [active/A-046-validate-features-overhaul.md](active/A-046-validate-features-overhaul.md) |
 | A-047 | Agent monitor: dynamic status + simpler send | queued | area:overlay | YES | [active/A-047-agent-monitor-dynamic-status-send.md](active/A-047-agent-monitor-dynamic-status-send.md) |
+| A-048 | Claude Code: select launch effort / depth | done | area:overlay | YES | [done/A-048-claude-code-effort-picker.md](done/A-048-claude-code-effort-picker.md) |
