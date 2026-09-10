@@ -333,3 +333,8 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: queue A-017 Training Assignments panel
 - After Problems: queue list + click/detail/save; generate assignment from selected problem (local model or on-machine agent); handoff button → Agent monitor.
 - Filed [A-017](assignments/active/A-017-training-assignments-panel.md); QUEUE order A-016 → A-017 → A-015.
+
+## 2026-09-10 — desk: queue A-018 Training Agent monitor
+- Agent tiles; click → overview + open visible Hyprland agent window (not hidden background).
+- Left assignment list to spin up/assign; preselect from A-017 handoff; interactive parallel-aware queue board.
+- Filed [A-018](assignments/active/A-018-training-agent-monitor.md); order A-016 → A-017 → A-018 → A-015.

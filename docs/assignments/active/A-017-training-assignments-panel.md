@@ -5,7 +5,7 @@
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/` (Training Assignments panel), `brain/training.py`, `brain/server.py` (assignment/training endpoints), shared problem↔assignment links, `tests/`, `docs/assignments/` (runtime writes of real assignment files via confirmed save), `docs/SESSION.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `docs/FEATURES.md`, `docs/validation/`, `README.md`, `START.md`, `VERSION`, `scripts/` if needed for agent handoff helpers
 - **Forbidden paths:** Replacing A-016 Problems chrome; chat overlay plan work (**A-015**); auto-spending cloud credits; sending to agents without explicit user action; rewriting QUEUE semantics without ADR
-- **Blocks / blocked-by:** **Blocked by A-016** (needs Training window + nav + Problems selection handoff). Blocks nothing critical; do before A-015 unless Alex reprioritizes.
+- **Blocks / blocked-by:** **Blocked by A-016**. **Blocks A-018** (Agent monitor). Do before A-015 unless Alex reprioritizes.
 - **Links:** Alex 2026-09-10 JARVIS — after Problems, Assignments list/detail/save; generate from problem (local model or other on-machine agent); handoff button → Agent monitor
 
 ## Goal
@@ -31,6 +31,7 @@ Done means Assignments is a real triage/create surface, not a dump of titles —
 - Redesigning Problems list (A-016)
 - Fully autonomous multi-agent orchestration / watching live chats
 - A-015 plan readability in chat overlay
+- Full Agent monitor tiles + visible Hyprland agent windows — **A-018** (Hand off may deep-link with assignment preselected)
 
 ## Notes for the coding agent
 - Reuse confirmed preview patterns from A-008/A-016 for any file writes.
