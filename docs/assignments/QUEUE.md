@@ -4,7 +4,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
-| A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | YES | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
+| A-035 | Latency distributions, version compare, ledger hooks | in_progress | area:overlay | YES | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-042 | Parallel claimability tooling migration (default YES + status hints) | queued | area:docs | NO | medium | [active/A-042-parallel-claimability-tooling.md](active/A-042-parallel-claimability-tooling.md) |
 
 Recently completed: A-001 … A-025, A-026, A-027-cancelled, A-028, A-029, A-030, A-031, A-032, A-033, A-034, A-036, A-037, A-038, A-039, A-040, A-041 (see [done/](done/)).
@@ -54,7 +54,7 @@ outrank any amount of `inferred` repetition), inspect/revoke/restore, byte-ident
 migration with one-time backup, quarantine for unreadable/unknown-version files, `fcntl.flock`
 cross-process locking, and bounded growth (oldest revoked pruned first). IMP-001 updated.
 
-**Next up:** **A-035** (latency distributions/compare, depth **medium**, `Blocked-by: A-034` now met). A-042 remains `parallel-ok: NO` (control-plane tooling).
+**In progress:** **A-035** (latency distributions/compare, depth **medium**). A-042 remains queued (`parallel-ok: NO`, control-plane tooling).
 
 **A-027 / branch protection (ADR-049):** repo is **public**; `main` ruleset requires PR + `test` check, blocks force-push/deletion. ADR-046's "no protection" stance is superseded. Unattended Forge stays parked ([FUTURE.md](../FUTURE.md)). Parallel claimability: **ADR-048** (`parallel-ok` defaults YES).
 

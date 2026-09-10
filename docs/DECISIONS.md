@@ -316,4 +316,9 @@ explicit, avoiding attribution to an unrelated recent run. Verification auto-clo
 - **Decision:** Training gains a **Latency** nav entry and panel. History bars are scaled to **`meaningful_response_latency`**, not TTFT; a click GETs `/v1/latency/traces/<id>` and draws a waterfall (indent = parent depth; bar offset/width = start/duration within the trace). Error and unfinished traces stay listed and inspectable. The panel lives in `overlay/latency.js` (plus a nav/section in `training.html` / `training.js` / `training.css` and `/latency.js` from the brain static map). **`overlay/agents.js` is not touched** so A-041 can keep the Agent monitor rewrite. No prompts are rendered. No FEATURES/validation catalog entry (A-035 may add compare; this is a diagnostic panel).
 - **Consequences:** A-035 can add distributions without changing the inspector. Merge conflicts with A-041 are expected on `training.html` nav and `training.js` panel lists — both additive. Covered by `tests/latency-panel.test.cjs` (history scaling, error/no-MRL rows, nested + parallel waterfall, unfinished spans, no prompt leakage).
 
+## ADR-054 — Latency distributions, compare, ledger PERF hook (2026-09-10)
+- **Context:** A-033 records InteractionTraces; A-034 shows one spike. A-035 needs p50/p90/p95/p99, bounded filters, version/SHA compare with sample counts, and a way to attach PERF evidence to the Improvement Ledger without Training writing `docs/ledger/` or allocating `IMP-*`. Budgets exist only as config placeholders — they must not fail CI or block merges.
+- **Decision:** TBD at implement time. Reserved so A-035 does not collide with another ADR number.
+- **Consequences:** TBD.
+
 
