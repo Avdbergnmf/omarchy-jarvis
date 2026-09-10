@@ -5,8 +5,9 @@
 - **parallel-ok:** NO (single writer for ledger schema/index/history)
 - **Recommended depth:** high
 - **Soft path hints:** `docs/` (ledger schema + INDEX), `docs/assignments/`
-- **Blocks / blocked-by:** After A-038. Completion unblocks A-029.
-- **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review
+- **Blocked-by:** A-038
+- **Gate:** control-plane
+- **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review · unblocks A-029 on completion
 
 ## Goal
 Create a versioned, Desk-owned Improvement Ledger. The ledger explains why behavior changed;

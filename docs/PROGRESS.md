@@ -672,3 +672,30 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: empty-queue = minimal tokens
 - Alex: no claimable work → almost no tokens; explicit override only; ask if unclear.
 - CONTINUE / NEW_AGENT / PARALLEL / prompts README / START updated.
+
+## 2026-09-10 — A-037 release gates + claimability visibility (ADR-041)
+- Split the old free-text `Blocks / blocked-by:` field into structured `Blocked-by:` (comma-
+  separated `A-###` ids, or `none`) + optional informational `Gate:` (lowercase-hyphen label).
+  No global `stage:` integers, no new QUEUE.md columns.
+- `scripts/assignment-status.sh`: reads each active brief's Blocked-by/Gate from `origin/main`,
+  computes unmet blockers against `INDEX.md` (not `QUEUE.md` — done ids are delisted from
+  QUEUE's open rows, which would have falsely shown a completed dependency as still unmet),
+  prints a `BLOCKED-by/gate` section, and the claim hint now skips a `queued` row whose
+  Blocked-by isn't actually satisfied.
+- `brain/training.py`: `assignment_fields`/`META_FIELDS` gained `blocked_by`/`gate` (validated
+  optional fields, same pattern as `allowed_paths`/`forbidden_paths`); `assignments()` now
+  returns `blocked_by`/`gate`/`unmet_blocked_by` per row. `overlay/training.html` editor and
+  `overlay/agents.js`/`assignments.js` show the real unmet ids and gate instead of a generic
+  "see assignment brief" hint.
+- Migrated all 10 currently blocked/queued Wave 0/1 briefs (A-026…A-031, A-033…A-035, A-038) to
+  the structured fields per A-037's own "initial gates" note (`control-plane`, `latency`,
+  `training-dispatch`); A-027 correctly gets `Blocked-by: none` (blocked on Alex's hosting/plan
+  choice, not an id).
+- Evidence: `tests/test_assignments.py::test_blocked_by_and_gate_are_structured_optional_hints`
+  (format validation, editor round-trip, `unmet_blocked_by` narrowing once a blocker is marked
+  done); `node tests/overlay.test.cjs` (5 suites) and `./scripts/test-full.sh` pass. Found and
+  fixed a real bug before committing: the first cut of the unmet-blocker lookup used `QUEUE.md`,
+  which delists `done` rows entirely, so it permanently misreported a done-and-delisted blocker
+  (A-036, in A-037's own brief) as still unmet — switched the status lookup to `INDEX.md`, which
+  retains every id including `done`, and verified against all 10 migrated briefs by hand before
+  and after the fix.

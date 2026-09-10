@@ -5,9 +5,9 @@
 - **parallel-ok:** NO (promotion/control-plane work is serial)
 - **Recommended depth:** high
 - **Soft path hints:** `docs/`, `START.md`, `scripts/`, `.github/`
-- **Blocks / blocked-by:** Blocked on Alex choosing GitHub Pro, deliberate public visibility,
-  or another authoritative host with private-repo protection. Blocks A-030 and unattended Forge.
-- **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review
+- **Blocked-by:** none — blocked on a human decision, not an assignment id: Alex must choose GitHub Pro, deliberate public visibility, or another authoritative host with private-repo protection
+- **Gate:** none
+- **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review · blocks A-030 and unattended Forge
 
 ## Goal
 

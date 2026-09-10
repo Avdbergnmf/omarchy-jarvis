@@ -45,8 +45,10 @@ function renderAgentBoard(data){
  const board=agentEl('board');board.innerHTML='';
  for(const item of data.assignments){
   const worker=data.agents.find(s=>s.current_assignment===item.id);
-  const waiting=item.status==='blocked'?' · waiting — see assignment brief':'';
-  trainingLine(board,item.id+' · '+item.status+' · '+item.area+' · parallel '+item.parallel+waiting+(worker?' · '+worker.label:''));
+  const unmet=item.unmet_blocked_by&&item.unmet_blocked_by.length?item.unmet_blocked_by.join(', '):null;
+  const waiting=item.status==='blocked'?(unmet?' · waiting on '+unmet:' · waiting — see assignment brief'):'';
+  const gate=item.gate?' · gate '+item.gate:'';
+  trainingLine(board,item.id+' · '+item.status+' · '+item.area+' · parallel '+item.parallel+gate+waiting+(worker?' · '+worker.label:''));
  }
  if(!data.assignments.length)trainingLine(board,'Queue is empty.');
 }

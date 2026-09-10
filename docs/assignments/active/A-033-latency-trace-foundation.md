@@ -4,9 +4,10 @@
 - **Area:** area:brain (+ light `docs/`)
 - **parallel-ok:** NO
 - **Recommended depth:** high
-- **Wave:** **1** — only after **A-032** and **Wave 0** (A-026…A-031 / A-029) unless Alex reorders
+- **Blocked-by:** none
+- **Gate:** latency
 - **Soft path hints:** `brain/`, `docs/LOGGING.md`, new `docs/LATENCY.md`, `tests/`, optional SQLite under XDG/`logs/` (gitignored)
-- **Links:** `docs/audits/chatgpt-latency-profiler-brief-2026-09-10.md`
+- **Links:** `docs/audits/chatgpt-latency-profiler-brief-2026-09-10.md` · queued after the control-plane gate in practice (QUEUE order), not a hard id dependency; Alex may reorder
 
 ## Goal
 Architecture for text-first latency profiling **without** Training UI yet.

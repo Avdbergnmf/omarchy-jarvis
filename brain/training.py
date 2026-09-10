@@ -47,15 +47,25 @@ def assignments(root):
         if len(cols) >= 7 and re.fullmatch(r'A-\d{3,}', cols[1]):
             match = re.search(r'\]\((active/A-\d{3,}-[a-zA-Z0-9_-]+\.md)\)', line)
             path = 'docs/assignments/'+match.group(1) if match else None
-            priority = metadata(read(root, path), 'Priority').split(' ')[0] if path else ''
-            result.append(dict(id=cols[1], title=cols[2], status=cols[3], area=cols[4], parallel=cols[5], path=path, priority=priority if priority in PRIORITIES else None))
+            body = read(root, path) if path else ''
+            priority = metadata(body, 'Priority').split(' ')[0] if path else ''
+            # A-037: Blocked-by/Gate are optional structured metadata (not new QUEUE columns) —
+            # assignment-status.sh and this board compute claimability by cross-referencing ids.
+            blocked_by = re.findall(r'A-\d{3,}', metadata(body, 'Blocked-by')) if path else []
+            gate = metadata(body, 'Gate') if path else ''
+            result.append(dict(id=cols[1], title=cols[2], status=cols[3], area=cols[4], parallel=cols[5], path=path,
+                                priority=priority if priority in PRIORITIES else None,
+                                blocked_by=blocked_by, gate=gate if gate and gate.lower() != 'none' else None))
+    status_by_id = {item['id']: item['status'] for item in result}
+    for item in result:
+        item['unmet_blocked_by'] = [bid for bid in item['blocked_by'] if status_by_id.get(bid) != 'done']
     return result
 
 
 # Assignment edits preserve ownership, status, parallel policy and unknown brief sections.
 SECTION_FIELDS = {'goal': 'Goal', 'checklist': 'Checklist', 'notes': 'Human comments / evidence', 'out_of_scope': 'Out of scope'}
-META_FIELDS = {'area': 'Area', 'priority': 'Priority', 'allowed_paths': 'Allowed paths', 'forbidden_paths': 'Forbidden paths'}
-FIELD_LIMITS = dict(title=140, goal=1400, checklist=1400, notes=1200, out_of_scope=1200, allowed_paths=600, forbidden_paths=600)
+META_FIELDS = {'area': 'Area', 'priority': 'Priority', 'allowed_paths': 'Allowed paths', 'forbidden_paths': 'Forbidden paths', 'blocked_by': 'Blocked-by', 'gate': 'Gate'}
+FIELD_LIMITS = dict(title=140, goal=1400, checklist=1400, notes=1200, out_of_scope=1200, allowed_paths=600, forbidden_paths=600, blocked_by=200, gate=60)
 GENERATING = threading.Lock()
 
 
@@ -104,13 +114,19 @@ def assignment_fields(data):
     # A-023: allowed_paths/forbidden_paths are optional soft hints, not a hard gate —
     # isolation for parallel work is worktree + disjoint area (see ADR-034).
     for key, limit in FIELD_LIMITS.items():
-        value = short(data.get(key, ''), key.replace('_', ' ').title(), limit, empty=key in ('notes', 'allowed_paths', 'forbidden_paths'))
-        if key in ('title', 'allowed_paths', 'forbidden_paths') and ('\n' in value or '|' in value):
+        value = short(data.get(key, ''), key.replace('_', ' ').title(), limit, empty=key in ('notes', 'allowed_paths', 'forbidden_paths', 'blocked_by', 'gate'))
+        if key in ('title', 'allowed_paths', 'forbidden_paths', 'blocked_by', 'gate') and ('\n' in value or '|' in value):
             raise ValueError(key+' must be a single line without table separators')
         if re.search(r'^#{1,2} ', value, re.M): raise ValueError('Use prose within '+key+', not assignment headings')
         result[key] = value
     if data.get('area') not in AREAS or data.get('priority') not in PRIORITIES: raise ValueError('Invalid assignment area or priority')
     result.update(area=data['area'], priority=data['priority'])
+    # A-037: Blocked-by/Gate are optional structured hints — validated for shape, not existence
+    # (an id may not be filed yet); "" and "none" both mean unblocked/ungated.
+    if result['blocked_by'] and result['blocked_by'].lower() != 'none' and not re.fullmatch(r'A-\d{3,}(,\s*A-\d{3,})*', result['blocked_by']):
+        raise ValueError('Blocked-by must be "none" or a comma-separated list of A-### ids')
+    if result['gate'] and result['gate'].lower() != 'none' and not re.fullmatch(r'[a-z][a-z0-9-]{1,40}', result['gate']):
+        raise ValueError('Gate must be "none" or a lowercase-hyphen label')
     lines = result['checklist'].splitlines()
     if not lines or any(not re.fullmatch(r'- \[[ xX]\] .+', line) for line in lines):
         raise ValueError('Checklist needs one - [ ] verification step per line')

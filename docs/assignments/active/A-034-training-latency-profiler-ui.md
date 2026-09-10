@@ -4,8 +4,8 @@
 - **Area:** area:overlay
 - **parallel-ok:** NO
 - **Recommended depth:** medium
-- **Wave:** **1**
-- **Blocks / blocked-by:** **Blocked by A-033**
+- **Blocked-by:** A-033
+- **Gate:** latency
 - **Soft path hints:** `overlay/` Training UI, A-033 store APIs, `tests/`
 - **Links:** chatgpt-latency-profiler-brief §§10–11, 31–32
 

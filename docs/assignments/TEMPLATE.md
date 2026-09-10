@@ -6,8 +6,9 @@
 - **Recommended depth:** low | medium | high | xhigh  (Codex `model_reasoning_effort`; show in QUEUE; tell Alex on closeout)
 - **Allowed paths (optional soft hint):** likely-touched paths, if useful context — never a hard gate; isolation is worktree + a disjoint `area:`, not a path allowlist
 - **Forbidden paths (optional soft hint):** anything worth flagging explicitly — never a hard gate
-- **Blocks / blocked-by:** none | A-NNN
-- **Links:** issue #N · pass path · ADR
+- **Blocked-by:** none | A-NNN[, A-NNN...]  (structured — `assignment-status.sh` computes claimability from this, not prose; see ADR-041)
+- **Gate:** none | <lowercase-hyphen-slug>  (optional grouping label, e.g. `control-plane`; informational, never auto-enforced)
+- **Links:** issue #N · pass path · ADR · what this blocks (prose, e.g. "unblocks A-029")
 
 ## Goal
 One paragraph. What “done” means for Alex.

@@ -34,12 +34,24 @@ Rules:
 - Coding agents check off boxes in the assignment file and mirror “Next action” in `docs/SESSION.md`.
 - On done: move `active/A-###-*.md` → `done/`, update QUEUE + INDEX + PROGRESS.
 
+## Release gates: `Blocked-by` + `Gate` (not a stage counter)
+An assignment blocked on other work sets **`Blocked-by:`** to a comma-separated list of
+`A-###` ids (or `none`) — this is the only field `./scripts/assignment-status.sh` and Training's
+Agent monitor parse to compute real claimability and print *why* a row isn't claimable yet. A
+human-only blocker (a decision only Alex can make, not an id) stays `Blocked-by: none` with the
+reason in prose. **`Gate:`** is an optional, purely informational grouping label (e.g.
+`control-plane`, `latency`) — never auto-enforced, never a second numbering scheme; it exists so
+Training can group/filter related blocked work without inventing global `stage: 0/1/2` integers
+(see [ADR-041](../DECISIONS.md#adr-041--structured-blocked-by--gate-replace-stage-integers-2026-09-10)).
+Changing `Blocked-by`/`Gate` never auto-flips `Status`: a human (or the desk) still sets
+`Status: blocked → queued` once the real-world dependency is actually resolved.
+
 ## How a desk agent creates an assignment (standard)
 When Alex asks for a change/add (in any chat):
 
 1. **Name it** — short title; id `A-NNN` monotonic (see INDEX).
 2. **Copy** `TEMPLATE.md` → `active/A-NNN-slug.md`.
-3. Fill: goal, area, parallel-ok, checklist (acceptance as boxes), out of scope, links (issue/pass); allowed/forbidden paths are optional soft hints, not required.
+3. Fill: goal, area, parallel-ok, checklist (acceptance as boxes), out of scope, links (issue/pass); allowed/forbidden paths are optional soft hints, not required. Set `Blocked-by`/`Gate` if this depends on other work (see below) — leave both `none` otherwise.
 4. Append row to `QUEUE.md` as `queued` (or `in_progress` if Alex will run it immediately).
 5. Add INDEX line.
 6. Tell Alex which paste prompt to use:
