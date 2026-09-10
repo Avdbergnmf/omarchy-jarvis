@@ -3,41 +3,43 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- Assignment: _(none this session — A-020 and A-021 both done, merged, worktrees/branches removed)_
-- Branch: `main` (a020-validate-features-ux merged at 791577d; a021-empty-enter-skips-report-qa merged at 4a93046)
-- Batch: 1 (default; stopped and reporting after this turn)
+- Assignment: **A-019 — Proposed-action bubble UX** (in_progress)
+- Owner: claude-code (this session)
+- Branch: `a019-proposed-action-bubble-ux`
+- Area: area:overlay
+- Batch: 1 (default; stop and report after this assignment)
 
 ## Checklist
-- [x] A-020: persistence UX (guide closes + inline report on confirm), visible/copyable run
-      id, auto-run mechanical guided steps (`kind:"auto"`) — done, merged, ADR-033
-- [x] A-021 (separate parallel session): empty Enter in report Q&A now acts like Skip — done, merging now
+- [x] Read START, SESSION, QUEUE; claimed A-019 (first queued row, nothing in_progress)
+- [ ] Reproduce current approve UI (bubble + below-bubble text); note A-015 vs overlay-only gaps
+- [ ] Redesign `#plan`/`#plan-actions` so each action is a readable bubble/card
+- [ ] Show human labels + important args; truncate long values with tooltip
+- [ ] Wrapping: CSS allows wrap; content prefers compact chips; no horizontal scroll
+- [ ] Live step list stays consistent with new labels where applicable
+- [ ] Overlay tests updated
+- [ ] ADR + PROGRESS; FEATURES/validation touch if user-visible; SESSION; QUEUE/INDEX → done
 
 ## Done this session (evidence)
-- Desk (Firsty): filed A-020 from Alex Validate-features feedback (persist results, run ids, automate mechanical steps)
-- Committed a live bug report (bug-open-cliamp) that was sitting uncommitted in the canonical checkout
-- A-020 done: persistence was already correct (existing tests proved it); real bug was the
-  guide staying open after a confirmed result. Fixed: guide closes + inline list report on
-  confirm; run id now visible in chat footer (copy) + auto-captured by new `kind:"auto"`
-  guided steps, which submit their literal prompt via the same `/v1/run` a chat send uses
-  (never approves/denies). `feat-overlay-chat` migrated as the reference guide. 141 Python
-  tests + all 5 JS suites pass, doctor.sh --syntax passes. VERSION 0.5.6 → 0.5.7; ADR-033.
-- A separate parallel session (`a021-empty-enter-skips-report-qa`, disjoint from A-020's
-  files) finished A-021: `#qa-form` submit now sends `'skip'` on an empty trimmed answer
-  instead of silently no-opping; new overlay.test.cjs regression case. Merging into main now.
+- A-020 done: persistence UX (guide closes + inline report on confirm), visible/copyable run
+  id, auto-run mechanical guided steps (`kind:"auto"`). 141 Python tests + all 5 JS suites
+  pass. VERSION 0.5.6 → 0.5.7; ADR-033. Merged into main at 791577d.
+- A-021 (separate parallel session): empty Enter in report Q&A now acts like Skip. Merged
+  into main at 4a93046 (I did the merge/cleanup since it was ready but unmerged).
 - Desk also queued A-022 (fix "open cliamp", area:brain) and A-023 (simplify path-scope
-  policy, area:docs, `parallel-ok: YES`) while A-020/A-021 were in progress; both open, unclaimed.
+  policy, area:docs, `parallel-ok: YES`); A-023 already has another session's dirty worktree
+  — left untouched, claimed A-019 instead (first queued row, disjoint from A-023).
 
 ## Also queued
-- A-019 Proposed-action bubble UX (area:overlay, serial — no other overlay work in_progress)
 - A-022 Fix open cliamp plan/tooling, issue #15 (area:brain)
-- A-023 Simplify path-scope policy (`parallel-ok: YES`, area:docs)
+- A-023 Simplify path-scope policy (`parallel-ok: YES`, area:docs) — another session has a
+  dirty worktree on this already; do not claim/touch it
 
 ## Next action (one concrete step)
-- Queue has three open rows (A-019/A-022/A-023); another session already has a dirty
-  worktree on A-023. A fresh agent should claim A-019 or A-022 per NEW_AGENT rules.
+- Set up isolated worktree for A-019, read `overlay/app.js`'s `renderPlan`/`describeAction`
+  and `#plan`/`#plan-actions`/`#draft-preview` markup once, then design the bubble redesign.
 
 ## Parallel agent
-- none active (A-020 and A-021 both finished)
+- another session appears to be working A-023 in `~/Work/omarchy-jarvis-a023-simplify-assignment-path-scope` (dirty, unclaimed in QUEUE) — different area (docs), no file overlap expected
 
 ## Blockers
 - none
