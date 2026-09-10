@@ -70,13 +70,23 @@ path and jarvis_version. Do not silently expand a pass into unrelated open issue
 ## Parallel work
 
 Areas are `area:overlay`, `area:brain`, `area:actions`, `area:skills`, `area:docs`.
-Use one agent ↔ one issue ↔ one area where possible. Parallel work requires `parallel-ok`
-and a **different `area:`** from every in-progress issue/assignment, plus the mandatory
-separate worktree/branch below — that's the isolation, not a path allowlist. `Allowed
-paths:`/`Forbidden paths:` entries are optional soft hints for context, never a gate; same
-area, no path list makes it parallel-safe (see ADR-034). `single-writer` is the default for
-brain/control-plane work. Never parallelize approve/execute or brain/server.py redesign.
-Merge before handing off contested files. agent-status groups issues by area and warns about
+Use one agent ↔ one issue ↔ one area where possible. **Claimability is computed, not declared**
+(ADR-046): a row is claimable when it is `queued`, every `Blocked-by` id is `done` (ADR-041), and
+its `area:` differs from every in-progress row's — read from `origin/main` only (ADR-038), plus
+the mandatory separate worktree/branch below. That's the isolation, not a path allowlist.
+`Allowed paths:`/`Forbidden paths:` entries are optional soft hints for context, never a gate;
+same area, no path list makes it parallel-safe (see ADR-034).
+
+`parallel-ok` defaults to **YES** and only restricts the row it sits on — an in-progress `NO`
+never blocks anyone else. Write `NO` only for `control-plane` (redefines authorization,
+promotion, evaluation, trust or the claim rules), `single-writer` (redesigns a shared runtime
+seam — approve/execute, planner routing, the journal writer) or `human-serial` (Alex asked), and
+name the reason in the brief. `area:brain` alone is not a reason; ordering belongs in
+`Blocked-by:`. Never parallelize approve/execute or brain/server.py redesign.
+Merge before handing off contested files, and follow the shared-bookkeeping protocol in
+[assignments/README](docs/assignments/README.md#shared-bookkeeping-while-parallel) — reserve your
+ADR number in the claim commit, touch only your own QUEUE/INDEX/SESSION rows, append to PROGRESS,
+rebase before merging. agent-status groups issues by area and warns about
 shared areas and missing scope; warnings require human review, not automatic scheduling.
 Labels permit coordination; they do not authorize agent spending or spawning.
 

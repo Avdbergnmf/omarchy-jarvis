@@ -30,9 +30,57 @@ Related: `docs/passes/` for large historical briefs; prefer **assignments** for 
 `queued` → `in_progress` → `done` (or `blocked` / `cancelled`)
 
 Rules:
-- **One primary `in_progress`** unless extras are `parallel-ok: YES` with disjoint `area:`.
+- **Claimability is computed, not declared** (ADR-046): `queued` + every `Blocked-by` id `done` +
+  `area:` disjoint from every `in_progress` row. See "Parallel claimability" below.
 - Coding agents check off boxes in the assignment file and mirror “Next action” in `docs/SESSION.md`.
 - On done: move `active/A-###-*.md` → `done/`, update QUEUE + INDEX + PROGRESS.
+
+## Parallel claimability: `parallel-ok` defaults to YES
+A row is claimable when the queue says it is ready, its dependencies are met, and nobody is
+working its area — nothing else. The absence of a positive flag never refuses a claim.
+
+```
+for row in QUEUE order:
+    skip unless row.status == "queued"
+    skip if any Blocked-by id is not "done" in INDEX.md      # ADR-041
+    take it if nothing is in_progress                        # first ready row wins
+    skip if row.parallel-ok is NO                            # reasoned kill-switch only
+    skip if row.area matches any in_progress row's area      # ADR-034
+    -> claimable in parallel
+```
+
+All inputs come from `origin/main` (ADR-038), never a branch-local copy. `parallel-ok: NO` is
+*self*-restricting: it says when **this** row may be claimed, never that an in-progress row locks
+the repository.
+
+**Default `YES`.** Write `NO` only when one of three reasons applies, and name it in the brief:
+
+| reason | means |
+|--------|-------|
+| `control-plane` | redefines authorization, promotion, evaluation, trust, or the claim rules themselves |
+| `single-writer` | redesigns a shared runtime seam no concurrent writer can tolerate even from another area (`brain/server.py` approve/execute or planner routing, the journal writer) |
+| `human-serial` | Alex asked for this one to run alone |
+
+`area:brain` on its own is **not** a reason — additive instrumentation is fine, a planner-routing
+redesign is not. Ordering is **not** a reason either: "do this after A-0NN" belongs in
+`Blocked-by:`, which is recomputed as blockers complete, while a stale `NO` lasts forever. A bare
+`NO` with no reason is a filing bug — the desk treats it as `YES` pending review.
+
+## Shared bookkeeping while parallel
+The merge pain ADR-034 cited was never in product code; it was in the files every assignment
+touches. Independent of areas or flags:
+
+1. **Reserve your ADR number in the claim commit** — the same push to `origin/main` that flips
+   your row to `in_progress` appends a one-line reserved stub to `docs/DECISIONS.md`. A-026 had to
+   renumber 043 → 044 at merge time for want of this.
+2. **QUEUE/INDEX: your own row only.** Never reorder rows or rewrite the prose block under the
+   table mid-flight; add your narrative at merge time. Row-per-assignment merges cleanly by itself.
+3. **SESSION: your own lines only** — your Active-goal bullet, your checklist line, your
+   `## Parallel agent` entry. Never rewrite another agent's.
+4. **PROGRESS: append at the end**, a new dated `## YYYY-MM-DD — A-NNN …` section. Never edit an
+   existing one, even to correct it.
+5. **Rebase on `origin/main` immediately before merging.** PR #18 conflicted on these same files
+   with no parallel agent at all, purely from a stale base.
 
 ## Release gates: `Blocked-by` + `Gate` (not a stage counter)
 An assignment blocked on other work sets **`Blocked-by:`** to a comma-separated list of
@@ -96,7 +144,8 @@ recovery](../../START.md#recovering-a-stale-claim), not silently reclaimed.
 - Checklist items must be **verifiable**.
 - Explicit **out of scope** to stop mega-passes.
 - Link existing ADRs/passes instead of pasting novels.
-- Mark `parallel-ok: NO` for `area:brain` / control-plane by default.
+- Leave `parallel-ok: YES` (the default) unless one of the three named reasons above applies;
+  a `NO` must say which. Do not encode ordering here — use `Blocked-by:`.
 
 ## Alex commands (coding agent interpretation)
 | Alex says | Coding agent does |
@@ -110,7 +159,7 @@ Never tell Alex to paste agent session logs into the next agent. Point at QUEUE 
 
 ## Visibility for humans
 - **Who is working right now?** `docs/SESSION.md` (Active goal) and any QUEUE row with `in_progress`.
-- **What can a second agent take?** `./scripts/assignment-status.sh` (claim hint). New agents follow `prompts/NEW_AGENT.txt`: prefer `parallel-ok: YES` when something is already in progress; otherwise reply **No assignment in queue is possible right now** with the queue list.
+- **What can a second agent take?** `./scripts/assignment-status.sh` (claim hint). New agents follow `prompts/NEW_AGENT.txt` and compute the claim set above; if it is genuinely empty, reply **No assignment in queue is possible right now** with the queue list. Until A-042 lands, the script still ANDs on a literal `YES` and silently honors an unreasoned `NO` — if it offers nothing while a dependency-free row sits in an untouched area, that row's flag is the bug, not the queue.
 
 ## One assignment then report (default)
 Coding agents complete **a single** assignment per invocation unless Alex explicitly enables a batch (`keep going`, `batch N`, `until queue empty`). After each assignment they update QUEUE/SESSION/PROGRESS; after the batch (or the single default) they **stop and summarize** for Alex instead of silently draining the queue.
@@ -118,8 +167,9 @@ Coding agents complete **a single** assignment per invocation unless Alex explic
 ## Training-authored assignments and local slots
 Training previews generate a monotonic A-NNN brief, queued QUEUE/INDEX rows and an active
 handoff using NEW_AGENT/CONTINUE. The user sees exact bytes and confirms before writing.
-Rows are serial by default with area scope, an optional soft path hint, a verification
-checklist and source evidence. Human comments should state the expected outcome; an agent must clarify
+Rows carry area scope, an optional soft path hint, a verification checklist and source evidence.
+Training still stamps `parallel-ok: NO` on every draft it writes and its editor cannot change the
+flag (ADR-031) — a desk agent must correct it by hand until **A-042** flips that default to `YES`. Human comments should state the expected outcome; an agent must clarify
 insufficient acceptance before broadening work. Preparation does not claim the assignment.
 
 Local slots are stored in ignored `logs/training/agents.json` (version 1, `agents` list),
