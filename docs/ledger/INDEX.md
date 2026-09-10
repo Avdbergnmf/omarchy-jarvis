@@ -5,7 +5,7 @@ Validated by `scripts/ledger-status.py` — run it before allocating the next id
 
 | id | title | status | assignment ids | path |
 |----|-------|--------|-----------------|------|
-| IMP-001 | Ambiguous app-open should pick a match, then let Alex correct it | shipped | A-024, A-025 | [records/IMP-001-bitwarden-ambiguous-app-open.md](records/IMP-001-bitwarden-ambiguous-app-open.md) |
+| IMP-001 | Ambiguous app-open should pick a match, then let Alex correct it | shipped | A-024, A-025, A-029 | [records/IMP-001-bitwarden-ambiguous-app-open.md](records/IMP-001-bitwarden-ambiguous-app-open.md) |
 | IMP-002 | "Open cliamp" produced an empty or false-success plan | shipped | A-022 | [records/IMP-002-open-cliamp-planning-bug.md](records/IMP-002-open-cliamp-planning-bug.md) |
 | IMP-003 | Plan details belong inside the proposed-action bubble | shipped | A-019 | [records/IMP-003-proposed-action-bubble-ux.md](records/IMP-003-proposed-action-bubble-ux.md) |
 | IMP-004 | Validate features didn't visibly persist and asked for unavailable run ids | shipped | A-020 | [records/IMP-004-validate-features-persistence.md](records/IMP-004-validate-features-persistence.md) |
