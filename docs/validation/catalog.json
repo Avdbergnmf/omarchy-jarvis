@@ -15,16 +15,16 @@
       "expected": "Chat replies immediately. Actions wait for approval and Cancel performs no action.",
       "status": "validated",
       "last_run": {
-        "id": "17b1c227fabd9b2ab45fac86",
-        "ts": "2026-09-10T06:52:44.523365+00:00",
-        "jarvis_version": "0.5.2",
-        "git_describe": "v0.0.1-46-g15a2836",
-        "definition_hash": "ed7b55355572a97ba6b49d48cd1a35ef6c81c2d3884f30bf80064d2bfebdcfae",
+        "id": "6991bbed54bb7b4be5f7a67f",
+        "ts": "2026-09-10T08:39:07.712130+00:00",
+        "jarvis_version": "0.5.6",
+        "git_describe": "v0.0.1-62-g0be3627-dirty",
+        "definition_hash": "5ce5194d23f51f752650c7be2fda605f709dcb12fbae0138d41f0424b526b6a4",
         "run_id": null,
-        "notes": "i think theres something weird going on with this validation request. The hello thing works, if it asks me do execute a plan, it works as expect it to kinda, butttt, I get very little information about that plan. It kinda tells me what feature/skill its gonna do, but not really with what parameters etc, and its very poorly readable for a human. I think we can improve here... ",
+        "notes": "",
         "result": "validated"
       },
-      "jarvis_version": "0.5.2",
+      "jarvis_version": "0.5.6",
       "jarvis_version_shipped": "0.5.3"
     },
     {
@@ -53,9 +53,18 @@
         "Press Super+S to reveal the original window; check that Outlook opened."
       ],
       "expected": "The original window moves to scratchpad and Outlook opens.",
-      "status": "unvalidated",
-      "last_run": null,
-      "jarvis_version": null,
+      "status": "validated",
+      "last_run": {
+        "id": "665e144be3941b8d543db86f",
+        "ts": "2026-09-10T08:38:57.684423+00:00",
+        "jarvis_version": "0.5.6",
+        "git_describe": "v0.0.1-62-g0be3627-dirty",
+        "definition_hash": "8ee8ab38169a735b650deef9e2be99378bb7ff4185bf2bed3ff459219f4c646d",
+        "run_id": null,
+        "notes": "",
+        "result": "validated"
+      },
+      "jarvis_version": "0.5.6",
       "jarvis_version_shipped": "0.4.1"
     },
     {

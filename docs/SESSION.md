@@ -34,3 +34,7 @@
 
 ## Blockers
 - none
+
+## Training preparation
+- Last confirmed assignment save: A-022. Preparation only; no ownership claimed or agent contacted.
+

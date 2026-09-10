@@ -7,6 +7,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | A-020 | Validate features: record results, run ids, less busywork | in_progress | area:overlay | NO | [active/A-020-validate-features-ux.md](active/A-020-validate-features-ux.md) |
 | A-019 | Proposed-action bubble UX (readable plan in the bubble) | queued | area:overlay | NO | [active/A-019-proposed-action-bubble-ux.md](active/A-019-proposed-action-bubble-ux.md) |
 | A-021 | Empty Enter skips report / how-did-that-go Q&A | queued | area:overlay | YES | [active/A-021-empty-enter-skips-report-qa.md](active/A-021-empty-enter-skips-report-qa.md) |
+| A-022 | Fix open cliamp plan/tooling (issue #15) | queued | area:brain | NO | [active/A-022-training.md](active/A-022-training.md) |
 
 Recently completed: A-001 … A-018 (see [done/](done/)).
 
