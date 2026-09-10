@@ -909,3 +909,18 @@ validation remains pending because the browser connector exposes no browser on t
 - Tests: `tests/latency-panel.test.cjs`. No FEATURES catalog entry; A-035 still owns
   distributions/compare/ledger.
 
+## 2026-09-10 — A-035 Latency distributions, compare, ledger PERF hook (ADR-054)
+- Training → Latency now shows p50/p90/p95/p99 (nearest-rank / ceil on
+  `meaningful_response_latency`), n / with_mrl, bounded filters (window 20/50/100,
+  planner_mode, status, version, revision), version-or-SHA compare with sample counts,
+  and a slow-tail list (≥ p90) that jumps to the existing waterfall.
+- `GET /v1/latency/summary` (token-gated); traces list accepts `?limit=` (cap 100) so
+  query strings no longer 404. `latency_budget_p50_ms` / `latency_budget_p90_ms` are
+  0/absent = unset; `budgets.enforced` is always false; optional `flags.over_p50` /
+  `over_p90` are diagnostic only.
+- Copy PERF note is a paste-ready Improvement Ledger Events line. Training does not
+  write `docs/ledger/` or allocate `IMP-*` (next id remains IMP-007 for Desk).
+- Tests: `tests/test_latency.py` (percentiles, filters, compare, privacy, query bounds,
+  GET with query string) and `tests/latency-panel.test.cjs` (stats, filters, compare,
+  copy, slow-tail jump + A-034 inspector cases). Did not edit `overlay/agents.js`.
+

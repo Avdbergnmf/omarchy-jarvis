@@ -81,4 +81,13 @@ a{color:#9dd9d2}
 .latency-bar.unfinished,.latency-span.unfinished .latency-span-bar{background:#eab972}
 .latency-span{display:grid;grid-template-columns:minmax(140px,1.1fr) minmax(160px,1.4fr);gap:8px;align-items:center;margin:4px 0}
 .latency-span-name{font-size:12px;color:#c7d8ed;overflow-wrap:anywhere}
+.latency-stats{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 14px}
+.latency-stat{background:#141c27;border:1px solid #344253;border-radius:7px;padding:8px 12px;min-width:72px}
+.latency-stat-label{display:block;font-size:11px;color:#8aa0b8}
+.latency-stat-value{font-size:16px;color:#e8f1fa}
+.latency-stat.over{border-color:#c45c5c}
+.latency-filters,.latency-compare{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 12px}
+.latency-filters label,.latency-compare label{font-size:12px;color:#c7d8ed}
+.latency-perf{margin:0 0 16px}
+#latency-note{width:100%;min-height:70px;margin-top:8px;font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:#141c27;color:#c7d8ed;border:1px solid #344253;border-radius:7px;padding:8px}
 @media(max-width:850px){.latency-layout{grid-template-columns:1fr}.latency-span{grid-template-columns:1fr}}

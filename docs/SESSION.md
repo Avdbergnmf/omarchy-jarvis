@@ -3,7 +3,7 @@
 > Continuations: SESSION + [QUEUE](assignments/QUEUE.md) — not chat logs.
 
 ## Active goal
-- **A-035** in_progress — Latency distributions, version compare, ledger hooks (ADR-054); branch `cursor/claim-a035-a468`
+- **A-035** done — Latency distributions, version compare, ledger hooks (ADR-054)
 - **A-034** done — Training Latency Profiler UI (ADR-053); merged PR #30
 - **A-041** done — Agent Manager visible per-agent auto-queues (ADR-043); merged PR #31, version 0.5.11 restarted
 - **A-033** done — latency profiler foundation (ADR-052); merged PR #27
@@ -24,6 +24,7 @@
 - [x] A-033 Latency profiler foundation — done (ADR-052); no Training UI
 - [x] A-034 Training Latency Profiler UI — done (ADR-053); force-parallel with A-041
 - [x] A-041 Agent Monitor redesign — done (ADR-043); human validation remains unvalidated
+- [x] A-035 Latency distributions / compare / ledger PERF hook — done (ADR-054); budgets are placeholders, no IMP allocated
 
 ## Done this session (evidence)
 - Desk: reproduced A-036 claim only on feature branch; main still said queued. Filed A-039; synced A-036 → in_progress on main.
@@ -42,9 +43,10 @@
 - Cursor/Grok: implemented A-033 (ADR-052) — InteractionTrace + hierarchical spans + local SQLite store. Product metric is `meaningful_response_latency` (Enter → first non-placeholder paint), not TTFT. Overlay stamps `client_submit_ms` / POST ack+meaningful; GET polls stay write-free. Late client marks rewrite the store. No prompts persisted.
 - Codex: implemented A-041 (ADR-043) — Agent Manager status-colored top tiles, per-agent FIFO queues, canonical available-work/auto-advance checks, automatic cold-start-vs-continue, and visible-window prompt preparation without automatic paste/submit. Updated `feat-agent-monitor`; 256 Python tests + five JS suites pass.
 - Cursor/Grok: implemented A-034 (ADR-053) — Training Latency panel: MRL history bars + waterfall inspector on the A-033 store. Incomplete/error traces stay listed. Did not edit `overlay/agents.js`.
+- Cursor/Grok: claimed A-035 via PR #33 (merged). Implemented A-035 (ADR-054) on `cursor/a035-latency-distributions-a468` from `origin/main`: nearest-rank p50/p90/p95/p99, bounded filters, version/SHA compare, slow-tail jump, Copy PERF note. Budget keys unset by default and never enforced. Did not write `docs/ledger/` or allocate IMP-007.
 
 ## Next action (one concrete step)
-- Implement A-035: percentiles + filters + version compare + paste-ready PERF note (do not write `docs/ledger/`).
+- Stop. Next QUEUE row is **A-042** (depth **medium**, `parallel-ok: NO`). Do not start it.
 
 ## Parallel agent
 - none

@@ -13,6 +13,7 @@ import time
 import tomllib
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlparse
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,8 +37,17 @@ BUSY_RUN_ID = None
 AWAIT_TIMEOUT = 900  # seconds an awaiting-approval run may sit idle before auto-deny
 RUN_ID_RE = re.compile(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}')
 
+def _budget_ms(data, key):
+    raw = data.get(key, 0)
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return None
+    return value if value > 0 else None
+
+
 def load_config():
-    defaults = {'approval_mode': 'always', 'show_notifications': True, 'log_level': 'info', 'latency_profiler': True}
+    defaults = {'approval_mode': 'always', 'show_notifications': True, 'log_level': 'info', 'latency_profiler': True, 'latency_budget_p50_ms': None, 'latency_budget_p90_ms': None}
     path = Path(os.environ.get('JARVIS_CONFIG', str(Path.home() / '.config/jarvis/config.toml')))
     if not path.exists():
         return defaults
@@ -51,7 +61,14 @@ def load_config():
     profiler = data.get('latency_profiler', True)
     if isinstance(profiler, str):
         profiler = profiler.lower() not in ('0', 'false', 'off', 'no')
-    return {'log_level': data.get('log_level') if data.get('log_level') in ('info', 'debug') else 'info', 'approval_mode': mode, 'show_notifications': bool(data.get('show_notifications', defaults['show_notifications'])), 'latency_profiler': bool(profiler)}
+    return {
+        'log_level': data.get('log_level') if data.get('log_level') in ('info', 'debug') else 'info',
+        'approval_mode': mode,
+        'show_notifications': bool(data.get('show_notifications', defaults['show_notifications'])),
+        'latency_profiler': bool(profiler),
+        'latency_budget_p50_ms': _budget_ms(data, 'latency_budget_p50_ms'),
+        'latency_budget_p90_ms': _budget_ms(data, 'latency_budget_p90_ms'),
+    }
 
 CONFIG = load_config()
 
@@ -850,12 +867,28 @@ class Handler(BaseHTTPRequestHandler):
             name, mime = {'/':('index.html','text/html'),'/jarvis-overlay':('index.html','text/html'),'/app.js':('app.js','text/javascript'),'/style.css':('style.css','text/css'),'/commands.js':('commands.js','text/javascript'),'/training.js':('training.js','text/javascript'),'/validation.js':('validation.js','text/javascript'),'/latency.js':('latency.js','text/javascript')}[self.path]
             return self.reply(200,(ROOT/'overlay'/name).read_text(),mime)
         if self.path == '/v1/session': return self.reply(200, {'token':TOKEN})
-        if self.path == '/v1/latency/traces' or self.path.startswith('/v1/latency/traces/'):
+        parsed = urlparse(self.path)
+        path = parsed.path
+        if path == '/v1/latency/summary' or path == '/v1/latency/traces' or path.startswith('/v1/latency/traces/'):
             if self.headers.get('X-Jarvis-Token') != TOKEN: return self.reply(403, {'error':'Invalid token'})
-            if TRACER.store is None: return self.reply(200, {'traces': []})
-            if self.path == '/v1/latency/traces':
-                return self.reply(200, {'traces': TRACER.store.recent(20)})
-            found = TRACER.store.get(self.path[len('/v1/latency/traces/'):])
+            query = latency.parse_query(parse_qs(parsed.query))
+            budgets = {'p50_ms': CONFIG.get('latency_budget_p50_ms'), 'p90_ms': CONFIG.get('latency_budget_p90_ms')}
+            if TRACER.store is None:
+                if path == '/v1/latency/summary':
+                    empty, _ = latency.summarize_window([], query, budgets)
+                    return self.reply(200, empty)
+                if path == '/v1/latency/traces':
+                    return self.reply(200, {'traces': []})
+                return self.reply(404, {'error':'Unknown trace'})
+            if path == '/v1/latency/summary':
+                window = TRACER.store.recent(query['limit'])
+                summary, _ = latency.summarize_window(window, query, budgets)
+                return self.reply(200, summary)
+            if path == '/v1/latency/traces':
+                window = TRACER.store.recent(query['limit'])
+                _, filtered = latency.summarize_window(window, query, budgets)
+                return self.reply(200, {'traces': filtered})
+            found = TRACER.store.get(path[len('/v1/latency/traces/'):])
             return self.reply(200 if found else 404, found or {'error':'Unknown trace'})
         if self.path == '/v1/training':
             if self.headers.get('X-Jarvis-Token') != TOKEN: return self.reply(403, {'error':'Invalid token'})

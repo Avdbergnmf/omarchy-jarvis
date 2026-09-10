@@ -2,9 +2,11 @@
 
 Diagnostic timings for how a chat turn felt — submit → first meaningful visible
 content — without storing prompts or payloads. Core emits traces; Training UI
-(A-034) is a later consumer. GET polls never write here.
+(A-034/A-035) consumes them. GET polls never write here.
 """
+import datetime
 import json
+import math
 import os
 import sqlite3
 import threading
@@ -470,3 +472,280 @@ class Tracer:
         if self.store is not None:
             self.store.write(snapshot)
         return snapshot
+
+
+COMPARE_KEYS = ('jarvis_version', 'git_revision')
+SLOW_TAIL_KEEP = 20
+
+
+def percentile_ns(values, p):
+    """Nearest-rank percentile. ``p`` in (0, 100]. Empty → None."""
+    if not values:
+        return None
+    try:
+        percent = float(p)
+    except (TypeError, ValueError):
+        return None
+    if percent <= 0:
+        return None
+    ordered = sorted(int(v) for v in values)
+    rank = max(1, min(len(ordered), math.ceil(percent / 100.0 * len(ordered))))
+    return ordered[rank - 1]
+
+
+def _clean_filter(value):
+    if value is None:
+        return None
+    text = str(value).strip()
+    return text or None
+
+
+def filter_traces(traces, planner_mode=None, status=None, jarvis_version=None, git_revision=None):
+    planner_mode = _clean_filter(planner_mode)
+    status = _clean_filter(status)
+    jarvis_version = _clean_filter(jarvis_version)
+    git_revision = _clean_filter(git_revision)
+    out = []
+    for trace in traces or []:
+        if planner_mode and str(trace.get('planner_mode') or '') != planner_mode:
+            continue
+        if status and str(trace.get('status') or '') != status:
+            continue
+        if jarvis_version and str(trace.get('jarvis_version') or '') != jarvis_version:
+            continue
+        if git_revision and str(trace.get('git_revision') or '') != git_revision:
+            continue
+        out.append(trace)
+    return out
+
+
+def _mrl_values(traces):
+    values = []
+    for trace in traces:
+        raw = trace.get('meaningful_response_latency_ns')
+        if raw is None or raw == '':
+            continue
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            continue
+        if value >= 0:
+            values.append(value)
+    return values
+
+
+def _cohort(label, key, traces):
+    mrl = _mrl_values(traces)
+    return {
+        'label': label,
+        'key': key,
+        'count': len(traces),
+        'with_mrl': len(mrl),
+        'p50_ns': percentile_ns(mrl, 50),
+        'p90_ns': percentile_ns(mrl, 90),
+        'p95_ns': percentile_ns(mrl, 95),
+        'p99_ns': percentile_ns(mrl, 99),
+    }
+
+
+def _ns_ms_label(ns):
+    if ns is None:
+        return '—'
+    ms = ns / 1e6
+    if ms < 10:
+        return f'{ms:.1f}ms'
+    return f'{int(round(ms))}ms'
+
+
+def _budget_over(actual_ns, budget_ms):
+    if actual_ns is None or budget_ms is None:
+        return False
+    try:
+        return (actual_ns / 1e6) > float(budget_ms)
+    except (TypeError, ValueError):
+        return False
+
+
+def _compare_key(name):
+    key = _clean_filter(name) or 'jarvis_version'
+    return key if key in COMPARE_KEYS else 'jarvis_version'
+
+
+def _options(traces):
+    def unique(field):
+        seen = []
+        for trace in traces:
+            value = str(trace.get(field) or '').strip()
+            if value and value not in seen:
+                seen.append(value)
+        return seen
+    return {
+        'planner_mode': unique('planner_mode'),
+        'status': unique('status'),
+        'jarvis_version': unique('jarvis_version'),
+        'git_revision': unique('git_revision'),
+    }
+
+
+def format_ledger_note(summary, today=None):
+    """Paste-ready Improvement Ledger Events line. Timings only — no prompts."""
+    day = today or datetime.date.today().isoformat()
+    parts = [
+        f"n={summary.get('count', 0)}",
+        f"with_mrl={summary.get('with_mrl', 0)}",
+        f"p50={_ns_ms_label(summary.get('p50_ns'))}",
+        f"p90={_ns_ms_label(summary.get('p90_ns'))}",
+        f"p95={_ns_ms_label(summary.get('p95_ns'))}",
+        f"p99={_ns_ms_label(summary.get('p99_ns'))}",
+    ]
+    compare = summary.get('compare') or {}
+    left = compare.get('left')
+    right = compare.get('right')
+    if left and right:
+        parts.append(
+            f"compare {left.get('label')} (n={left.get('count')} p50={_ns_ms_label(left.get('p50_ns'))} "
+            f"p90={_ns_ms_label(left.get('p90_ns'))}) vs {right.get('label')} "
+            f"(n={right.get('count')} p50={_ns_ms_label(right.get('p50_ns'))} p90={_ns_ms_label(right.get('p90_ns'))})"
+        )
+    budgets = summary.get('budgets') or {}
+    p50_b = budgets.get('p50_ms')
+    p90_b = budgets.get('p90_ms')
+    if p50_b or p90_b:
+        parts.append(f"budget placeholders p50={p50_b or 'unset'}ms p90={p90_b or 'unset'}ms (not enforced)")
+    else:
+        parts.append('budgets unset (placeholders only; not a merge gate)')
+    return f"- {day} — PERF: " + ' · '.join(parts)
+
+
+def summarize(traces, budgets=None, left=None, right=None, left_key='jarvis_version', right_key='jarvis_version'):
+    traces = list(traces or [])
+    mrl = _mrl_values(traces)
+    p90 = percentile_ns(mrl, 90)
+    slow_tail = []
+    if p90 is not None:
+        for trace in traces:
+            raw = trace.get('meaningful_response_latency_ns')
+            try:
+                value = int(raw)
+            except (TypeError, ValueError):
+                continue
+            if value >= p90:
+                slow_tail.append({
+                    'trace_id': trace.get('trace_id'),
+                    'run_id': trace.get('run_id'),
+                    'status': trace.get('status'),
+                    'planner_mode': trace.get('planner_mode'),
+                    'jarvis_version': trace.get('jarvis_version'),
+                    'git_revision': trace.get('git_revision'),
+                    'meaningful_response_latency_ns': value,
+                })
+        slow_tail.sort(key=lambda row: row['meaningful_response_latency_ns'], reverse=True)
+        slow_tail = slow_tail[:SLOW_TAIL_KEEP]
+    by_version = {}
+    for trace in traces:
+        label = str(trace.get('jarvis_version') or 'unknown')
+        by_version.setdefault(label, []).append(trace)
+    left_key = _compare_key(left_key)
+    right_key = _compare_key(right_key)
+    left_label = _clean_filter(left)
+    right_label = _clean_filter(right)
+    compare = None
+    if left_label and right_label:
+        compare = {
+            'left': _cohort(left_label, left_key, [t for t in traces if str(t.get(left_key) or '') == left_label]),
+            'right': _cohort(right_label, right_key, [t for t in traces if str(t.get(right_key) or '') == right_label]),
+        }
+    budgets = budgets or {}
+    p50_ns = percentile_ns(mrl, 50)
+    p90_ns = p90
+    p95_ns = percentile_ns(mrl, 95)
+    p99_ns = percentile_ns(mrl, 99)
+    p50_budget = budgets.get('p50_ms')
+    p90_budget = budgets.get('p90_ms')
+    summary = {
+        'count': len(traces),
+        'with_mrl': len(mrl),
+        'p50_ns': p50_ns,
+        'p90_ns': p90_ns,
+        'p95_ns': p95_ns,
+        'p99_ns': p99_ns,
+        'slow_tail': slow_tail,
+        'by_version': {
+            label: {
+                'count': cohort['count'],
+                'with_mrl': cohort['with_mrl'],
+                'p50_ns': cohort['p50_ns'],
+                'p90_ns': cohort['p90_ns'],
+            }
+            for label, group in by_version.items()
+            for cohort in [_cohort(label, 'jarvis_version', group)]
+        },
+        'compare': compare,
+        'budgets': {
+            'p50_ms': p50_budget,
+            'p90_ms': p90_budget,
+            'enforced': False,
+        },
+        'flags': {
+            'over_p50': _budget_over(p50_ns, p50_budget),
+            'over_p90': _budget_over(p90_ns, p90_budget),
+        },
+    }
+    summary['ledger_note'] = format_ledger_note(summary)
+    return summary
+
+
+def parse_query(qs):
+    """Bounded query for GET /v1/latency/traces and /v1/latency/summary."""
+    def one(name, default=None):
+        values = qs.get(name) if isinstance(qs, dict) else None
+        if not values:
+            return default
+        return values[0] if isinstance(values, list) else values
+
+    try:
+        limit = int(one('limit', 20))
+    except (TypeError, ValueError):
+        limit = 20
+    left_key = _compare_key(one('left_key'))
+    right_key = _compare_key(one('right_key'))
+    return {
+        'limit': max(1, min(limit, 100)),
+        'planner_mode': _clean_filter(one('planner_mode')),
+        'status': _clean_filter(one('status')),
+        'jarvis_version': _clean_filter(one('jarvis_version')),
+        'git_revision': _clean_filter(one('git_revision')),
+        'left': _clean_filter(one('left')),
+        'right': _clean_filter(one('right')),
+        'left_key': left_key,
+        'right_key': right_key,
+    }
+
+
+def summarize_window(traces, query=None, budgets=None):
+    query = query or {}
+    window = list(traces or [])
+    filtered = filter_traces(
+        window,
+        planner_mode=query.get('planner_mode'),
+        status=query.get('status'),
+        jarvis_version=query.get('jarvis_version'),
+        git_revision=query.get('git_revision'),
+    )
+    summary = summarize(
+        filtered,
+        budgets=budgets,
+        left=query.get('left'),
+        right=query.get('right'),
+        left_key=query.get('left_key'),
+        right_key=query.get('right_key'),
+    )
+    summary['options'] = _options(window)
+    summary['window'] = query.get('limit') or len(window)
+    summary['filters'] = {
+        'planner_mode': query.get('planner_mode'),
+        'status': query.get('status'),
+        'jarvis_version': query.get('jarvis_version'),
+        'git_revision': query.get('git_revision'),
+    }
+    return summary, filtered

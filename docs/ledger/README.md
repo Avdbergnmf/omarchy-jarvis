@@ -81,6 +81,16 @@ the whole reason A-038 exists. If you want to actually reference durable evidenc
 a real bundle `id` or write the bounded summary directly into the record; don't point at a path
 that retention (A-006) can delete out from under the claim.
 
+## PERF notes from Training (A-035)
+
+Training → Latency can **Copy PERF note**: a paste-ready Events line with n,
+with_mrl, p50/p90/p95/p99, optional version/SHA compare, and a reminder that
+budget keys are placeholders. **Desk** pastes that line into an existing IMP
+when the numbers belong on the audit trail. Runtime and Training still must
+not allocate an `IMP-*` id or write files under `docs/ledger/`. Next id is
+whatever `python3 scripts/ledger-status.py` prints after fetching origin/main
+(IMP-007 if Desk files one).
+
 ## Linking an assignment to an improvement
 
 An assignment brief may set the optional `- **Improvement:** IMP-NNN` metadata field (same

@@ -57,6 +57,8 @@ approval_mode = "always"   # or "skills_trusted" / "off" (debug only)
 log_level = "info"         # "debug" for module noise
 show_notifications = true
 latency_profiler = true    # false/off/0 disables A-033 traces; see docs/LATENCY.md
+latency_budget_p50_ms = 0  # 0/absent = unset; placeholders only, never a merge gate
+latency_budget_p90_ms = 0
 ```
 
 App-open preference weights (which Bitwarden to prefer after “the other one”) live in `~/.config/jarvis/app-preferences.json`, created on first correction. Not repo-tracked.
