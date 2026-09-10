@@ -47,3 +47,4 @@
 | A-043 | Training Problems: whole row bubble clickable | queued | area:overlay | YES | [active/A-043-problem-row-full-bubble-click.md](active/A-043-problem-row-full-bubble-click.md) |
 | A-044 | Agent manager: Copy handoff fix | queued | area:overlay | YES | [active/A-044-agent-copy-handoff-fix.md](active/A-044-agent-copy-handoff-fix.md) |
 | A-045 | Agent manager: opt-in auto-send prompt | queued | area:overlay | YES | [active/A-045-agent-auto-send-prompt-option.md](active/A-045-agent-auto-send-prompt-option.md) |
+| A-046 | Validate features overhaul (simple cards) | queued | area:overlay | YES | [active/A-046-validate-features-overhaul.md](active/A-046-validate-features-overhaul.md) |
