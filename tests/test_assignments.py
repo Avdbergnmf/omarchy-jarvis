@@ -78,6 +78,37 @@ class AssignmentTest(unittest.TestCase):
         item=next(a for a in training.assignments(self.root) if a['id']==aid)
         self.assertEqual(item['unmet_blocked_by'],['A-030'],'a done blocker drops out of unmet_blocked_by')
 
+    def test_blocked_by_parser_strips_prose_and_dedupes(self):
+        # A-037 hardening: parentheticals, em-dashes, and duplicates must not pollute the parsed id list.
+        # This tests the parser robustness for briefs that may have prose (e.g. from manual edits or pre-validation).
+        # The validation correctly rejects prose at save time, but the parser must handle it when reading.
+        
+        # Create a base assignment that we'll manually edit
+        aid=self.create()
+        detail=training.assignment_detail(self.root,aid)
+        path=self.root/detail['path']
+        
+        # Test case 1: parenthetical prose like A-031 originally had
+        # Manually edit the brief to add prose (bypassing validation)
+        original_text=path.read_text()
+        text1=original_text.replace('- **Blocked-by:**','- **Blocked-by:** A-028, A-030 (transitively also needs A-038, via A-028)')
+        path.write_text(text1)
+        item1=next(a for a in training.assignments(self.root) if a['id']==aid)
+        self.assertEqual(item1['blocked_by'],['A-028','A-030'],'parenthetical prose must not add extra ids')
+        
+        # Test case 2: em-dash prose like A-027 originally had
+        text2=original_text.replace('- **Blocked-by:**','- **Blocked-by:** none — blocked on a human decision, not an assignment id')
+        path.write_text(text2)
+        item2=next(a for a in training.assignments(self.root) if a['id']==aid)
+        self.assertEqual(item2['blocked_by'],[],'none with em-dash prose yields empty blocked_by')
+        
+        # Test case 3: duplicates must collapse
+        text3=original_text.replace('- **Blocked-by:**','- **Blocked-by:** A-028, A-030, A-028')
+        path.write_text(text3)
+        item3=next(a for a in training.assignments(self.root) if a['id']==aid)
+        self.assertEqual(item3['blocked_by'],['A-028','A-030'],'duplicates must collapse to unique list')
+
+
     def test_stale_preview_and_claimed_assignment_rejected(self):
         aid=self.create();detail=training.assignment_detail(self.root,aid)
         payload=dict(operation='assignment_save',assignment_id=aid,revision=detail['revision'],fields=self.fields)

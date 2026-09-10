@@ -5,11 +5,15 @@
 - **parallel-ok:** NO (promotion/control-plane work is serial)
 - **Recommended depth:** high
 - **Soft path hints:** `docs/`, `START.md`, `scripts/`, `.github/`
-- **Blocked-by:** none — blocked on a human decision, not an assignment id: Alex must choose GitHub Pro, deliberate public visibility, or another authoritative host with private-repo protection
+- **Blocked-by:** none
 - **Gate:** none
 - **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review · blocks A-030 and unattended Forge
 
 ## Goal
+
+**Human decision blocker:** This assignment is blocked on a human decision, not an assignment id.
+Alex must choose GitHub Pro, deliberate public visibility, or another authoritative host with
+private-repo protection before this work can proceed.
 
 Create a **verified hard promotion gate**, not a policy-only approximation. Candidate branches
 and PRs may be automated later; merge/promotion requires Alex and repository enforcement.

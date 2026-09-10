@@ -138,7 +138,9 @@ for row in "${ROWS[@]+"${ROWS[@]}"}"; do
   [[ -n "$BODY" ]] || continue
   BLOCKED_BY_RAW=$(brief_meta "$BODY" 'Blocked-by')
   GATE_RAW=$(brief_meta "$BODY" 'Gate')
-  mapfile -t IDS < <(grep -oE 'A-[0-9]+' <<<"$BLOCKED_BY_RAW" || true)
+  # A-037 hardening: strip parentheticals and em-dash prose before extracting ids; dedupe.
+  BLOCKED_BY_CLEAN=$(sed -E 's/\([^)]*\)//g; s/ —.*//; s/ –.*//' <<<"$BLOCKED_BY_RAW")
+  mapfile -t IDS < <(grep -oE 'A-[0-9]+' <<<"$BLOCKED_BY_CLEAN" | awk '!seen[$0]++' || true)
   UNMET=()
   for bid in "${IDS[@]+"${IDS[@]}"}"; do
     [[ "${STATUS_BY_ID[$bid]:-}" == "done" ]] || UNMET+=("$bid")
@@ -157,6 +159,21 @@ done
 if ((ANY_BLOCKED == 0)); then
   echo "(no structured Blocked-by dependencies are currently unmet)"
 fi
+# A-037 hardening: show rows with status=blocked but no id dependencies (human-blocked).
+for row in "${ROWS[@]+"${ROWS[@]}"}"; do
+  RID=$(row_id "$row")
+  RSTATUS=$(row_status "$row")
+  RPATH=$(row_path "$row")
+  [[ "$RSTATUS" == "blocked" && "$RPATH" == active/* ]] || continue
+  BODY=$(brief_text "$RPATH")
+  [[ -n "$BODY" ]] || continue
+  BLOCKED_BY_RAW=$(brief_meta "$BODY" 'Blocked-by')
+  BLOCKED_BY_CLEAN=$(sed -E 's/\([^)]*\)//g; s/ —.*//; s/ –.*//' <<<"$BLOCKED_BY_RAW")
+  mapfile -t IDS < <(grep -oE 'A-[0-9]+' <<<"$BLOCKED_BY_CLEAN" || true)
+  if ((${#IDS[@]} == 0)); then
+    echo "HUMAN-BLOCKED: $RID (status=blocked; not an id dependency)"
+  fi
+done
 
 echo
 echo "=== in_progress (canonical) ==="
