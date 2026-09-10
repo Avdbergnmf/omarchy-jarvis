@@ -44,7 +44,14 @@ Forge may modify Runtime. Forge must **not** freely modify Control Plane authori
 5. **A-031** Stochastic evals v0 (~10–20 behaviors)  
 6. **A-029** Memory v0 provenance  
 
-### Wave 1 — backlog after Wave 0
+### Wave 1 — Text latency profiler (after Wave 0)
+1. **A-033** traces/spans/store + instrumentation
+2. **A-034** Training profiler UI
+3. **A-035** distributions / version compare / ledger hooks
+
+Brief: `docs/audits/chatgpt-latency-profiler-brief-2026-09-10.md`.
+
+### Wave 2+ — backlog after Wave 0/1
 Secrets broker; deployment ladder + health/rollback; friction metrics; rejection memory; resource budgets; skill manifests; VM candidates; …
 
 ### Deprioritized

@@ -11,6 +11,9 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | A-030 | Protect safety/eval/control-plane paths | queued | area:docs | YES | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic evals v0 (~10–20 critical behaviors) | queued | area:docs | YES | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
 | A-029 | Memory v0 (typed prefs + provenance) | queued | area:brain | NO | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
+| A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | NO | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
+| A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
+| A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 
 Recently completed: A-001 … A-025 (see [done/](done/)).
 
@@ -22,5 +25,7 @@ Recently completed: A-001 … A-025 (see [done/](done/)).
 - Briefing without chat history: `docs/audits/chatgpt-self-improve-discussion-brief-2026-09-10.md`
 
 **Wave 0 (after A-032):** A-027 → A-026 → A-028 → A-030 → A-031 → A-029. Roadmap: [docs/SELF_IMPROVE_ROADMAP.md](../SELF_IMPROVE_ROADMAP.md).
+
+**Wave 1 (after Wave 0):** A-033 → A-034 → A-035 text latency profiler. Brief: [chatgpt-latency-profiler-brief](../audits/chatgpt-latency-profiler-brief-2026-09-10.md).
 
 **How to run:** paste a prompt from [`prompts/`](prompts/README.md).

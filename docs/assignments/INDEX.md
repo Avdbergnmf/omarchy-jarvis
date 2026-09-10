@@ -34,3 +34,6 @@
 | A-030 | Protect safety/eval/control-plane paths | queued | area:docs | YES | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic evals v0 (~10–20 critical behaviors) | queued | area:docs | YES | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
 | A-032 | ChatGPT deep review: plan vs codebase (plan perfection) | queued | area:docs | NO | [active/A-032-chatgpt-plan-codebase-review.md](active/A-032-chatgpt-plan-codebase-review.md) |
+| A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | NO | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
+| A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
+| A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |

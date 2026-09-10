@@ -570,3 +570,6 @@ validation remains pending because the browser connector exposes no browser on t
 ## 2026-09-10 — desk: A-032 briefing for Sol without ChatGPT chat
 - Added docs/audits/chatgpt-self-improve-discussion-brief-2026-09-10.md (8 answers + sequence + north star).
 - A-032: batch 1 only; CONTINUE should name A-032 explicitly.
+
+## 2026-09-10 — desk: Wave 1 latency profiler (A-033–A-035)
+- Split ChatGPT text-latency brief; standing work (A-032 + Wave 0) stays first.

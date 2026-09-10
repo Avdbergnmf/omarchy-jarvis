@@ -35,3 +35,11 @@ _Converted:_ bug-open-bitwarden → assignments A-024 + A-025 (`bugs/converted/`
 | feat-self-improve-prompt-config-semver | feature | Trace prompt/config versions like code | M | open | — |
 | feat-self-improve-rejection-memory | feature | Store rejection reasons for improvements | S | open | — |
 | feat-self-improve-resource-budgets | feature | Autonomy resource budgets | M | open | — |
+
+## Latency profiler backlog (desk 2026-09-10)
+
+| id | type | title | difficulty | status | gh issue |
+|----|------|-------|------------|--------|----------|
+| feat-latency-perfetto-export | feature | Export selected latency trace to Perfetto/Chrome Trace | S | open | — |
+| feat-latency-auto-regression-gate | feature | Optional latency regression gate on promotion | M | open | — |
+| feat-latency-process-pooling | feature | Reduce subprocess startup via pooling (profiler-driven) | L | open | — |

@@ -17,5 +17,8 @@
 ## Next action (one concrete step)
 - Sol: claim **A-032** only (see prompt tip in QUEUE). Read `docs/audits/chatgpt-self-improve-discussion-brief-2026-09-10.md` first.
 
+## Also queued (Wave 1 — after Wave 0)
+- A-033…A-035 latency profiler
+
 ## Blockers
 - Wave 0 implementation waits on A-032
