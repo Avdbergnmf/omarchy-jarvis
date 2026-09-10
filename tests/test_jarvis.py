@@ -623,8 +623,8 @@ class OpenByNameTest(unittest.TestCase):
   entries=[{'name':'Bitwarden','exec':'bitwarden','stem':'bitwarden','wmclass':'bitwarden'},
            {'name':'Bitwarden','exec':'flatpak run com.bitwarden.desktop','stem':'com.bitwarden.desktop','wmclass':'com.bitwarden.desktop'}]
   self.assertEqual(core.resolve_app('bitwarden',entries)['stem'],'bitwarden')
-  prefs={'queries':{'bitwarden':{'weights':{'com.bitwarden.desktop':1}}},'last_open':None}
-  self.assertEqual(core.resolve_app('bitwarden',entries,prefs)['stem'],'com.bitwarden.desktop')
+  core.add_preference_record('bitwarden','com.bitwarden.desktop')
+  self.assertEqual(core.resolve_app('bitwarden',entries)['stem'],'com.bitwarden.desktop')
  def test_preview_correction_picks_the_next_stem_and_rejects_stale_or_solo(self):
   entries=[{'name':'Bitwarden','exec':'bitwarden','stem':'bitwarden','wmclass':'bitwarden'},
            {'name':'Bitwarden','exec':'flatpak run com.bitwarden.desktop','stem':'com.bitwarden.desktop','wmclass':'com.bitwarden.desktop'}]

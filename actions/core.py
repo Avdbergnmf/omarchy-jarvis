@@ -1,11 +1,14 @@
 """Reviewed desktop actions. No model-generated shell commands are evaluated."""
 import argparse
+import contextlib
 import datetime
 import difflib
+import fcntl
 import json
 import os
 from pathlib import Path
 import re
+import secrets
 import shlex
 import subprocess
 import sys
@@ -25,6 +28,14 @@ FIELD_CODE_RE = re.compile(r'%[fFuUdDnNickvm]')
 # Per-user, not repo-tracked — same XDG convention as config.toml (ADR-015). Overridable for tests.
 APP_PREFS_PATH = Path(os.environ.get('JARVIS_APP_PREFS', str(Path.home() / '.config/jarvis/app-preferences.json')))
 LAST_OPEN_TTL = 900  # seconds a "the other one" correction may still target the last open
+# A-029: durable app-open preference records (provenance, precedence, revoke). `last_open`
+# above stays the separate, ephemeral, non-durable interaction state it already was.
+PREFS_VERSION = 2
+PREF_RECORD_KEEP = 500  # bounded growth cap; oldest inactive records pruned first
+AUTHORITIES = ('explicit_correction', 'migrated_v1', 'inferred')
+EXPLICIT_AUTHORITIES = {'explicit_correction', 'migrated_v1'}  # never outweighed by inferred repetition
+EXPLICIT_TIER_MULTIPLIER = 1_000_000  # encodes "explicit always outranks any amount of inferred" as plain int comparison
+RECORD_STATUSES = ('active', 'revoked')
 
 def redact(value):
     text = str(value)
@@ -235,9 +246,53 @@ def desktop_entries():
     return entries
 
 def _empty_app_prefs():
-    return {'version': 1, 'queries': {}, 'last_open': None}
+    return {'version': PREFS_VERSION, 'records': {}, 'last_open': None}
+
+def _now_iso():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+def _new_record_id(existing):
+    for _ in range(10):
+        rid = 'pref_' + secrets.token_hex(6)
+        if rid not in existing:
+            return rid
+    raise RuntimeError('Could not allocate a unique preference record id')
+
+def _valid_record(rid, rec):
+    return (isinstance(rec, dict) and rec.get('id') == rid and rec.get('type') == 'app_open_weight'
+            and isinstance(rec.get('query'), str) and isinstance(rec.get('stem'), str)
+            and rec.get('authority') in AUTHORITIES and rec.get('status') in RECORD_STATUSES)
+
+def _migrate_v1_records(data):
+    """v1 {'queries': {q: {'weights': {stem:int}}}} -> one migrated_v1 record per (query,
+    stem) weight, preserving the exact integer amount — ranking is identical pre/post
+    migration since migrated_v1 is an explicit-tier authority (A-029)."""
+    records = {}
+    queries = data.get('queries') if isinstance(data.get('queries'), dict) else {}
+    now = _now_iso()
+    for query, bucket in queries.items():
+        weights = bucket.get('weights') if isinstance(bucket, dict) else None
+        if not isinstance(weights, dict):
+            continue
+        for stem, value in weights.items():
+            try:
+                amount = int(value)
+            except (TypeError, ValueError):
+                continue
+            if amount == 0:
+                continue
+            rid = _new_record_id(records)
+            records[rid] = dict(id=rid, type='app_open_weight', query=str(query).strip().lower(), stem=str(stem),
+                                 amount=amount, source={'run_id': None, 'event': 'migration'}, created_at=now,
+                                 authority='migrated_v1', confidence=1.0, supersedes=None, revokes=None,
+                                 expiry=None, status='active')
+    return records
 
 def load_app_prefs(path=None):
+    """Pure read: never mutates disk. A v1 file is transparently migrated in memory on
+    every load (exact same ranking, since migrated_v1 is explicit-tier) — the on-disk
+    upgrade to v2 happens naturally the next time save_app_prefs runs, which is also where
+    a one-time .v1.bak backup or quarantine of anything unreadable happens (A-029)."""
     path = Path(path) if path is not None else APP_PREFS_PATH
     if not path.is_file():
         return _empty_app_prefs()
@@ -247,60 +302,177 @@ def load_app_prefs(path=None):
         return _empty_app_prefs()
     if not isinstance(data, dict):
         return _empty_app_prefs()
-    queries = data.get('queries') if isinstance(data.get('queries'), dict) else {}
     last = data.get('last_open') if isinstance(data.get('last_open'), dict) else None
-    return {'version': 1, 'queries': queries, 'last_open': last}
+    version = data.get('version')
+    if version == PREFS_VERSION:
+        raw_records = data.get('records') if isinstance(data.get('records'), dict) else {}
+        records = {rid: rec for rid, rec in raw_records.items() if _valid_record(rid, rec)}
+        return {'version': PREFS_VERSION, 'records': records, 'last_open': last}
+    if version == 1 or (version is None and isinstance(data.get('queries'), dict)):
+        return {'version': PREFS_VERSION, 'records': _migrate_v1_records(data), 'last_open': last}
+    return _empty_app_prefs()  # unknown/malformed version: never guessed at, quarantined on next write
+
+def _preserve_before_overwrite(path):
+    """Called with the lock held, immediately before writing a fresh v2 file: preserves
+    whatever is currently on disk if it's a v1 file (one-time .v1.bak) or anything else
+    unparseable/unknown-version (timestamped quarantine) — never silently overwritten."""
+    if not path.is_file():
+        return
+    try:
+        raw = path.read_text()
+        data = json.loads(raw)
+    except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+        data = None
+    if isinstance(data, dict) and data.get('version') == PREFS_VERSION:
+        return  # already current format; nothing to preserve
+    if isinstance(data, dict) and (data.get('version') == 1 or (data.get('version') is None and isinstance(data.get('queries'), dict))):
+        backup = path.with_name(path.name + '.v1.bak')
+        if not backup.exists():
+            try:
+                backup.write_text(raw); backup.chmod(0o600)
+            except OSError:
+                pass
+        return
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+    try:
+        path.rename(path.with_name(path.name + '.quarantined-' + stamp))
+    except OSError:
+        pass
+
+def _prune_records(records, keep):
+    """Bounded growth: beyond `keep`, drop the oldest revoked records first, then the
+    oldest active ones if still over the cap. Never silently drops everything at once."""
+    if len(records) <= keep:
+        return records
+    def sort_key(item):
+        rid, rec = item
+        return (rec.get('status') == 'active', rec.get('created_at') or '')
+    ordered = sorted(records.items(), key=sort_key)
+    return dict(ordered[len(ordered) - keep:])
 
 def save_app_prefs(data, path=None):
     path = Path(path) if path is not None else APP_PREFS_PATH
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    payload = json.dumps({'version': 1, 'queries': data.get('queries') or {}, 'last_open': data.get('last_open')}, indent=2) + '\n'
+    _preserve_before_overwrite(path)
+    # PREF_RECORD_KEEP is looked up fresh here (not a def-time default) so tests can
+    # patch.object(core, 'PREF_RECORD_KEEP', ...) and have it actually take effect.
+    records = _prune_records(data.get('records') if isinstance(data.get('records'), dict) else {}, PREF_RECORD_KEEP)
+    payload = json.dumps({'version': PREFS_VERSION, 'records': records, 'last_open': data.get('last_open')}, indent=2) + '\n'
     tmp = path.with_name(path.name + '.tmp')
     tmp.write_text(payload)
     tmp.chmod(0o600)
     tmp.replace(path)
 
-def query_weights(query, prefs=None):
-    prefs = prefs if prefs is not None else load_app_prefs()
-    bucket = (prefs.get('queries') or {}).get((query or '').strip().lower()) or {}
-    raw = bucket.get('weights') if isinstance(bucket, dict) else None
-    if not isinstance(raw, dict):
-        return {}
-    weights = {}
-    for stem, value in raw.items():
+@contextlib.contextmanager
+def _app_prefs_lock(path=None):
+    """Cross-process lock around a load-mutate-save cycle. flock is per-open-file-
+    description, not per-process, so this must be the ONLY place that locks — load_app_prefs
+    and save_app_prefs stay lock-free themselves to avoid a same-process re-entrant deadlock."""
+    path = Path(path) if path is not None else APP_PREFS_PATH
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    lock_path = path.with_name(path.name + '.lock')
+    fd = os.open(lock_path, os.O_CREAT | os.O_RDWR, 0o600)
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        yield
+    finally:
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.close(fd)
+
+def _record_effective(record, now):
+    if record.get('status') != 'active':
+        return False
+    expiry = record.get('expiry')
+    if expiry:
         try:
-            weights[str(stem)] = int(value)
+            if datetime.datetime.fromisoformat(expiry) <= now:
+                return False
+        except ValueError:
+            return False
+    return True
+
+def query_weights(query, prefs=None, now=None):
+    """Effective per-stem ranking score for `query`. Explicit-tier records (real
+    corrections, plus migrated_v1 history) always outrank any amount of inferred
+    repetition — encoded as a large integer multiplier so ranked_apps' existing plain
+    int sort key needs no changes (A-029)."""
+    prefs = prefs if prefs is not None else load_app_prefs()
+    now = now if now is not None else datetime.datetime.now(datetime.timezone.utc)
+    query = (query or '').strip().lower()
+    records = prefs.get('records') if isinstance(prefs.get('records'), dict) else {}
+    scores = {}
+    for record in records.values():
+        if not isinstance(record, dict) or record.get('query') != query or not _record_effective(record, now):
+            continue
+        stem = record.get('stem')
+        if not stem:
+            continue
+        try:
+            amount = int(record.get('amount', 0))
         except (TypeError, ValueError):
             continue
-    return weights
+        tier = EXPLICIT_TIER_MULTIPLIER if record.get('authority') in EXPLICIT_AUTHORITIES else 1
+        scores[str(stem)] = scores.get(str(stem), 0) + amount * tier
+    return scores
 
-def bump_app_weight(query, stem, amount=1, path=None):
+def add_preference_record(query, stem, amount=1, run_id=None, authority='explicit_correction', confidence=1.0, expiry=None, path=None):
+    """The durable, inspectable, revocable analogue of the old bump_app_weight: records
+    WHO/WHY influenced ranking, with explicit provenance, not just an anonymous counter."""
+    if authority not in AUTHORITIES:
+        raise ValueError('Unknown preference authority: ' + repr(authority))
+    query = (query or '').strip().lower()
+    if not query or not stem:
+        raise ValueError('query and stem are required')
+    with _app_prefs_lock(path):
+        prefs = load_app_prefs(path)
+        rid = _new_record_id(prefs['records'])
+        prefs['records'][rid] = dict(id=rid, type='app_open_weight', query=query, stem=str(stem), amount=int(amount),
+                                      source={'run_id': run_id, 'event': 'correction'}, created_at=_now_iso(),
+                                      authority=authority, confidence=float(confidence), supersedes=None,
+                                      revokes=None, expiry=expiry, status='active')
+        save_app_prefs(prefs, path)
+        return dict(prefs['records'][rid])
+
+def inspect_preferences(query=None, path=None):
+    """Read-only: every stored record (any status), optionally filtered by normalized
+    query, newest first — the callable "inspect" path A-029 requires."""
     prefs = load_app_prefs(path)
-    key = (query or '').strip().lower()
-    bucket = prefs.setdefault('queries', {}).setdefault(key, {})
-    weights = bucket.setdefault('weights', {})
-    if not isinstance(weights, dict):
-        weights = {}; bucket['weights'] = weights
-    try:
-        current = int(weights.get(stem, 0) or 0)
-    except (TypeError, ValueError):
-        current = 0
-    weights[stem] = current + int(amount)
-    save_app_prefs(prefs, path)
-    return weights[stem]
+    query = (query or '').strip().lower() if query else None
+    records = [dict(rec) for rec in prefs['records'].values() if query is None or rec.get('query') == query]
+    records.sort(key=lambda r: r.get('created_at') or '', reverse=True)
+    return records
+
+def _set_record_status(record_id, status, path):
+    with _app_prefs_lock(path):
+        prefs = load_app_prefs(path)
+        record = prefs['records'].get(record_id)
+        if record is None:
+            raise ValueError('Unknown preference record: ' + repr(record_id))
+        record['status'] = status
+        save_app_prefs(prefs, path)
+        return dict(record)
+
+def revoke_preference(record_id, path=None):
+    """Idempotent: revoking an already-revoked record is a no-op that still returns it."""
+    return _set_record_status(record_id, 'revoked', path)
+
+def restore_preference(record_id, path=None):
+    """Idempotent: restoring an already-active record is a no-op that still returns it."""
+    return _set_record_status(record_id, 'active', path)
 
 def record_last_open(query, entry, address=None, path=None):
-    prefs = load_app_prefs(path)
-    prefs['last_open'] = {
-        'query': (query or '').strip().lower(),
-        'stem': entry['stem'],
-        'name': entry['name'],
-        'wmclass': entry.get('wmclass') or entry['stem'],
-        'address': address,
-        'ts': time.time(),
-    }
-    save_app_prefs(prefs, path)
-    return prefs['last_open']
+    with _app_prefs_lock(path):
+        prefs = load_app_prefs(path)
+        prefs['last_open'] = {
+            'query': (query or '').strip().lower(),
+            'stem': entry['stem'],
+            'name': entry['name'],
+            'wmclass': entry.get('wmclass') or entry['stem'],
+            'address': address,
+            'ts': time.time(),
+        }
+        save_app_prefs(prefs, path)
+        return prefs['last_open']
 
 def recent_last_open(prefs=None, now=None):
     prefs = prefs if prefs is not None else load_app_prefs()
@@ -447,7 +619,7 @@ def correct_open(dry=False, query=None, entries=None):
         except RuntimeError:
             closed = None
     result = launch_entry(nxt, dry=False)
-    bump_app_weight(preview['query'], nxt['stem'])
+    add_preference_record(preview['query'], nxt['stem'], authority='explicit_correction')
     record_last_open(preview['query'], nxt, result.get('address'))
     return {'query': preview['query'], 'closed': closed, 'name': result['name'], 'stem': result['stem'],
             'address': result['address'], 'workspace': result['workspace'], 'class': result['class']}

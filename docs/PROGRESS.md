@@ -792,3 +792,42 @@ validation remains pending because the browser connector exposes no browser on t
   file made the mismatch fail loudly. `python3 -m unittest discover -s tests` — 204/204 pass
   (190 + 14 new); `./scripts/doctor.sh --syntax`, `node tests/overlay.test.cjs`,
   `check-test-coverage.py` and `eval-status.py` all green via `./scripts/test-full.sh`.
+
+## 2026-09-10 — A-029 durable preference memory v0 (ADR-047)
+- `actions/core.py` app-open preferences move from a bare `{query:{weights:{stem:int}}}`
+  counter (v1) to a versioned v2 record schema: `id`, `type`, `query`, `stem`, `amount`,
+  `source` (`run_id`/`event`), `created_at`, `authority`
+  (`explicit_correction`/`migrated_v1`/`inferred`), `confidence`, `supersedes`/`revokes`
+  (reserved), `expiry`, `status`. `last_open` stays exactly the ephemeral, non-durable state
+  it already was.
+- Precedence: `query_weights()` multiplies explicit-tier amounts by `EXPLICIT_TIER_MULTIPLIER`
+  (1,000,000) before summing, so `ranked_apps`' existing plain-int sort key needs zero changes
+  and one explicit correction always outranks any amount of inferred repetition.
+- Migration: pure, idempotent, in-memory (inside `load_app_prefs`) — v1 weights become
+  `migrated_v1` records with the identical amount, so ranking is byte-for-byte unchanged. The
+  `.v1.bak` backup and quarantine-of-unreadable/unknown-version files both happen inside
+  `save_app_prefs`, immediately before an overwrite, never during a read.
+- Locking: `fcntl.flock`-based `_app_prefs_lock()` wraps every load-mutate-save cycle in the
+  new mutating functions; `load_app_prefs`/`save_app_prefs` stay lock-free themselves to avoid
+  a same-process re-entrant deadlock. Bounded growth via `PREF_RECORD_KEEP` (500),
+  oldest-revoked-first pruning.
+- New callable API: `add_preference_record`, `inspect_preferences`, `revoke_preference`,
+  `restore_preference` (idempotent). `correct_open()` now calls `add_preference_record` instead
+  of the retired `bump_app_weight`.
+- Linked to the ledger's IMP-001 (new event + `Improvement: IMP-001` on A-029's own brief) —
+  this hardens A-024/A-025's shipped capability, not a new improvement. No `docs/validation/`
+  entry: ranking and correction UX are provably unchanged; inspect/revoke/restore are
+  backend-only in v0, not yet wired to any chat command or Training panel.
+- Evidence: `tests/test_app_preferences.py` (19 new cases: exact-ranking migration, idempotent
+  migration, one-time backup, quarantine of unknown-version/corrupt files, malformed individual
+  records dropped without being fatal, explicit-outranks-inferred, migrated_v1+explicit
+  combining in the same tier, expiry, revoke/restore round-trip + idempotence, unknown
+  record/authority rejection, inspect filtering/ordering, bounded-growth pruning order, and a
+  real 16-thread/40-write concurrency test proving zero lost updates). Updated
+  `tests/test_jarvis.py::OpenByNameTest`'s one test that hand-built a raw v1 prefs dict to use
+  the real v2 API. Found and fixed a real bug pre-commit: `_prune_records`'s `keep` parameter
+  had a def-time-bound default, so patching `PREF_RECORD_KEEP` in a test silently had no
+  effect — fixed by having `save_app_prefs` pass the current module value explicitly.
+  `python3 -m unittest discover -s tests` — 223/223 pass (204 + 19 new); `./scripts/test-full.sh`
+  green. No shared-service restart required (actions/ CLI tools only, no brain/server.py
+  behavior change).

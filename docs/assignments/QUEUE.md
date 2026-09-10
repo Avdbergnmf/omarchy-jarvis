@@ -7,13 +7,12 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | high | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
 | A-030 | Protect safety/eval/control-plane paths | blocked | area:docs | NO | medium | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | high | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
-| A-029 | Preference memory v0 (provenance, precedence, revoke) | in_progress | area:actions | NO | high | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
 | A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | NO | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | NO | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
 
-Recently completed: A-001 … A-025, A-026, A-028, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
+Recently completed: A-001 … A-025, A-026, A-028, A-029, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
 
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
@@ -52,9 +51,16 @@ A-019–A-025/#15/#16. A-029 is unblocked.
 (new CI step, "no quiet suite omission"). Seeded EVAL-001…EVAL-005. A-030 intentionally **not**
 unblocked — still waits on externally-blocked A-027.
 
-**Next up: A-029** — recommended depth high (preference memory v0, area:actions;
-`Blocked-by: none`). A-033 (area:brain) and A-041 (area:overlay, `Gate: training-dispatch`) are
-equally valid, disjoint-area alternatives.
+**A-029 complete (ADR-047):** `~/.config/jarvis/app-preferences.json` moves to a versioned v2
+schema — each app-open ranking influence is now a durable, provenance-carrying record
+(`id`/`authority`/`source`/`created_at`/`confidence`/`expiry`/`status`) instead of a bare int
+weight, with explicit authority-tiered precedence (`explicit_correction`/`migrated_v1` always
+outrank any amount of `inferred` repetition), inspect/revoke/restore, byte-identical in-memory v1
+migration with one-time backup, quarantine for unreadable/unknown-version files, `fcntl.flock`
+cross-process locking, and bounded growth (oldest revoked pruned first). IMP-001 updated.
+
+**Next up:** A-033 (area:brain) and A-041 (area:overlay, `Gate: training-dispatch`) are both
+`queued` and disjoint-area; either is a valid next claim.
 
 **Revised Wave 0:** A-027 is externally blocked (private-repo protection unavailable until
 Alex chooses a supported plan/visibility/host). A-030 waits for A-027 (A-028 done); A-031 waits
