@@ -329,3 +329,7 @@ validation remains pending because the browser connector exposes no browser on t
 - Alex: Training must be a main self-improve surface; current UI too chaotic.
 - Wanted: separate Hyprland window, top stats bar, feature nav buttons, Problems-first (color-coded list, dismiss/check-off, detail+edit+save, priority, generate assignment).
 - Filed [A-016](assignments/active/A-016-training-window-overhaul.md); kept earlier plan-detail ask as A-015 (lower priority, same area).
+
+## 2026-09-10 — desk: queue A-017 Training Assignments panel
+- After Problems: queue list + click/detail/save; generate assignment from selected problem (local model or on-machine agent); handoff button → Agent monitor.
+- Filed [A-017](assignments/active/A-017-training-assignments-panel.md); QUEUE order A-016 → A-017 → A-015.

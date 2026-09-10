@@ -5,7 +5,7 @@
 - **parallel-ok:** NO
 - **Allowed paths:** `overlay/` (esp. training UI; may add dedicated training HTML/JS/CSS), `brain/training.py`, `brain/server.py` (training endpoints only), `brain/validation.py` if shared problem model, `actions/` only if needed for a `jarvis-training` / Hyprland float launch helper, `scripts/` launch/hotkey, `tests/`, `docs/assignments/`, `docs/SESSION.md`, `docs/PROGRESS.md`, `docs/DECISIONS.md`, `docs/FEATURES.md`, `docs/validation/`, `README.md`, `START.md`, `VERSION`
 - **Forbidden paths:** Rewriting chat overlay core (plan/approve/execute) beyond a slim “Open Training” entry; claiming A-015’s plan-detail work; silent cloud spend; auto-dispatching coding agents without Alex confirm
-- **Blocks / blocked-by:** Independent of A-015 (can ship in parallel conceptually, but same overlay area → **serial**; do A-016 after or instead of A-015 only if Alex prioritizes — **Alex priority: this assignment**). Prefer completing A-016 Problems phase before polishing A-015 if both claimed by same agent.
+- **Blocks / blocked-by:** Blocks **A-017**. Independent of A-015 (can ship in parallel conceptually, but same overlay area → **serial**; do A-016 after or instead of A-015 only if Alex prioritizes — **Alex priority: this assignment**). Prefer completing A-016 Problems phase before polishing A-015 if both claimed by same agent.
 - **Links:** Alex 2026-09-10 JARVIS room — Training is a main self-improve surface; current Training view is chaotic; wants separate Hyprland window
 
 ## Goal
@@ -41,6 +41,7 @@ Done for Alex means: he can open Training as its own window, triage problems cal
 - Auto-sending work to Claude/Codex without paste/confirm
 - Full visual redesign of the chat overlay itself
 - Building every future Training feature in one pass — Problems-first is the acceptance bar; other panels need structure, not feature-complete parity
+- Full **Assignments** create/edit/generate/handoff UX — that is **A-017** (after this). Problems “Generate assignment” may deep-link / preselect into that panel once A-017 exists; until then a minimal confirm-gated prepare is OK
 
 ## Notes for the coding agent
 - Current Training is `#training-view` inside the chat Chromium `--app` (`overlay/index.html` + `training.js` + `/v1/training`). Target: own window/process or second app URL with Hyprland rules — prefer one brain server, two UIs.

@@ -18,3 +18,4 @@
 | A-014 | Hygiene: bug hunt, tests, lean cleanup | done | area:docs | YES | [done/A-014-hygiene-bug-hunt-cleanup.md](done/A-014-hygiene-bug-hunt-cleanup.md) |
 | A-015 | Richer readable plan details on approve | queued | area:overlay | NO | [active/A-015-training.md](active/A-015-training.md) |
 | A-016 | Training window overhaul (Problems-first) | queued | area:overlay | NO | [active/A-016-training-window-overhaul.md](active/A-016-training-window-overhaul.md) |
+| A-017 | Training Assignments panel (list/edit/generate/handoff) | queued | area:overlay | NO | [active/A-017-training-assignments-panel.md](active/A-017-training-assignments-panel.md) |
