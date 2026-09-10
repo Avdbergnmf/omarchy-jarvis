@@ -12,7 +12,7 @@
 ## Checklist
 - [x] A-039 Cross-worktree claims — done, merged to main, worktree/branch removed
 - [x] A-036 Agent monitor usability — done
-- [x] A-040 Test suite token optimization — done, merging to main
+- [x] A-040 Test suite token optimization — done, merged to main, worktree/branch removed
 - [ ] A-037+ — next claimable
 
 ## Done this session (evidence)
@@ -21,9 +21,10 @@
 - Codex: implemented A-036 launch-depth, delivery, local-status and active-work behavior; all tests pass.
 - Claude: claimed A-040 by pushing QUEUE/INDEX/SESSION status → in_progress directly to `origin/main` before opening the feature worktree.
 - Claude: implemented A-040 (ADR-040) — audited the 158-case suite, found no safe cull (kept everything); added `scripts/test-smoke.sh` (curated critical-path subset, ~71 cases + all 5 cjs suites, ~0.4s) and `scripts/test-full.sh` (mirrors CI, ~1.5s), both quiet-by-default with a bounded failure tail; START/prompts updated to default to smoke, full before landing/on brain-overlay-actions changes, never paste `-v` output. Found and documented that `overlay.test.cjs` already runs all five cjs suites via `require()` (corrects a stale A-032-review finding). Verified failure detection by injecting a false assertion into `test_journal.py`, confirming `test-smoke.sh` reports it correctly, then reverted. Reconciled with Alex's concurrent direct-to-main "depth column" commit.
+- Claude: merged to `main` (`44d856c`), pushed, removed the `a040-test-suite-token-optimization` worktree and local+remote branch. `origin/main` confirmed up to date; `./scripts/test-full.sh` green post-merge.
 
 ## Next action (one concrete step)
-- Merge `a040-test-suite-token-optimization` into `main`, push, remove the worktree/branch, then report to Alex. Next claimable: A-037 (area:docs, recommended depth medium).
+- Report to Alex (done). Next up: **A-037** — recommended depth medium (release gates + claimability visibility).
 
 ## Parallel agent
 - none
