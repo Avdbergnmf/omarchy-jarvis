@@ -8,6 +8,7 @@
 - **Forbidden paths (optional soft hint):** anything worth flagging explicitly — never a hard gate
 - **Blocked-by:** none | A-NNN[, A-NNN...]  (structured — `assignment-status.sh` computes claimability from this, not prose; see ADR-041)
 - **Gate:** none | <lowercase-hyphen-slug>  (optional grouping label, e.g. `control-plane`; informational, never auto-enforced)
+- **Improvement:** none | IMP-NNN  (optional back-link into `docs/ledger/`, A-026 — the durable "why," not queue sequencing)
 - **Links:** issue #N · pass path · ADR · what this blocks (prose, e.g. "unblocks A-029")
 
 ## Goal

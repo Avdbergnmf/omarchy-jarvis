@@ -1,7 +1,7 @@
 const assignEl=id=>document.querySelector('#assign-'+id);
-const assignmentFields=['title','area','priority','goal','notes','checklist','allowed_paths','forbidden_paths','blocked_by','gate','out_of_scope'];
+const assignmentFields=['title','area','priority','goal','notes','checklist','allowed_paths','forbidden_paths','blocked_by','gate','improvement','out_of_scope'];
 let selectedAssignment=null,linkedProblem=null,assignmentDirty=false,assignmentEpoch=0,assignmentSaveEpoch=null;
-const assignmentDefaults=()=>({title:'',area:'overlay',priority:'P2',goal:'',notes:'',checklist:'- [ ] Reproduce the problem and record expected vs actual behavior\n- [ ] Implement the scoped improvement\n- [ ] Verify tests and update the human validation guide',allowed_paths:'overlay/, tests/, docs/assignments/, docs/SESSION.md, docs/PROGRESS.md, docs/DECISIONS.md',forbidden_paths:'brain/, actions/, skills/; approval bypass; automatic agent dispatch',blocked_by:'',gate:'',out_of_scope:'Unrelated queue work, unreviewed skills and silent cloud spending.'});
+const assignmentDefaults=()=>({title:'',area:'overlay',priority:'P2',goal:'',notes:'',checklist:'- [ ] Reproduce the problem and record expected vs actual behavior\n- [ ] Implement the scoped improvement\n- [ ] Verify tests and update the human validation guide',allowed_paths:'overlay/, tests/, docs/assignments/, docs/SESSION.md, docs/PROGRESS.md, docs/DECISIONS.md',forbidden_paths:'brain/, actions/, skills/; approval bypass; automatic agent dispatch',blocked_by:'',gate:'',improvement:'',out_of_scope:'Unrelated queue work, unreviewed skills and silent cloud spending.'});
 function assignmentValues(){return Object.fromEntries(assignmentFields.map(key=>[key,assignEl(key).value]));}
 function fillAssignment(fields){for(const key of assignmentFields)assignEl(key).value=fields[key]||'';}
 function renderAssignments(data){

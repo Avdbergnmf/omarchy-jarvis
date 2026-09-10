@@ -27,6 +27,11 @@ Ongoing “Alex asked for X” work lives in [docs/assignments/QUEUE.md](docs/as
 
 Desk agents (Firsty or anyone authoring work) follow [docs/assignments/README.md](docs/assignments/README.md).
 
+**Why something changed, across assignments:** [docs/ledger/README.md](docs/ledger/README.md) —
+the Desk-owned Improvement Ledger (A-026). Assignments stay disposable execution work; the
+ledger is the durable "why." Only Desk writes `docs/ledger/`; run
+`python3 scripts/ledger-status.py` before allocating a new `IMP-NNN` id.
+
 **Default:** one assignment → report to Alex (include the **next** QUEUE row’s recommended **depth**). If nothing is claimable: **stop with minimal tokens** (short “nothing possible” reply only) unless Alex explicitly overrides; if unclear, ask once. **Batch / keep going** only when Alex says so (`batch N`, `keep going`, `until queue empty`) — see [prompts/README](docs/assignments/prompts/README.md).
 
 ## Token & context discipline
@@ -216,4 +221,5 @@ journal), use `scripts/export-evidence.py <run_id>` — see [docs/evidence/READM
 [START](START.md) · [AGENTS](AGENTS.md) · [README](README.md) ·
 [DECISIONS](docs/DECISIONS.md) · [PROGRESS](docs/PROGRESS.md) · [HOST](docs/HOST.md) ·
 [MILESTONES](docs/MILESTONES.md) · [backlog](docs/backlog/README.md) ·
-[passes](docs/passes/INDEX.md) · [logging](docs/LOGGING.md) · [evidence bundles](docs/evidence/README.md)
+[passes](docs/passes/INDEX.md) · [logging](docs/LOGGING.md) · [evidence bundles](docs/evidence/README.md) ·
+[improvement ledger](docs/ledger/README.md)

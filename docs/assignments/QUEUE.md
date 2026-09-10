@@ -5,17 +5,16 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | id | title | status | area | parallel-ok | depth | path |
 |----|-------|--------|------|-------------|-------|------|
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | high | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
-| A-026 | Improvement Ledger v0 (Desk-owned audit wrapping QUEUE) | in_progress | area:docs | NO | high | [active/A-026-improvement-ledger-v0.md](active/A-026-improvement-ledger-v0.md) |
 | A-028 | Deterministic candidate-eval foundation | queued | area:docs | NO | high | [active/A-028-eval-harness-v0.md](active/A-028-eval-harness-v0.md) |
 | A-030 | Protect safety/eval/control-plane paths | blocked | area:docs | NO | medium | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | high | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
-| A-029 | Preference memory v0 (provenance, precedence, revoke) | blocked | area:actions | NO | high | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
+| A-029 | Preference memory v0 (provenance, precedence, revoke) | queued | area:actions | NO | high | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
 | A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | NO | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
 | A-041 | Agent Monitor tiles + per-agent auto-queue redesign | queued | area:overlay | NO | high | [active/A-041-agent-monitor-tiles-per-agent-auto-queue.md](active/A-041-agent-monitor-tiles-per-agent-auto-queue.md) |
 
-Recently completed: A-001 … A-025, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
+Recently completed: A-001 … A-025, A-026, A-032, A-036, A-037, A-038, A-039, A-040 (see [done/](done/)).
 
 **A-032 complete:** the codebase-grounded review reshaped the roadmap and Wave 0 briefs.
 The [review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md) is the evidence for the
@@ -44,13 +43,18 @@ already-journaled run into a bounded, redacted, content-addressed bundle under
 `$XDG_STATE_HOME/jarvis/evidence/` — the fingerprint (model digest, planner mode, schema/prompt
 hashes) A-026/A-028 need to compare results across revisions. A-026 and A-028 are unblocked.
 
-**Next up: A-026** — recommended depth high (Improvement Ledger v0; `Blocked-by: none`,
-`Gate: control-plane`). A-028 (also unblocked, same depth/gate) is an equally valid parallel-ok:NO
-alternative if Alex prefers evals-first.
+**A-026 complete (ADR-044):** `docs/ledger/` — Desk-owned, manual, schema-first Improvement
+Ledger; `scripts/ledger-status.py` validates it and allocates the next `IMP-NNN` id the same
+fetch-origin/main-first way A-039 fixed assignment claims. Seeded IMP-001…IMP-006 from
+A-019–A-025/#15/#16. A-029 is unblocked.
+
+**Next up: A-028** — recommended depth high (deterministic candidate-eval foundation;
+`Blocked-by: none`, `Gate: control-plane`). A-029 (also unblocked, area:actions) is an equally
+valid parallel-ok:NO alternative.
 
 **Revised Wave 0:** A-027 is externally blocked (private-repo protection unavailable until
 Alex chooses a supported plan/visibility/host). A-030 waits for A-027+A-028; A-031 waits for
-A-030; A-029 waits for A-026 and stays last. See the [roadmap](../SELF_IMPROVE_ROADMAP.md) and
+A-030. See the [roadmap](../SELF_IMPROVE_ROADMAP.md) and
 [A-032 review](../audits/chatgpt-plan-vs-codebase-review-2026-09-10.md).
 
 **Wave 1 (after Wave 0):** A-033 → A-034 → A-035 text latency profiler. Brief: [chatgpt-latency-profiler-brief](../audits/chatgpt-latency-profiler-brief-2026-09-10.md).
