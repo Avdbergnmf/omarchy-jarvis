@@ -951,4 +951,6 @@ validation remains pending because the browser connector exposes no browser on t
   reasoned-NO withhold, HEADS-UP does not drop a candidate),
   `tests/test_assignments.py` (new draft YES; flag survives title edit),
   `tests/test_journal.py` agent-status assertions. `AREAS` not changed.
+  `./scripts/test-full.sh` green — 281 Python tests; journal-archive prune flake did
+  not appear. Log: `logs/tests/full-20260910-164357.log`. PR #35.
 
