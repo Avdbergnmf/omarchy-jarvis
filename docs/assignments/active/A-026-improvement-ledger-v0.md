@@ -1,13 +1,13 @@
 # A-026 — Improvement Ledger v0 (Desk-owned audit wrapping QUEUE)
 
-- **Status:** blocked
+- **Status:** queued
 - **Area:** area:docs
 - **parallel-ok:** NO (single writer for ledger schema/index/history)
 - **Recommended depth:** high
 - **Soft path hints:** `docs/` (ledger schema + INDEX), `docs/assignments/`
-- **Blocked-by:** A-038
+- **Blocked-by:** none
 - **Gate:** control-plane
-- **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review · unblocks A-029 on completion
+- **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review · unblocked by A-038 (done) · unblocks A-029 on completion
 
 ## Goal
 Create a versioned, Desk-owned Improvement Ledger. The ledger explains why behavior changed;

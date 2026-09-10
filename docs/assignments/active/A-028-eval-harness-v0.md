@@ -1,13 +1,13 @@
 # A-028 — Deterministic candidate-eval foundation (separate evidence planes)
 
-- **Status:** blocked
+- **Status:** queued
 - **Area:** area:docs
 - **parallel-ok:** NO (candidate evaluation is Control Plane work)
 - **Recommended depth:** high
 - **Soft path hints:** `docs/evals/`, `.github/workflows/ci.yml`, `tests/`, `scripts/`, `START.md`
-- **Blocked-by:** A-038
+- **Blocked-by:** none
 - **Gate:** control-plane
-- **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review · ADR-028 (human validation remains separate) · blocks A-030 and A-031
+- **Links:** docs/SELF_IMPROVE_ROADMAP.md · A-032 review · ADR-028 (human validation remains separate) · unblocked by A-038 (done) · blocks A-030 and A-031
 
 ## Goal
 Define a candidate-evaluation registry and result envelope without overloading the human

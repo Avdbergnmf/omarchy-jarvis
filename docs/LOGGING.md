@@ -8,7 +8,9 @@ Intake questions and raw module output belong to debug, not the journal.
 Every record includes `ts` (ISO-8601 UTC), `jarvis_version` (VERSION), `git_describe`
 (cached at process startup), `run_id`, and `phase`. Phase payloads are:
 
-- prompt: `prompt`, redacted user text.
+- prompt: `prompt` (redacted user text), `mode` (A-038: which router/planner path handled this
+  run — `json_plan`, `tools_run`, `correction`, `intake` or `fixed_plan`), `model` (the Ollama
+  model name active for this run).
 - process: `process`, short plan (actions/tools/arguments/reply), or no-plan explanation.
 - done: `happened` with terminal status, reply and tool steps/results; `ok` reports execution success.
 - eval: `eval: {ok, flag, note}`, where flag is null, suspicious, mismatch or partial;
@@ -115,3 +117,13 @@ directory out from under it would be disruptive. A fresh profile is recreated au
 on the next overlay launch either way. Not run automatically by `doctor.sh` (which is meant to
 be a non-destructive health check) or as a git hook (optional, not mandatory for every clone)
 — run it yourself before a commit if you want a tidy `logs/` first.
+
+## Durable evidence bundles (A-038)
+
+The journal above is deliberately ephemeral and bounded — useful for today's diagnostics, but
+pruned and never a comparison baseline across code/model revisions. `scripts/export-evidence.py
+<run_id> [--tier reference|summary|full]` turns one already-journaled run into a bounded,
+redacted, **content-addressed** bundle under `$XDG_STATE_HOME/jarvis/evidence/` (default
+`~/.local/state/jarvis/evidence/`, gitignored, mode 0600/0700). It never mutates a run, restarts
+the service, or claims anything is "backed up" — that's true only once Alex selects and
+verifies a destination. Full schema, tiers and retention: [docs/evidence/README.md](evidence/README.md).
