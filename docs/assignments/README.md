@@ -97,6 +97,9 @@ recovery](../../START.md#recovering-a-stale-claim), not silently reclaimed.
 - Explicit **out of scope** to stop mega-passes.
 - Link existing ADRs/passes instead of pasting novels.
 - Mark `parallel-ok: NO` for `area:brain` / control-plane by default.
+- Closing behavior work needs a relevant regression artifact (a `tests/` case, and a
+  [`docs/evals/`](../evals/README.md) entry when it names a capability/regression worth
+  pinning) or a documented reason only human/VM validation is possible (A-028).
 
 ## Alex commands (coding agent interpretation)
 | Alex says | Coding agent does |

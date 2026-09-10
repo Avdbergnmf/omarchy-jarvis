@@ -31,6 +31,8 @@ run "python3 -m unittest discover -s tests" python3 -m unittest discover -s test
 run "shellcheck (scripts + skills)" bash -c 'find scripts skills -name "*.sh" -print0 | xargs -0 shellcheck'
 run "node --check overlay/app.js" node --check overlay/app.js
 run "node tests/overlay.test.cjs (5 suites)" node tests/overlay.test.cjs
+run "check-test-coverage.py (no quiet suite omission)" python3 scripts/check-test-coverage.py
+run "eval-status.py (docs/evals/cases.json)" python3 scripts/eval-status.py
 
 echo "Full log: $LOG"
 if ((failed)); then

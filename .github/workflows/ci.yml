@@ -13,3 +13,5 @@ jobs:
       - run: find scripts skills -name '*.sh' -print0 | xargs -0 shellcheck
       - run: node --check overlay/app.js
       - run: node tests/overlay.test.cjs
+      - run: python3 scripts/check-test-coverage.py
+      - run: python3 scripts/eval-status.py

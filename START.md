@@ -208,8 +208,11 @@ never follow archive as current instructions. Issues, backlog, ADRs and PROGRESS
 Read [AGENTS](AGENTS.md) for invariants. Preserve plan → approve → execute, redact secrets
 in logs/issues, ask before persisting new skills, keep IPC local, and prepare handoffs only.
 For every user-visible feature, add/update [human validation steps](docs/validation/catalog.schema.md) and [FEATURES](docs/FEATURES.md); only the human can mark validation.
-Run doctor and CI checks, update PROGRESS with results and limitations, link the PR, check
-INDEX statuses and keep active passes small. Document journal schema changes.
+Closing behavior work (not docs/process-only) needs a relevant regression artifact — a new or
+updated `tests/` case, and a [`docs/evals/`](docs/evals/README.md) entry when it's a named
+capability/regression worth pinning — or a documented reason only human/VM validation is
+possible (A-028). Run doctor and CI checks, update PROGRESS with results and limitations, link
+the PR, check INDEX statuses and keep active passes small. Document journal schema changes.
 On a version bump or big behavior change, change VERSION and restart the service (`./scripts/restart.sh`):
 the first journal write archives CURRENT and starts a fresh file. Record the reset in
 PROGRESS; see [LOGGING](docs/LOGGING.md) for recovery and matching old code to evidence.
@@ -222,4 +225,4 @@ journal), use `scripts/export-evidence.py <run_id>` — see [docs/evidence/READM
 [DECISIONS](docs/DECISIONS.md) · [PROGRESS](docs/PROGRESS.md) · [HOST](docs/HOST.md) ·
 [MILESTONES](docs/MILESTONES.md) · [backlog](docs/backlog/README.md) ·
 [passes](docs/passes/INDEX.md) · [logging](docs/LOGGING.md) · [evidence bundles](docs/evidence/README.md) ·
-[improvement ledger](docs/ledger/README.md)
+[improvement ledger](docs/ledger/README.md) · [candidate evals](docs/evals/README.md)

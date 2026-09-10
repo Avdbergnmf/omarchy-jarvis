@@ -764,3 +764,31 @@ validation remains pending because the browser connector exposes no browser on t
   green. Manually reproduced and reverted each of `ledger-status.py`'s problem-detection paths
   (duplicate id, missing/orphan record, bad assignment reference) against the real seeded
   ledger before committing. No shared-service restart required (docs + light Training only).
+
+## 2026-09-10 — A-028 deterministic candidate-eval foundation (ADR-045)
+- `docs/evals/README.md`: documents four evidence planes (CI/unit, runtime journal, human
+  validation, candidate evals) and states none auto-graduates into another.
+- `docs/evals/schema.json` + `cases.json`: one case shape, `oracle_type: unit-test-reference`
+  only (v0) — the oracle is an existing `tests/` function, deterministic and side-effect-free
+  by construction. Seeded EVAL-001…EVAL-005 from known planner/approval history (honesty
+  rewrite, approve-by-default, skills_trusted boundary as `protected-regression`; A-024/A-025's
+  shipped app-open capabilities as `candidate-capability`, linked from ledger IMP-001).
+- `scripts/eval-status.py`: validates cases.json's schema and confirms every `reference`
+  resolves to a real test class/method via `ast.parse` (never imports/executes the test).
+- `scripts/check-test-coverage.py` (new CI step): fails if any `tests/*.test.cjs` isn't
+  reachable from a CI entrypoint (directly or via `require()`) or a `tests/*.py` file doesn't
+  match `unittest discover`'s `test_*.py` pattern — the "no quiet suite omission" contract.
+- Result envelope reuses A-038's `fingerprint()` verbatim (`case_id`/`case_version` already
+  existed, now wired) plus `counts`/`artifact_hash`, documented for A-031's future runner —
+  no runner built here.
+- `START.md`/`docs/assignments/README.md`: closing behavior work now needs a regression
+  artifact or a documented human/VM-only reason.
+- A-030 intentionally NOT unblocked — still needs A-027 (externally blocked) per A-028's brief.
+- Evidence: `tests/test_check_test_coverage.py` (5 cases) + `tests/test_eval_status.py` (9
+  cases). Found and fixed a real bug in `check-test-coverage.py`'s first draft: its
+  `reachable_cjs()` read the module-level `TESTS` constant instead of the `tests` parameter
+  passed to `check()`, so its own tests were silently exercising the real repo's `tests/`
+  directory instead of an isolated fixture — caught when a fixture-only transitively-required
+  file made the mismatch fail loudly. `python3 -m unittest discover -s tests` — 204/204 pass
+  (190 + 14 new); `./scripts/doctor.sh --syntax`, `node tests/overlay.test.cjs`,
+  `check-test-coverage.py` and `eval-status.py` all green via `./scripts/test-full.sh`.
