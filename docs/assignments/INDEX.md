@@ -30,7 +30,7 @@
 | A-026 | Improvement Ledger v0 (Desk-owned audit wrapping QUEUE) | done | area:docs | NO | [done/A-026-improvement-ledger-v0.md](done/A-026-improvement-ledger-v0.md) |
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
 | A-028 | Deterministic candidate-eval foundation | done | area:docs | NO | [done/A-028-eval-harness-v0.md](done/A-028-eval-harness-v0.md) |
-| A-029 | Preference memory v0 (provenance, precedence, revoke) | queued | area:actions | NO | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
+| A-029 | Preference memory v0 (provenance, precedence, revoke) | in_progress | area:actions | NO | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
 | A-030 | Protect safety/eval/control-plane paths | blocked | area:docs | NO | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
 | A-032 | ChatGPT deep review: plan vs codebase (plan perfection) | done | area:docs | NO | [done/A-032-chatgpt-plan-codebase-review.md](done/A-032-chatgpt-plan-codebase-review.md) |

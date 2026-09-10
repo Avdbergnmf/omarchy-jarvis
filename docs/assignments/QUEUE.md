@@ -7,7 +7,7 @@ Oldest queued at the top among `queued`. At most one non-parallel `in_progress` 
 | A-027 | Enforced promotion path (protected main + separate Forge actor) | blocked | area:docs | NO | high | [active/A-027-protected-promotion-path.md](active/A-027-protected-promotion-path.md) |
 | A-030 | Protect safety/eval/control-plane paths | blocked | area:docs | NO | medium | [active/A-030-protect-control-plane-paths.md](active/A-030-protect-control-plane-paths.md) |
 | A-031 | Stochastic planner evals v0 (10–20 critical behaviors) | blocked | area:docs | NO | high | [active/A-031-stochastic-evals-v0.md](active/A-031-stochastic-evals-v0.md) |
-| A-029 | Preference memory v0 (provenance, precedence, revoke) | queued | area:actions | NO | high | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
+| A-029 | Preference memory v0 (provenance, precedence, revoke) | in_progress | area:actions | NO | high | [active/A-029-memory-v0-provenance-prefs.md](active/A-029-memory-v0-provenance-prefs.md) |
 | A-033 | Latency profiler foundation (traces/spans/store) | queued | area:brain | NO | high | [active/A-033-latency-trace-foundation.md](active/A-033-latency-trace-foundation.md) |
 | A-034 | Training Latency Profiler UI (history + inspector) | queued | area:overlay | NO | medium | [active/A-034-training-latency-profiler-ui.md](active/A-034-training-latency-profiler-ui.md) |
 | A-035 | Latency distributions, version compare, ledger hooks | queued | area:overlay | NO | medium | [active/A-035-latency-distributions-compare-ledger.md](active/A-035-latency-distributions-compare-ledger.md) |
